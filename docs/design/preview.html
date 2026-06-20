@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RoadRunners — Design System Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Nunito:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #d97706;
+      --primary-active: #b45309;
+      --primary-soft: #fef3c7;
+      --on-primary: #ffffff;
+      --link: #0066cc;
+      --link-on-dark: #2997ff;
+      --ink: #1d1d1f;
+      --ink-warm: #26251e;
+      --body: #525252;
+      --mute: #a3a3a3;
+      --canvas: #ffffff;
+      --canvas-parchment: #f5f5f7;
+      --canvas-warm: #f7f7f4;
+      --surface-card: #ffffff;
+      --surface-soft: #fafafa;
+      --hairline: #e5e5e5;
+      --hairline-strong: #d4d4d4;
+      --canvas-dark: #141413;
+      --surface-dark: #1c1b19;
+      --surface-dark-elevated: #26251e;
+      --surface-dark-soft: #2a2926;
+      --on-dark: #ececec;
+      --on-dark-mute: rgba(236,236,236,0.72);
+      --semantic-success: #1f8a65;
+      --semantic-success-soft: #d1fae5;
+      --semantic-error: #cf2d56;
+      --semantic-error-soft: #fce7f3;
+      --semantic-warning: #d97706;
+      --semantic-warning-soft: #fef3c7;
+      --semantic-info: #0066cc;
+      --semantic-info-soft: #dbeafe;
+      --skill-web: #9fbbe0;
+      --skill-mobile: #9fc9a2;
+      --skill-data: #c0a8dd;
+      --skill-ai: #dfa88f;
+      --skill-devops: #c08532;
+      --skill-explore: #d4d4d4;
+      --streak-flame: #ea580c;
+      --xp-track: #f5f5f7;
+      --shadow-soft: 0 1px 1px #00000005, 0 2px 2px #0000000a;
+      --shadow-elevated: 0 2px 2px #0000000a, 0 8px 16px -4px #0000000a;
+      --font-display: "Nunito", system-ui, sans-serif;
+      --font-body: "Inter", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+      --r-none: 0;
+      --r-xs: 4px;
+      --r-sm: 6px;
+      --r-md: 8px;
+      --r-lg: 12px;
+      --r-xl: 16px;
+      --r-pill: 9999px;
+      --s-xxs: 2px;
+      --s-xs: 4px;
+      --s-sm: 8px;
+      --s-md: 12px;
+      --s-lg: 16px;
+      --s-xl: 24px;
+      --s-xxl: 32px;
+      --s-section: 80px;
+      --touch: 44px;
+      --bg: var(--canvas);
+      --fg: var(--ink);
+      --muted-fg: var(--body);
+      --border: var(--hairline);
+      --card-bg: var(--surface-card);
+      --elevated: var(--surface-soft);
+    }
+
+    html.dark {
+      --bg: var(--canvas-dark);
+      --fg: var(--on-dark);
+      --muted-fg: var(--on-dark-mute);
+      --border: #3a3936;
+      --card-bg: var(--surface-dark-elevated);
+      --elevated: var(--surface-dark-soft);
+      --xp-track: var(--surface-dark-soft);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; width: 100%; }
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: 100vh;
+      font-family: var(--font-body);
+      font-size: 17px;
+      line-height: 1.47;
+      letter-spacing: -0.17px;
+      color: var(--fg);
+      background: var(--bg);
+    }
+
+    .skip { position: absolute; left: -9999px; }
+    .page {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 0 0 96px;
+    }
+    .section-pad {
+      padding-left: clamp(20px, 4vw, 72px);
+      padding-right: clamp(20px, 4vw, 72px);
+    }
+
+    /* ── Live nav demo ── */
+    .demo-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      padding: 0 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      margin-bottom: var(--s-xl);
+    }
+    .demo-nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .demo-nav-links { display: flex; gap: 20px; font-size: 14px; font-weight: 500; }
+    .demo-nav-links a { color: var(--fg); text-decoration: none; }
+    .demo-nav-actions { display: flex; align-items: center; gap: 12px; }
+
+    /* ── Sticky progress bar demo ── */
+    .sticky-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 56px;
+      padding: 8px 20px;
+      background: color-mix(in srgb, var(--canvas-parchment) 80%, transparent);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      margin-bottom: var(--s-xl);
+    }
+    html.dark .sticky-bar {
+      background: color-mix(in srgb, var(--surface-dark) 90%, transparent);
+    }
+    .xp-track {
+      flex: 1;
+      height: 8px;
+      background: var(--xp-track);
+      border-radius: var(--r-pill);
+      overflow: hidden;
+    }
+    .xp-fill {
+      width: 62%;
+      height: 100%;
+      background: var(--primary);
+      border-radius: var(--r-pill);
+      transition: width 300ms ease-out;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      width: 100%;
+      margin: 0 0 var(--s-section);
+      padding: clamp(48px, 8vw, var(--s-section)) clamp(20px, 4vw, 72px);
+      text-align: center;
+      overflow: hidden;
+    }
+    .hero-mesh {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 30%, #007cf0 0%, transparent 55%),
+        radial-gradient(ellipse 70% 50% at 80% 20%, #7928ca 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 50% 90%, #d97706 0%, transparent 45%);
+      opacity: 0.35;
+      z-index: 0;
+    }
+    html.dark .hero-mesh { opacity: 0.22; }
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: none;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .hero-icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 16px;
+      color: var(--primary);
+    }
+    .hero-icon svg,
+    .rr-logo {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .rr-logo--hero { width: clamp(72px, 10vw, 96px); height: clamp(72px, 10vw, 96px); }
+    .rr-logo--nav { width: 24px; height: 24px; }
+    .rr-logo--lg { width: 48px; height: 48px; opacity: 0.45; margin: 0 auto 16px; }
+    .display-xl {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 5vw, 40px);
+      font-weight: 600;
+      line-height: 1.1;
+      letter-spacing: -0.4px;
+      margin: 0 0 16px;
+    }
+    .hero-sub { color: var(--muted-fg); max-width: 56ch; margin: 0 auto 28px; }
+    .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+
+    /* ── Sections ── */
+    section {
+      width: 100%;
+      margin-bottom: var(--s-section);
+      scroll-margin-top: 24px;
+      padding-left: clamp(20px, 4vw, 72px);
+      padding-right: clamp(20px, 4vw, 72px);
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.88px;
+      text-transform: uppercase;
+      color: var(--mute);
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: -0.32px;
+      margin: 0 0 8px;
+    }
+    .section-desc { color: var(--muted-fg); margin: 0 0 28px; max-width: none; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: var(--touch);
+      padding: 10px 20px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1;
+      border-radius: var(--r-pill);
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 120ms ease, background 120ms ease;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--primary); color: var(--on-primary); }
+    .btn-primary:active { background: var(--primary-active); }
+    .btn-secondary {
+      background: var(--card-bg);
+      color: var(--fg);
+      border-color: var(--hairline-strong);
+    }
+    html.dark .btn-secondary {
+      background: var(--surface-dark-elevated);
+      border-color: var(--border);
+    }
+    .btn-ghost { background: transparent; color: var(--link); }
+    html.dark .btn-ghost { color: var(--link-on-dark); }
+    .btn-lg { font-size: 16px; padding: 10px 24px; }
+    .btn-icon {
+      width: var(--touch);
+      height: var(--touch);
+      padding: 0;
+      border-radius: var(--r-pill);
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      color: var(--fg);
+    }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+    /* ── Badges & pills ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.88px;
+      text-transform: uppercase;
+      border-radius: var(--r-pill);
+    }
+    .badge-level { background: var(--primary-soft); color: var(--primary-active); }
+    .badge-streak { background: var(--primary-soft); color: var(--streak-flame); }
+    .badge-fallback { background: var(--semantic-warning-soft); color: var(--semantic-warning); }
+    .badge-success { background: var(--semantic-success-soft); color: var(--semantic-success); }
+    .badge-info { background: var(--semantic-info-soft); color: var(--semantic-info); }
+    .skill-pill { composes: badge; }
+    .skill-web { background: var(--skill-web); color: var(--ink-warm); }
+    .skill-mobile { background: var(--skill-mobile); color: var(--ink-warm); }
+    .skill-data { background: var(--skill-data); color: var(--ink-warm); }
+    .skill-ai { background: var(--skill-ai); color: var(--ink-warm); }
+    .skill-devops { background: var(--skill-devops); color: var(--on-primary); }
+    .skill-explore { background: var(--skill-explore); color: var(--ink-warm); }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 24px;
+    }
+    .card-elevated { box-shadow: var(--shadow-soft); }
+    .card-float { box-shadow: var(--shadow-elevated); }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+      gap: 20px;
+      width: 100%;
+    }
+    .card-grid-wide {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+    @media (min-width: 1200px) {
+      .card-grid-3 { grid-template-columns: repeat(3, 1fr); }
+      .card-grid-2 { grid-template-columns: repeat(2, 1fr); }
+    }
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.28px;
+      line-height: 1.1;
+    }
+    .stat-label { font-size: 16px; font-weight: 600; color: var(--muted-fg); margin-top: 4px; }
+
+    .choice-btn {
+      display: block;
+      width: 100%;
+      min-height: var(--touch);
+      padding: 16px 20px;
+      text-align: left;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      cursor: pointer;
+      color: var(--fg);
+    }
+    .choice-btn strong { display: block; font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+    .choice-btn span { font-size: 14px; color: var(--muted-fg); }
+    .choice-btn.selected {
+      background: var(--primary-soft);
+      border: 2px solid var(--primary);
+    }
+    .choice-btn.disabled {
+      background: var(--elevated);
+      color: var(--mute);
+      pointer-events: none;
+    }
+    .choice-stack { display: flex; flex-direction: column; gap: 12px; }
+    .pivot-link { font-size: 14px; color: var(--link); text-decoration: none; margin-top: 12px; display: inline-block; }
+    html.dark .pivot-link { color: var(--link-on-dark); }
+
+    .skeleton-line {
+      height: 12px;
+      background: var(--border);
+      border-radius: var(--r-sm);
+      margin-bottom: 12px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    .skeleton-line.w60 { width: 60%; }
+    .skeleton-line.w90 { width: 90%; }
+    .skeleton-line.w40 { width: 40%; }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+
+    /* ── Journey timeline (AI signature) ── */
+    .demo-nav,
+    .sticky-bar,
+    .code-block,
+    .btn-row,
+    .badge-row {
+      width: 100%;
+    }
+
+    .timeline {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: clamp(16px, 3vw, 28px);
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      width: 100%;
+    }
+
+    .forms-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      width: 100%;
+    }
+    @media (min-width: 900px) {
+      .forms-layout { grid-template-columns: 1fr 1fr; align-items: start; }
+    }
+    .timeline-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .timeline-pill {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.88px;
+      text-transform: uppercase;
+      border-radius: var(--r-pill);
+      color: var(--ink-warm);
+    }
+    .timeline-thinking { background: var(--skill-ai); }
+    .timeline-reading { background: var(--skill-web); }
+    .timeline-choosing { background: var(--skill-mobile); }
+    .timeline-pivot { background: var(--skill-data); }
+    .timeline-done { background: var(--skill-devops); color: var(--on-primary); }
+    .timeline-arrow { color: var(--mute); font-size: 14px; }
+
+    /* ── Code block ── */
+    .code-block {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 20px;
+      overflow-x: auto;
+    }
+    .code-block pre {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--fg);
+    }
+    .code-block .comment { color: var(--mute); }
+    .code-block .keyword { color: var(--link); }
+    html.dark .code-block .keyword { color: var(--link-on-dark); }
+    .code-inline {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      background: var(--elevated);
+      padding: 2px 8px;
+      border-radius: var(--r-sm);
+    }
+
+    /* ── Pricing ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: 20px;
+      width: 100%;
+    }
+    @media (min-width: 900px) {
+      .pricing-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .pricing-card {
+      padding: 32px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      background: var(--card-bg);
+    }
+    .pricing-card.featured {
+      background: var(--surface-dark-elevated);
+      color: var(--on-dark);
+      border-color: transparent;
+    }
+    html.dark .pricing-card.featured {
+      background: var(--ink-warm);
+    }
+    .pricing-card .tier { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+    .pricing-card .price {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 600;
+      margin: 16px 0;
+    }
+    .pricing-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0 0;
+      font-size: 14px;
+      color: var(--muted-fg);
+    }
+    html.dark .pricing-card:not(.featured) ul { color: var(--muted-fg); }
+    .pricing-card.featured ul { color: var(--on-dark-mute); }
+    .pricing-card li { padding: 6px 0; border-top: 1px solid var(--border); }
+    .pricing-card.featured li { border-color: rgba(255,255,255,0.12); }
+
+    /* ── Forms ── */
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .form-input {
+      width: 100%;
+      height: var(--touch);
+      padding: 12px 16px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-pill);
+      background: var(--card-bg);
+      color: var(--fg);
+    }
+    .form-input:focus {
+      outline: 2px solid rgba(0,102,204,0.45);
+      outline-offset: 2px;
+    }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .interest-chip {
+      min-height: var(--touch);
+      padding: 10px 16px;
+      border-radius: var(--r-pill);
+      border: 1px solid var(--border);
+      background: var(--elevated);
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .interest-chip.selected {
+      background: var(--primary-soft);
+      color: var(--primary-active);
+      border-color: var(--primary);
+    }
+
+    /* ── Color palette ── */
+    .swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+      gap: 12px;
+      width: 100%;
+    }
+    .swatch {
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    .swatch-color { height: 64px; }
+    .swatch-meta { padding: 10px 12px; font-size: 12px; }
+    .swatch-meta strong { display: block; font-size: 13px; margin-bottom: 2px; }
+    .swatch-meta code { color: var(--mute); font-family: var(--font-mono); font-size: 11px; }
+
+    /* ── Typography ── */
+    .type-row {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: minmax(160px, 220px) 1fr;
+      gap: clamp(16px, 4vw, 48px);
+      align-items: baseline;
+      width: 100%;
+    }
+    .type-meta { font-size: 12px; color: var(--mute); font-family: var(--font-mono); }
+    .t-display-xl { font-family: var(--font-display); font-size: 40px; font-weight: 600; line-height: 1.1; letter-spacing: -0.4px; }
+    .t-display-lg { font-family: var(--font-display); font-size: 32px; font-weight: 600; line-height: 1.15; letter-spacing: -0.32px; }
+    .t-display-md { font-family: var(--font-display); font-size: 24px; font-weight: 600; line-height: 1.25; letter-spacing: -0.24px; }
+    .t-heading-lg { font-size: 20px; font-weight: 600; line-height: 1.4; }
+    .t-body { font-size: 17px; line-height: 1.47; letter-spacing: -0.17px; }
+    .t-body-sm { font-size: 14px; line-height: 1.43; color: var(--muted-fg); }
+    .t-caption { font-size: 12px; line-height: 1.33; color: var(--mute); }
+    .t-stat { font-family: var(--font-display); font-size: 28px; font-weight: 700; letter-spacing: -0.28px; }
+    .t-code { font-family: var(--font-mono); font-size: 14px; }
+
+    /* ── Spacing scale ── */
+    .spacing-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(12px, 2vw, 32px);
+      align-items: flex-end;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .spacing-item { text-align: center; }
+    .spacing-bar {
+      background: var(--primary);
+      border-radius: var(--r-xs);
+      margin: 0 auto 8px;
+      opacity: 0.7;
+    }
+    .spacing-item span { font-size: 11px; font-family: var(--font-mono); color: var(--mute); }
+
+    /* ── Radius scale ── */
+    .radius-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(16px, 3vw, 40px);
+      justify-content: space-between;
+      width: 100%;
+    }
+    .radius-box {
+      width: 80px;
+      height: 80px;
+      background: var(--primary-soft);
+      border: 2px solid var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--primary-active);
+    }
+
+    /* ── Elevation ── */
+    .elevation-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+      gap: 20px;
+      width: 100%;
+    }
+    @media (min-width: 900px) {
+      .elevation-row { grid-template-columns: repeat(4, 1fr); }
+    }
+    .elev-box {
+      padding: 24px;
+      border-radius: var(--r-lg);
+      background: var(--card-bg);
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .elev-0 { border: none; background: var(--elevated); }
+    .elev-1 { border: 1px solid var(--border); }
+    .elev-2 { border: 1px solid var(--border); box-shadow: var(--shadow-soft); }
+    .elev-3 {
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--canvas-parchment) 80%, transparent);
+      backdrop-filter: blur(20px);
+    }
+    html.dark .elev-3 {
+      background: color-mix(in srgb, var(--surface-dark) 85%, transparent);
+    }
+    .elev-label { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+    .elev-desc { font-size: 12px; color: var(--mute); }
+
+    /* ── Tables ── */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      width: 100%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: var(--elevated);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.88px;
+      text-transform: uppercase;
+      color: var(--mute);
+    }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Diagram ── */
+    .diagram {
+      padding: clamp(16px, 3vw, 28px);
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      font-family: var(--font-mono);
+      font-size: clamp(10px, 1.2vw, 12px);
+      line-height: 1.6;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--muted-fg);
+      width: 100%;
+    }
+
+    /* ── Touch targets ── */
+    .touch-demo {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(16px, 4vw, 48px);
+      align-items: flex-end;
+      width: 100%;
+    }
+    .touch-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed var(--primary);
+      border-radius: var(--r-lg);
+      background: var(--primary-soft);
+      color: var(--primary-active);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .touch-44 { width: 44px; height: 44px; }
+    .touch-36 { width: 36px; height: 36px; opacity: 0.5; }
+    .touch-label { font-size: 12px; color: var(--mute); margin-top: 8px; text-align: center; }
+
+    /* ── Map nodes ── */
+    .map-demo { display: flex; flex-direction: column; gap: 12px; padding-left: 8px; }
+    .map-row { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+    .map-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .map-dot.complete { background: var(--semantic-success); }
+    .map-dot.current {
+      width: 16px;
+      height: 16px;
+      background: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-soft), 0 0 0 4px var(--primary);
+    }
+    .map-dot.upcoming { background: transparent; border: 2px solid var(--hairline); }
+    html.dark .map-dot.upcoming { border-color: var(--border); }
+    .map-dot.archived { width: 10px; height: 10px; border: 2px solid var(--mute); background: transparent; }
+    .map-archived-text { color: var(--mute); text-decoration: line-through; }
+
+    /* ── Banners ── */
+    .banner-error {
+      padding: 12px 16px;
+      background: var(--semantic-error-soft);
+      color: var(--semantic-error);
+      border-radius: var(--r-lg);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+    .banner-success {
+      padding: 12px 16px;
+      background: var(--semantic-success-soft);
+      color: var(--semantic-success);
+      border-radius: var(--r-lg);
+      font-size: 14px;
+    }
+
+    .split-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      width: 100%;
+    }
+    @media (min-width: 900px) {
+      .split-row { grid-template-columns: 1fr 1fr; }
+    }
+    .full-bleed-block { width: 100%; }
+
+    @media (max-width: 640px) {
+      .demo-nav-links { display: none; }
+      .type-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- RoadRunners logo symbol — icon-roadrunner -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+    <symbol id="icon-roadrunner" viewBox="0 0 64 64" fill="none">
+      <path d="M5 38h8M3 42h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.22"/>
+      <path d="M22 34C13 31 7 24 6 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M22 34C12 36 6 31 5 23" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M22 34C14 40 7 39 6 33" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M22 34c6-6 14-10 22-12c5-1 9 1 8 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M52 28c1 5-3 10-9 12c-6 2-12 0-15-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M32 28c2 3 2 7 0 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M38 17 36 10M40 16v-7M42 17l2-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M52 28 58 27" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="46" cy="24" r="1.25" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M34 38l5 10 5 2M30 39l-5 10-5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M44 50l4 1M20 47l-4 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </symbol>
+  </svg>
+
+  <div class="page">
+    <!-- ═══ HERO ═══ -->
+    <header class="hero" id="hero">
+      <div class="hero-mesh" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <div class="hero-icon" aria-hidden="true">
+          <svg class="rr-logo rr-logo--hero" role="img" aria-label="RoadRunners">
+            <use href="#icon-roadrunner"/>
+          </svg>
+        </div>
+        <h1 class="display-xl">The junior ladder is gone.<br>Learn breadth-first.</h1>
+        <p class="hero-sub">RoadRunners design system preview — Ollama clarity, Cursor dark mode, Apple typography, Vercel semantics.</p>
+        <div class="hero-ctas">
+          <a href="#components" class="btn btn-primary btn-lg">Start your journey</a>
+          <a href="#colors" class="btn btn-secondary btn-lg">Explore tokens</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══ NAVIGATION ═══ -->
+    <section id="navigation">
+      <p class="section-label">01 — Navigation</p>
+      <h2 class="section-title">Top Nav &amp; Sticky Progress</h2>
+      <p class="section-desc"><code>top-nav</code> · <code>sticky-progress-bar</code> · 56px height · frosted XP bar with level + streak badges.</p>
+
+      <div class="demo-nav" role="navigation" aria-label="Demo top nav">
+        <div class="demo-nav-brand">
+          <svg class="rr-logo rr-logo--nav" aria-hidden="true">
+            <use href="#icon-roadrunner"/>
+          </svg>
+          RoadRunners
+        </div>
+        <div class="demo-nav-links">
+          <a href="#">Journey</a>
+          <a href="#">Map</a>
+        </div>
+        <div class="demo-nav-actions">
+          <button type="button" class="btn btn-icon" id="theme-toggle" aria-label="Toggle dark mode">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+          </button>
+          <a href="#" class="btn btn-primary">Sign in</a>
+        </div>
+      </div>
+
+      <div class="sticky-bar">
+        <span class="badge badge-level">Level 4</span>
+        <div class="xp-track"><div class="xp-fill"></div></div>
+        <span class="badge badge-streak">🔥 7 day streak</span>
+      </div>
+    </section>
+
+    <!-- ═══ COLORS ═══ -->
+    <section id="colors">
+      <p class="section-label">02 — Color Palette</p>
+      <h2 class="section-title">Tokens</h2>
+      <p class="section-desc">Trail Amber primary · Path Blue links · pastel skill categories · semantic states · dark surfaces.</p>
+
+      <h3 style="font-size:18px;margin:24px 0 12px;">Brand &amp; Accent</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:#d97706"></div><div class="swatch-meta"><strong>primary</strong><code>#d97706</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#b45309"></div><div class="swatch-meta"><strong>primary-active</strong><code>#b45309</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#fef3c7"></div><div class="swatch-meta"><strong>primary-soft</strong><code>#fef3c7</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#0066cc"></div><div class="swatch-meta"><strong>link</strong><code>#0066cc</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#2997ff"></div><div class="swatch-meta"><strong>link-on-dark</strong><code>#2997ff</code></div></div>
+      </div>
+
+      <h3 style="font-size:18px;margin:24px 0 12px;">Surfaces — Light</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:#ffffff;border-bottom:1px solid #e5e5e5"></div><div class="swatch-meta"><strong>canvas</strong><code>#ffffff</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#f5f5f7"></div><div class="swatch-meta"><strong>canvas-parchment</strong><code>#f5f5f7</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#f7f7f4"></div><div class="swatch-meta"><strong>canvas-warm</strong><code>#f7f7f4</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#fafafa"></div><div class="swatch-meta"><strong>surface-soft</strong><code>#fafafa</code></div></div>
+      </div>
+
+      <h3 style="font-size:18px;margin:24px 0 12px;">Surfaces — Dark</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:#141413"></div><div class="swatch-meta"><strong>canvas-dark</strong><code>#141413</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#1c1b19"></div><div class="swatch-meta"><strong>surface-dark</strong><code>#1c1b19</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#26251e"></div><div class="swatch-meta"><strong>surface-dark-elevated</strong><code>#26251e</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#2a2926"></div><div class="swatch-meta"><strong>surface-dark-soft</strong><code>#2a2926</code></div></div>
+      </div>
+
+      <h3 style="font-size:18px;margin:24px 0 12px;">Skill Categories</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:#9fbbe0"></div><div class="swatch-meta"><strong>skill-web</strong><code>#9fbbe0</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#9fc9a2"></div><div class="swatch-meta"><strong>skill-mobile</strong><code>#9fc9a2</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#c0a8dd"></div><div class="swatch-meta"><strong>skill-data</strong><code>#c0a8dd</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#dfa88f"></div><div class="swatch-meta"><strong>skill-ai</strong><code>#dfa88f</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#c08532"></div><div class="swatch-meta"><strong>skill-devops</strong><code>#c08532</code></div></div>
+      </div>
+
+      <h3 style="font-size:18px;margin:24px 0 12px;">Semantic</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:#1f8a65"></div><div class="swatch-meta"><strong>success</strong><code>#1f8a65</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#cf2d56"></div><div class="swatch-meta"><strong>error</strong><code>#cf2d56</code></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#dbeafe"></div><div class="swatch-meta"><strong>info-soft</strong><code>#dbeafe</code></div></div>
+      </div>
+    </section>
+
+    <!-- ═══ TYPOGRAPHY ═══ -->
+    <section id="typography">
+      <p class="section-label">03 — Typography</p>
+      <h2 class="section-title">Type Scale</h2>
+      <p class="section-desc">Nunito display · Inter body at 17px · JetBrains Mono code · negative tracking on headlines.</p>
+
+      <div class="type-row">
+        <div class="type-meta">display-xl · 40/600</div>
+        <div class="t-display-xl">Learn breadth-first</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">display-lg · 32/600</div>
+        <div class="t-display-lg">Your learning journey</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">display-md · 24/600</div>
+        <div class="t-display-md">React basics: components</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">heading-lg · 20/600</div>
+        <div class="t-heading-lg">What's your goal?</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">body · 17/400</div>
+        <div class="t-body">At each step, the AI presents a lesson snippet and 2–3 branching choices. Pick based on interest — pivot anytime.</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">body-sm · 14/400</div>
+        <div class="t-body-sm">Choice description copy sits here in muted secondary color.</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">stat-lg · 28/700</div>
+        <div class="t-stat">1,240 XP</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">code · JetBrains Mono</div>
+        <div class="t-code">const skill = "react"; // skill slug</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">caption · 12/400</div>
+        <div class="t-caption">© 2026 RoadRunners · Hackathon MVP</div>
+      </div>
+    </section>
+
+    <!-- ═══ BUTTONS ═══ -->
+    <section id="buttons">
+      <p class="section-label">04 — Buttons</p>
+      <h2 class="section-title">Button Variants</h2>
+      <p class="section-desc">Pill geometry · 44px height · Trail Amber primary · scale(0.97) on press.</p>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary">Primary — Continue</button>
+        <button type="button" class="btn btn-secondary">Secondary</button>
+        <button type="button" class="btn btn-ghost">Ghost link action</button>
+        <button type="button" class="btn btn-primary btn-lg">Large CTA</button>
+        <button type="button" class="btn btn-icon" aria-label="Icon button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ═══ AI TIMELINE ═══ -->
+    <section id="timeline">
+      <p class="section-label">05 — AI Journey Timeline (signature)</p>
+      <h2 class="section-title">Agent Stage Pills</h2>
+      <p class="section-desc">Cursor timeline grammar adapted for RoadRunners — pastel pills scoped to in-product AI flow visualization only, never primary CTAs.</p>
+      <div class="timeline">
+        <div class="timeline-step">
+          <span class="timeline-pill timeline-thinking">Thinking</span>
+          <span class="timeline-arrow">→</span>
+        </div>
+        <div class="timeline-step">
+          <span class="timeline-pill timeline-reading">Reading</span>
+          <span class="timeline-arrow">→</span>
+        </div>
+        <div class="timeline-step">
+          <span class="timeline-pill timeline-choosing">Choosing</span>
+          <span class="timeline-arrow">→</span>
+        </div>
+        <div class="timeline-step">
+          <span class="timeline-pill timeline-pivot">Pivot</span>
+          <span class="timeline-arrow">→</span>
+        </div>
+        <div class="timeline-step">
+          <span class="timeline-pill timeline-done">Done</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ CARDS ═══ -->
+    <section id="cards">
+      <p class="section-label">06 — Cards</p>
+      <h2 class="section-title">Journey &amp; UI Cards</h2>
+      <p class="section-desc">Hairline borders · 12px radius · lesson content first, choices below.</p>
+
+      <div class="card-grid card-grid-3" style="margin-bottom:24px">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+            <span class="badge skill-web skill-pill">Web</span>
+            <span class="badge badge-fallback">Suggested path</span>
+          </div>
+          <h3 class="t-display-md" style="margin:0 0 12px;font-size:24px">React basics: JSX</h3>
+          <p class="t-body" style="margin:0 0 20px;font-size:17px">JSX lets you write HTML-like syntax inside JavaScript. Components return JSX to describe UI.</p>
+          <div class="choice-stack">
+            <button type="button" class="choice-btn selected">
+              <strong>Learn React hooks</strong>
+              <span>Deepen frontend skills with state management</span>
+            </button>
+            <button type="button" class="choice-btn">
+              <strong>Try TypeScript</strong>
+              <span>Add type safety to your React code</span>
+            </button>
+            <button type="button" class="choice-btn disabled">
+              <strong>Explore Next.js</strong>
+              <span>Already selected — disabled after submit</span>
+            </button>
+          </div>
+          <a href="#" class="pivot-link">Pivot to a different track →</a>
+        </div>
+
+        <div class="card">
+          <p class="section-label" style="margin-bottom:12px">Loading skeleton</p>
+          <div class="skeleton-line w60"></div>
+          <div class="skeleton-line w90"></div>
+          <div class="skeleton-line w90"></div>
+          <div class="skeleton-line w40"></div>
+        </div>
+
+        <div class="card card-elevated" style="text-align:center;padding:32px">
+          <svg class="rr-logo rr-logo--lg" aria-hidden="true">
+            <use href="#icon-roadrunner"/>
+          </svg>
+          <h3 class="t-heading-lg">No journey yet</h3>
+          <p class="t-body-sm" style="margin:8px 0 20px">Start onboarding to generate your first AI-guided path.</p>
+          <button type="button" class="btn btn-primary">Start onboarding</button>
+        </div>
+      </div>
+
+      <div class="card-grid card-grid-3">
+        <div class="card"><div class="stat-num">1,240</div><div class="stat-label">Total XP</div></div>
+        <div class="card"><div class="stat-num">4</div><div class="stat-label">Level</div></div>
+        <div class="card"><div class="stat-num">12</div><div class="stat-label">Nodes completed</div></div>
+      </div>
+
+      <h3 style="font-size:18px;margin:32px 0 12px">Journey map nodes</h3>
+      <div class="split-row">
+      <div class="card full-bleed-block">
+        <div class="map-demo">
+          <div class="map-row"><span class="map-dot complete"></span> HTML foundations</div>
+          <div class="map-row"><span class="map-dot complete"></span> CSS layout</div>
+          <div class="map-row"><span class="map-dot current"></span> <strong>React basics</strong></div>
+          <div class="map-row"><span class="map-dot upcoming"></span> React hooks</div>
+          <div class="map-row"><span class="map-dot archived"></span> <span class="map-archived-text">Swift intro (pivoted)</span></div>
+        </div>
+      </div>
+
+      <div class="full-bleed-block">
+        <div class="banner-error">Session expired — please sign in again.</div>
+        <div class="banner-success">+50 XP · Node complete!</div>
+      </div>
+      </div>
+    </section>
+
+    <!-- ═══ CODE ═══ -->
+    <section id="code">
+      <p class="section-label">07 — Code Block</p>
+      <h2 class="section-title">Monospace Surfaces</h2>
+      <p class="section-desc">JetBrains Mono · 13px in blocks · inline <span class="code-inline">skill_tag</span> chips at 14px.</p>
+      <div class="code-block">
+        <pre><span class="comment"># Install snippet — Ollama-style pill content</span>
+curl -fsSL https://roadrunners.dev/start | sh
+
+<span class="comment">// AI output schema (Zod-validated)</span>
+{
+  <span class="keyword">"title"</span>: "React basics: JSX",
+  <span class="keyword">"skill_tag"</span>: "react",
+  <span class="keyword">"choices"</span>: [
+    { <span class="keyword">"label"</span>: "Learn hooks", <span class="keyword">"target_skill_tag"</span>: "react" }
+  ]
+}</pre>
+      </div>
+    </section>
+
+    <!-- ═══ PRICING ═══ -->
+    <section id="pricing">
+      <p class="section-label">08 — Pricing Tiers</p>
+      <h2 class="section-title">Journey Plans</h2>
+      <p class="section-desc">Ollama-style hairline cards · featured tier inverted dark · pill CTAs.</p>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div class="tier">Explorer</div>
+          <p class="t-body-sm">Breadth-first learning, one active journey.</p>
+          <div class="price">$0</div>
+          <button type="button" class="btn btn-primary" style="width:100%">Get started</button>
+          <ul>
+            <li>✓ AI-generated nodes</li>
+            <li>✓ 2–3 choices per step</li>
+            <li>✓ Journey map</li>
+          </ul>
+        </div>
+        <div class="pricing-card featured">
+          <div class="tier">Pathfinder</div>
+          <p style="color:var(--on-dark-mute);font-size:14px">Unlimited pivots + priority AI.</p>
+          <div class="price">$12</div>
+          <button type="button" class="btn btn-secondary" style="width:100%;background:#fff;color:#26251e;border:none">Get Pathfinder</button>
+          <ul>
+            <li>✓ Everything in Explorer</li>
+            <li>✓ Unlimited pivot tracks</li>
+            <li>✓ Extended context window</li>
+          </ul>
+        </div>
+        <div class="pricing-card">
+          <div class="tier">Trailblazer</div>
+          <p class="t-body-sm">Teams + shared journey maps.</p>
+          <div class="price">$29</div>
+          <button type="button" class="btn btn-primary" style="width:100%">Contact us</button>
+          <ul>
+            <li>✓ Everything in Pathfinder</li>
+            <li>✓ Team dashboards</li>
+            <li>✓ Skill catalog admin</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ FORMS ═══ -->
+    <section id="forms">
+      <p class="section-label">09 — Forms</p>
+      <h2 class="section-title">Onboarding Inputs</h2>
+      <p class="section-desc">Pill inputs · 44px height · interest chips with min touch target.</p>
+      <div class="forms-layout">
+      <div class="card card-float full-bleed-block">
+        <div class="form-group">
+          <label class="form-label" for="goal">What's your goal?</label>
+          <input class="form-input" id="goal" type="text" placeholder="Become hireable full-stack" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Interests (pick any)</label>
+          <div class="chip-row">
+            <button type="button" class="interest-chip selected">Web</button>
+            <button type="button" class="interest-chip selected">Mobile</button>
+            <button type="button" class="interest-chip">Data</button>
+            <button type="button" class="interest-chip">AI</button>
+            <button type="button" class="interest-chip">DevOps</button>
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary" style="width:100%">Start journey</button>
+      </div>
+      <div class="card">
+        <p class="section-label">Form tokens</p>
+        <h3 class="t-heading-lg" style="margin:0 0 12px">Onboarding wizard</h3>
+        <p class="t-body-sm" style="margin:0 0 16px"><code>text-input</code> · pill shape · 44px height · focus ring <code>rgba(0,102,204,0.45)</code></p>
+        <p class="t-body-sm" style="margin:0 0 16px"><code>interest-chip</code> · min-height 44px · selected state uses <code>primary-soft</code></p>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" for="goal2">Disabled input</label>
+          <input class="form-input" id="goal2" type="text" placeholder="Placeholder state" disabled style="opacity:0.6" />
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- ═══ BADGES ═══ -->
+    <section id="badges">
+      <p class="section-label">10 — Badges</p>
+      <h2 class="section-title">Pills &amp; Labels</h2>
+      <p class="section-desc">Uppercase caption · 11px · 0.88px tracking · skill taxonomy + gamification + states.</p>
+      <div class="badge-row" style="margin-bottom:16px">
+        <span class="badge badge-level">Level 4</span>
+        <span class="badge badge-streak">🔥 7 day streak</span>
+        <span class="badge badge-fallback">Suggested path</span>
+        <span class="badge badge-success">Node complete</span>
+        <span class="badge badge-info">New feature</span>
+      </div>
+      <div class="badge-row">
+        <span class="badge skill-web">Web</span>
+        <span class="badge skill-mobile">Mobile</span>
+        <span class="badge skill-data">Data</span>
+        <span class="badge skill-ai">AI</span>
+        <span class="badge skill-devops">DevOps</span>
+        <span class="badge skill-explore">Explore</span>
+      </div>
+    </section>
+
+    <!-- ═══ SPACING ═══ -->
+    <section id="spacing">
+      <p class="section-label">11 — Spacing Scale</p>
+      <h2 class="section-title">Spacing Tokens</h2>
+      <p class="section-desc">8px base unit · section rhythm at 80px · touch-min at 44px.</p>
+      <div class="spacing-row">
+        <div class="spacing-item"><div class="spacing-bar" style="width:2px;height:2px"></div><span>xxs · 2</span></div>
+        <div class="spacing-item"><div class="spacing-bar" style="width:4px;height:4px"></div><span>xs · 4</span></div>
+        <div class="spacing-item"><div class="spacing-bar" style="width:8px;height:8px"></div><span>sm · 8</span></div>
+        <div class="spacing-item"><div class="spacing-bar" style="width:12px;height:12px"></div><span>md · 12</span></div>
+        <div class="spacing-item"><div class="spacing-bar" style="width:16px;height:16px"></div><span>lg · 16</span></div>
+        <div class="spacing-item"><div class="spacing-bar" style="width:24px;height:24px"></div><span>xl · 24</span></div>
+        <div class="spacing-item"><div class="spacing-bar" style="width:32px;height:32px"></div><span>xxl · 32</span></div>
+        <div class="spacing-item"><div class="spacing-bar" style="width:12px;height:80px"></div><span>section · 80</span></div>
+        <div class="spacing-item"><div class="spacing-bar" style="width:12px;height:44px"></div><span>touch · 44</span></div>
+      </div>
+    </section>
+
+    <!-- ═══ RADIUS ═══ -->
+    <section id="radius">
+      <p class="section-label">12 — Border Radius Scale</p>
+      <h2 class="section-title">Shape Grammar</h2>
+      <p class="section-desc">Pills for actions · lg (12px) for cards · never full-radius on content containers.</p>
+      <div class="radius-row">
+        <div><div class="radius-box" style="border-radius:0">none<br>0</div></div>
+        <div><div class="radius-box" style="border-radius:4px">xs<br>4</div></div>
+        <div><div class="radius-box" style="border-radius:6px">sm<br>6</div></div>
+        <div><div class="radius-box" style="border-radius:8px">md<br>8</div></div>
+        <div><div class="radius-box" style="border-radius:12px">lg<br>12</div></div>
+        <div><div class="radius-box" style="border-radius:16px">xl<br>16</div></div>
+        <div><div class="radius-box" style="border-radius:9999px;width:80px">pill</div></div>
+      </div>
+    </section>
+
+    <!-- ═══ ELEVATION ═══ -->
+    <section id="elevation">
+      <p class="section-label">13 — Elevation &amp; Depth</p>
+      <h2 class="section-title">Surface Levels</h2>
+      <p class="section-desc">Hairlines over shadows · hero gradient is the only decorative depth · dark mode uses color steps.</p>
+      <div class="elevation-row">
+        <div class="elev-box elev-0">
+          <div class="elev-label">Level 0 — Flat</div>
+          <div class="elev-desc">Page canvas, prose sections</div>
+        </div>
+        <div class="elev-box elev-1">
+          <div class="elev-label">Level 1 — Hairline</div>
+          <div class="elev-desc">Node cards, choice buttons</div>
+        </div>
+        <div class="elev-box elev-2">
+          <div class="elev-label">Level 2 — Soft stack</div>
+          <div class="elev-desc">Onboarding, modals</div>
+        </div>
+        <div class="elev-box elev-3">
+          <div class="elev-label">Level 3 — Sticky blur</div>
+          <div class="elev-desc">XP progress bar</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ RESPONSIVE ═══ -->
+    <section id="responsive">
+      <p class="section-label">14 — Responsive Behavior</p>
+      <h2 class="section-title">Breakpoints</h2>
+      <p class="section-desc">Mobile-first · choice panel always stacked · nav collapses at 640px.</p>
+
+      <div class="table-wrap" style="margin-bottom:24px">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Width</th>
+              <th>Key changes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>mobile</td>
+              <td>&lt; 640px</td>
+              <td>Single column · hero 28px · hamburger nav · streak icon only</td>
+            </tr>
+            <tr>
+              <td>tablet</td>
+              <td>640–1024px</td>
+              <td>Lesson column 720px max · compact sticky bar</td>
+            </tr>
+            <tr>
+              <td>desktop</td>
+              <td>≥ 1024px</td>
+              <td>Full sticky bar labels · wider journey map tree</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="font-size:18px;margin:0 0 12px">Layout collapse diagram</h3>
+      <div class="diagram">DESKTOP (≥1024px)                    MOBILE (&lt;640px)
+┌─────────────────────────────┐      ┌──────────────────┐
+│ [🐦 RoadRunners] Journey Map  │      │ 🐦 RoadRunners  ☰ │
+│ Level 4 ════════ 🔥 7 streak │      │ L4 ═══════ 🔥      │
+├─────────────────────────────┤      ├──────────────────┤
+│  ┌─────────────────────┐    │      │ ┌──────────────┐ │
+│  │ [WEB] React basics   │    │      │ │ [WEB] React  │ │
+│  │ Lesson markdown…     │    │  →   │ │ Lesson…      │ │
+│  │ ┌ Choose hooks ────┐ │    │      │ │ ┌ hooks ───┐ │ │
+│  │ ┌ Try TypeScript ──┐ │    │      │ │ ┌ TS ──────┐ │ │
+│  │ Pivot track →        │    │      │ │ Pivot →      │ │
+│  └─────────────────────┘    │      │ └──────────────┘ │
+│  Map: tree / SVG             │      │ Map: vertical list│
+└─────────────────────────────┘      └──────────────────┘</div>
+    </section>
+
+    <!-- ═══ TOUCH TARGETS ═══ -->
+    <section id="touch">
+      <p class="section-label">15 — Touch Targets</p>
+      <h2 class="section-title">44px Minimum</h2>
+      <p class="section-desc">Apple/WCAG AAA · choice buttons · primary CTAs · interest chips · nav icon buttons.</p>
+      <div class="touch-demo">
+        <div>
+          <div class="touch-box touch-44">44</div>
+          <div class="touch-label">✓ choice-button<br>button-primary</div>
+        </div>
+        <div>
+          <div class="touch-box touch-36">36</div>
+          <div class="touch-label">✗ too small<br>(Ollama nav only)</div>
+        </div>
+        <button type="button" class="btn btn-primary">Primary 44px</button>
+        <button type="button" class="choice-btn" style="flex:1;min-width:200px">
+          <strong>Choice button</strong>
+          <span>min-height: 44px enforced</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ═══ COLLAPSING ═══ -->
+    <section id="collapse">
+      <p class="section-label">16 — Collapsing Strategy</p>
+      <h2 class="section-title">What Breaks &amp; When</h2>
+      <p class="section-desc">Progressive reduction — content stays readable, chrome compresses first.</p>
+
+      <div class="table-wrap" style="margin-bottom:24px">
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Desktop</th>
+              <th>Tablet</th>
+              <th>Mobile</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Top nav</td>
+              <td>Wordmark + links + CTA</td>
+              <td>Same</td>
+              <td>Hamburger drawer</td>
+            </tr>
+            <tr>
+              <td>Sticky XP bar</td>
+              <td>Level + bar + streak label</td>
+              <td>Compact labels</td>
+              <td>Level + bar + 🔥 icon only</td>
+            </tr>
+            <tr>
+              <td>Choice panel</td>
+              <td>Full-width stack</td>
+              <td>Full-width stack</td>
+              <td>Full-width stack (never side-by-side)</td>
+            </tr>
+            <tr>
+              <td>Journey map</td>
+              <td>SVG tree</td>
+              <td>Indented list</td>
+              <td>Vertical list, reduced indent</td>
+            </tr>
+            <tr>
+              <td>Hero headline</td>
+              <td>display-xl 40px</td>
+              <td>36px</td>
+              <td>28px</td>
+            </tr>
+            <tr>
+              <td>Pricing grid</td>
+              <td>3-up</td>
+              <td>2-up + 1</td>
+              <td>1-up stacked</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="diagram">COLLAPSE PRIORITY (first to compress → last)
+─────────────────────────────────────────────────
+1. Streak text label        → icon only
+2. Nav inline links         → hamburger menu
+3. Hero subhead width       → full-bleed stack
+4. Map tree layout          → flat vertical list
+5. Section padding          → 80px → 48px
+6. Lesson column width      → NEVER below readable 720px cap
+7. Choice button height     → NEVER below 44px</div>
+    </section>
+
+    <!-- ═══ COMPONENTS OVERVIEW ═══ -->
+    <section id="components">
+      <p class="section-label">17 — Components Index</p>
+      <h2 class="section-title">Full Component Map</h2>
+      <p class="section-desc">All tokens from DESIGN.md — reference names for Tailwind / shadcn implementation.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Component</th><th>Use</th><th>Key tokens</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>hero-band</code></td><td>Landing hero + mesh gradient</td><td>display-xl, btn-primary</td></tr>
+            <tr><td><code>journey-node-card</code></td><td>Lesson container</td><td>rounded.lg, hairline, body 17px</td></tr>
+            <tr><td><code>choice-button</code></td><td>Branching paths</td><td>min-height 44px, lg radius</td></tr>
+            <tr><td><code>pivot-link</code></td><td>Track switch escape hatch</td><td>link color, body-sm</td></tr>
+            <tr><td><code>sticky-progress-bar</code></td><td>XP + level + streak</td><td>backdrop blur, xp-bar-fill</td></tr>
+            <tr><td><code>skill-pill-*</code></td><td>Category tags</td><td>pastel skill-* colors</td></tr>
+            <tr><td><code>fallback-badge</code></td><td>AI template fallback</td><td>semantic-warning-soft</td></tr>
+            <tr><td><code>empty-state-card</code></td><td>No journey yet</td><td>icon-empty-journey 64px</td></tr>
+            <tr><td><code>onboarding-step-card</code></td><td>Wizard steps</td><td>elev-2 shadow, 32px padding</td></tr>
+            <tr><td><code>map-node-*</code></td><td>Journey map states</td><td>complete/current/upcoming/archived</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer style="padding:48px clamp(20px, 4vw, 72px);text-align:center;color:var(--mute);font-size:12px;border-top:1px solid var(--border);margin-top:48px;width:100%">
+      RoadRunners Design System v1.0 · <a href="DESIGN.md" style="color:var(--link)">DESIGN.md</a> · Toggle dark mode with the sun icon in nav
+    </footer>
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const toggle = document.getElementById('theme-toggle');
+    const stored = localStorage.getItem('rr-theme');
+    if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      html.classList.add('dark');
+    }
+    toggle.addEventListener('click', () => {
+      html.classList.toggle('dark');
+      localStorage.setItem('rr-theme', html.classList.contains('dark') ? 'dark' : 'light');
+    });
+    document.querySelectorAll('.interest-chip').forEach(chip => {
+      chip.addEventListener('click', () => chip.classList.toggle('selected'));
+    });
+  </script>
+</body>
+</html>

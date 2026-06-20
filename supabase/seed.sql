@@ -1,0 +1,22 @@
+insert into public.skill_catalog (slug, name, category, icon) values
+  ('html', 'HTML', 'web', 'globe'),
+  ('css', 'CSS', 'web', 'globe'),
+  ('javascript', 'JavaScript', 'web', 'globe'),
+  ('react', 'React', 'web', 'globe'),
+  ('typescript', 'TypeScript', 'web', 'globe'),
+  ('nextjs', 'Next.js', 'web', 'globe'),
+  ('swift', 'Swift', 'mobile', 'phone'),
+  ('react-native', 'React Native', 'mobile', 'phone'),
+  ('kotlin', 'Kotlin', 'mobile', 'phone'),
+  ('sql', 'SQL', 'data', 'chart'),
+  ('python-data', 'Python for Data', 'data', 'chart'),
+  ('analytics', 'Analytics', 'data', 'chart'),
+  ('ml-basics', 'ML Basics', 'ai', 'brain'),
+  ('prompt-engineering', 'Prompt Engineering', 'ai', 'brain'),
+  ('llm-apps', 'LLM Apps', 'ai', 'brain'),
+  ('git', 'Git', 'devops', 'server'),
+  ('docker', 'Docker', 'devops', 'server'),
+  ('cicd', 'CI/CD', 'devops', 'server'),
+  ('apis', 'HTTP & APIs', 'web', 'globe'),
+  ('explore', 'Explore', 'explore', 'compass')
+on conflict (slug) do nothing;

@@ -1,0 +1,128 @@
+{
+  "tldr": "Roadrunner is a viable hackathon concept but requires human review before build due to multi-page scope, new auth/infrastructure, XSS/LLM risks, and underspecified persistence/RLS/test plans.",
+  "overall_confidence": 4,
+  "min_confidence": 4,
+  "confidence_details": {
+    "eng": 6,
+    "design": 6,
+    "qa": 8,
+    "security": 4
+  },
+  "overall_risk": "high",
+  "has_high_risk": true,
+  "risk_details": {
+    "eng": "medium",
+    "design": "high",
+    "qa": "high",
+    "security": "high"
+  },
+  "consensus": "mixed",
+  "consensus_details": {
+    "eng": "revise",
+    "design": "revise",
+    "qa": "revise",
+    "security": "revise"
+  },
+  "any_block": false,
+  "decision": "human_in_loop",
+  "decision_reason": "min_confidence=4 (<8); has_high_risk=true (design, qa, security flagged high); all agents recommend revise; security XSS finding caps confidence at 4",
+  "unanimous_high_confidence": false,
+  "summary_by_agent": {
+    "eng": "Solid hackathon architecture with clear MVP boundaries, but persistence, pivot, and nested RLS details underspecified.",
+    "design": "Ambitious 6-screen MVP with coherent AI node flow, but states, hierarchy, and responsive/a11y strategy missing.",
+    "qa": "Five critical paths identified but zero automated coverage; LLM eval gates needed before build.",
+    "security": "New auth/infrastructure with RLS/Zod foundations, but XSS from AI markdown and prompt injection unmitigated."
+  },
+  "key_findings": [
+    "SECURITY: Sanitize AI markdown before render (rehype-sanitize); treat LLM output as untrusted",
+    "SECURITY: Rate-limit /api/ai/next-node; keep LLM keys server-only; scope service-role key usage",
+    "ENG: Define write-through contract: stream → validate → persist node → advance current_node_id atomically",
+    "ENG: Pivot must soft-archive orphaned subtrees; prevent duplicate decisions with idempotency key",
+    "ENG: Nested RLS policies for journey_nodes/choices via journeys.user_id join",
+    "DESIGN: Specify all UI states (empty journey, streaming interrupted, auth expired, fallback canned content)",
+    "DESIGN: Mobile-first responsive strategy required; keyboard/focus plan for choice panel",
+    "QA: Minimum smoke tests — RLS cross-user denial, AI fallback on parse failure, auth→onboarding E2E",
+    "QA: LLM eval suite for structured output (1-3 choices, valid JSON schema)"
+  ],
+  "auto_approve_eligible": false,
+  "human_in_loop_reason_if_applicable": "Multi-page scope (design high risk), new Supabase auth + infrastructure (security high risk), XSS vulnerability identified, min confidence 4/10 from security reviewer",
+  "agent_reviews": {
+    "eng": {
+      "confidence": 6,
+      "risk": "medium",
+      "recommendation": "revise",
+      "effort_human": "2 days",
+      "effort_agent": "1 hour",
+      "findings": [
+        "Node persistence timing undefined — map can drift from UI without write-through contract",
+        "Pivot semantics missing — orphaned subtrees corrupt visualization and XP",
+        "Nested RLS for journey_nodes/choices via journeys.user_id join not designed",
+        "Streak needs last_activity_at and qualifying activity definition",
+        "Streamed JSON must validate only after complete response, not partial chunks",
+        "Choice submission needs idempotency — UNIQUE(journey_id, node_id) on decisions",
+        "Onboarding interests → skill_catalog mapping unspecified",
+        "Node completion criteria mismatch between quiz/reflection and node_type enum"
+      ]
+    },
+    "design": {
+      "confidence": 6,
+      "risk": "high",
+      "scope_type": "multi_page",
+      "recommendation": "revise",
+      "states_missing": [
+        "empty",
+        "success",
+        "partial",
+        "first-run/no active journey",
+        "onboarding incomplete",
+        "auth/session expired",
+        "map with zero or one node",
+        "streaming interrupted mid-generation"
+      ],
+      "findings": [
+        "Node view packs lesson + choices + pivot without hierarchy rules",
+        "Dashboard vs map relationship undefined",
+        "Gamification placement and feedback patterns unspecified",
+        "AI fallback UX — user not informed canned vs AI-generated",
+        "Responsive strategy missing"
+      ]
+    },
+    "qa": {
+      "confidence": 8,
+      "risk": "high",
+      "recommendation": "revise",
+      "critical_paths_covered": false,
+      "llm_eval_needed": "next-node structured output eval, prompt guardrail regression, context-window eval, failure-mode eval for fallback",
+      "findings": [
+        "No test strategy despite five critical paths",
+        "RLS cross-user isolation has no verification method",
+        "AI fallback trigger conditions unspecified",
+        "Streaming partial JSON and concurrent pivot untested"
+      ]
+    },
+    "security": {
+      "confidence": 4,
+      "risk": "high",
+      "recommendation": "revise",
+      "infrastructure_change": true,
+      "auth_boundary_change": true,
+      "vulnerabilities": [
+        {
+          "type": "XSS",
+          "severity": "high",
+          "description": "Untrusted AI markdown rendered without HTML sanitization"
+        },
+        {
+          "type": "Prompt Injection",
+          "severity": "medium",
+          "description": "Free-text goals/interests/pivot_skill passed to LLM"
+        }
+      ],
+      "findings": [
+        "Rate limiting and per-user LLM quotas not mentioned",
+        "Service-role vs anon key scoping not specified",
+        "RLS policy correctness for joins not verified"
+      ]
+    }
+  }
+}
