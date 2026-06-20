@@ -53,7 +53,7 @@ proxy.ts
 ## Setup
 
 1. Copy env: `cp .env.example .env.local`
-2. Create a Supabase project and run `supabase/migrations/001_initial.sql` + `seed.sql`
+2. Create a Supabase project, run every file in `supabase/migrations/` in order, then run `supabase/seed.sql`
 3. Enable Google OAuth and/or email magic link in Supabase Auth
 4. `npm install && npm run dev`
 

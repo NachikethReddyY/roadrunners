@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getFallbackNode } from "@/lib/ai/fallback";
-import {
-  generateNextNode,
-  isGeminiConfigured,
-} from "@/lib/ai/generate-node";
-import { aiNextNodeRequestSchema, aiNodeOutputSchema } from "@/lib/schemas/ai";
+import { createAndPersistNextNode } from "@/lib/ai/create-next-node";
+import { aiNextNodeRequestSchema } from "@/lib/schemas/ai";
 import { createClient } from "@/lib/supabase/server";
+
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 5;
+const requestsByUser = new Map<string, number[]>();
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -17,6 +17,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const now = Date.now();
+  const recentRequests = (requestsByUser.get(user.id) ?? []).filter(
+    (timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS
+  );
+  if (recentRequests.length >= RATE_LIMIT_MAX) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+  recentRequests.push(now);
+  requestsByUser.set(user.id, recentRequests);
+
   const body = await request.json().catch(() => null);
   const parsed = aiNextNodeRequestSchema.safeParse(body);
 
@@ -26,15 +36,17 @@ export async function POST(request: Request) {
 
   const { journeyId, pivotSkill } = parsed.data;
 
-  const { data: journey } = await supabase
-    .from("journeys")
-    .select("id, goal, user_id")
-    .eq("id", journeyId)
-    .eq("user_id", user.id)
-    .single();
-
-  if (!journey) {
-    return NextResponse.json({ error: "Journey not found" }, { status: 404 });
+  try {
+    const result = await createAndPersistNextNode(supabase, {
+      journeyId,
+      userId: user.id,
+      pivotSkill,
+    });
+    return NextResponse.json(result, { status: 201 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Node generation failed";
+    const status = message === "Journey not found" ? 404 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 
   const [{ data: profile }, { data: recentNodes }, { data: skillCatalog }] =
