@@ -28,13 +28,16 @@ export async function createAndPersistNextNode(
     .eq("user_id", input.userId)
     .maybeSingle();
 
-  const { data: recentNodes } = await supabase
-    .from("journey_nodes")
-    .select("title, skill_tag")
-    .eq("journey_id", input.journeyId)
-    .is("archived_at", null)
-    .order("created_at", { ascending: false })
-    .limit(5);
+  const [{ data: recentNodes }, { data: skillCatalog }] = await Promise.all([
+    supabase
+      .from("journey_nodes")
+      .select("title, skill_tag")
+      .eq("journey_id", input.journeyId)
+      .is("archived_at", null)
+      .order("created_at", { ascending: false })
+      .limit(5),
+    supabase.from("skill_catalog").select("slug"),
+  ]);
 
   let fallback = false;
   let node: AiNodeOutput;
@@ -45,6 +48,7 @@ export async function createAndPersistNextNode(
       interests: profile?.interests ?? [],
       recentNodes: recentNodes ?? [],
       pivotSkill: input.pivotSkill,
+      skillTags: skillCatalog?.map((skill) => skill.slug) ?? ["explore"],
     });
   } catch {
     fallback = true;

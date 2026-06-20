@@ -6,7 +6,7 @@ Open **`exploration-report.html`** and click a path in the sidebar to highlight 
 
 1. `docs/handoff-roadrunner-hackathon.md` — product + MVP scope
 2. `app/layout.tsx` — fonts, metadata, global CSS
-3. `middleware.ts` + `lib/supabase/middleware.ts` — auth gate
+3. `proxy.ts` + `lib/supabase/middleware.ts` — auth gate
 4. `lib/constants/routes.ts` — route constants
 5. `lib/supabase/server.ts` — server data access
 6. `app/onboarding/page.tsx` — first private flow
@@ -30,7 +30,7 @@ Open **`exploration-report.html`** and click a path in the sidebar to highlight 
 3. `lib/actions/journey.ts`
 4. `app/api/ai/next-node/route.ts`
 5. `lib/schemas/ai.ts`
-6. `lib/ai/fallback.ts` (today) → `lib/ai/generate-node.ts` (target)
+6. `lib/ai/create-next-node.ts` → provider generation, validation, fallback, and transactional persistence
 
 ## Database
 
@@ -41,7 +41,7 @@ Open **`exploration-report.html`** and click a path in the sidebar to highlight 
 
 ## Authentication
 
-1. `middleware.ts`
+1. `proxy.ts`
 2. `lib/supabase/middleware.ts`
 3. `lib/actions/auth.ts`
 4. `app/auth/callback/route.ts`

@@ -10,7 +10,7 @@ app/login/page.tsx
   → lib/actions/auth.ts (signInWithGoogle, signInWithMagicLink)
   → app/auth/callback/route.ts
   → lib/supabase/server.ts
-  → middleware.ts
+  → proxy.ts
   → lib/supabase/middleware.ts (session refresh + redirect)
 ```
 
@@ -25,10 +25,11 @@ app/onboarding/page.tsx
   → lib/schemas/onboarding.ts (validation)
   → lib/supabase/server.ts
   → profiles (upsert) + journeys (insert)
+  → lib/ai/create-next-node.ts
+  → OpenAI/Gemini or validated fallback
+  → persist_generated_node RPC (node + choices + current_node_id)
   → redirect /journey/[id]
 ```
-
-**Gap:** No first AI node is created yet — journey may have empty node list until LLM flow is wired.
 
 ## Journey Choice + XP
 
@@ -42,17 +43,18 @@ app/journey/[id]/page.tsx
 
 Idempotency: duplicate decision on same node returns error code `23505`.
 
-## AI Next Node (MVP — fallback only)
+## AI Next Node
 
 ```
 POST /api/ai/next-node
   → app/api/ai/next-node/route.ts
-  → lib/schemas/ai.ts (request + output validation)
-  → lib/ai/fallback.ts (deterministic node)
   → lib/supabase/server.ts (auth + journey ownership check)
+  → lib/ai/create-next-node.ts
+  → lib/ai/generate-node.ts (OpenAI first, Gemini alternative)
+  → lib/schemas/ai.ts (output validation)
+  → lib/ai/fallback.ts (provider failure/no-key path)
+  → persist_generated_node RPC
 ```
-
-**Target flow (not built):** stream LLM → validate → INSERT node + choices → UPDATE current_node_id → award XP.
 
 ## Pivot Track
 

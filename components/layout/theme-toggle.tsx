@@ -13,7 +13,9 @@ export function ThemeToggle() {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const isDark = stored === "dark" || (!stored && prefersDark);
     root.classList.toggle("dark", isDark);
-    setDark(isDark);
+    const frame = window.requestAnimationFrame(() => setDark(isDark));
+
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   function toggle() {

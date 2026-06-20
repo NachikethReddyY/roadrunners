@@ -57,6 +57,10 @@ export function isGeminiConfigured(): boolean {
   return Boolean(process.env.GEMINI_API_KEY?.trim());
 }
 
+export function isOpenAIConfigured(): boolean {
+  return Boolean(process.env.OPENAI_API_KEY?.trim());
+}
+
 function buildUserPrompt(context: GenerateNodeContext): string {
   const recent =
     context.recentNodes.length > 0
@@ -80,22 +84,34 @@ function buildUserPrompt(context: GenerateNodeContext): string {
 export async function generateNextNode(
   context: GenerateNodeContext
 ): Promise<AiNodeOutput> {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OpenAI is not configured");
+  if (isOpenAIConfigured()) {
+    return generateWithOpenAI(context);
   }
 
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  if (isGeminiConfigured()) {
+    return generateWithGemini(context);
+  }
+
+  throw new Error("No AI provider is configured");
+}
+
+async function generateWithOpenAI(
+  context: GenerateNodeContext
+): Promise<AiNodeOutput> {
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!apiKey) throw new Error("OPENAI_API_KEY not configured");
+
+  const client = new OpenAI({ apiKey });
   const response = await client.chat.completions.create({
     model: process.env.OPENAI_MODEL ?? "gpt-4.1-mini",
     messages: [
       {
         role: "system",
-        content:
-          "You create concise, encouraging learning journey steps. Return only JSON matching the supplied schema. Keep content practical and safe for plain-text rendering.",
+        content: SYSTEM_PROMPT,
       },
       {
         role: "user",
-        content: JSON.stringify(context),
+        content: buildUserPrompt(context),
       },
     ],
     response_format: {
@@ -137,6 +153,11 @@ export async function generateNextNode(
   if (!content) throw new Error("OpenAI returned an empty response");
 
   return aiNodeOutputSchema.parse(JSON.parse(content));
+}
+
+async function generateWithGemini(
+  context: GenerateNodeContext
+): Promise<AiNodeOutput> {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY not configured");

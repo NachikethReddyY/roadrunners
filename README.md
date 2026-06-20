@@ -10,7 +10,7 @@ AI-guided, gamified learning journeys — hackathon MVP for B1 (learning → ear
 - **Supabase** Auth + PostgreSQL + RLS
 - **Tailwind CSS v4** + shadcn/ui
 - **Zod** schemas in `lib/schemas/`
-- **OpenAI** (optional) via `/api/ai/next-node`
+- **OpenAI or Gemini** (optional) via `/api/ai/next-node`, with a validated fallback
 
 ## Project structure
 
@@ -56,6 +56,8 @@ proxy.ts
 2. Create a Supabase project, run every file in `supabase/migrations/` in order, then run `supabase/seed.sql`
 3. Enable Google OAuth and/or email magic link in Supabase Auth
 4. `npm install && npm run dev`
+
+Configure either `OPENAI_API_KEY` or `GEMINI_API_KEY` for generated paths. If both are present, OpenAI is used. Without either key, RoadRunners persists a suggested fallback path so onboarding still completes.
 
 ## Routes
 

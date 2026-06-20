@@ -6,7 +6,6 @@ These files are not imported by any other source file in the `@/` graph. They ar
 |------|---------------|
 | `components/ui/dialog.tsx` | shadcn primitive — installed for future modals |
 | `components/ui/skeleton.tsx` | shadcn primitive — loading states not wired everywhere |
-| `lib/ai/generate-node.ts` | Stub for OpenAI streaming — replace fallback when implementing LLM |
 | `lib/schemas/index.ts` | Barrel re-export — consumers import schemas directly today |
 | `lib/schemas/journey.ts` | Types/schemas for journey domain — used at API boundary later |
 | `lib/schemas/profile.ts` | Profile schema — onboarding uses `onboarding.ts` instead |
@@ -18,5 +17,5 @@ These files are not imported by any other source file in the `@/` graph. They ar
 **Also low-connectivity (framework entry points, not dead):**
 
 - All `app/**/page.tsx` and `app/**/route.ts` files — reached by URL, not imports
-- `middleware.ts` — invoked by Next.js runtime
+- `proxy.ts` — invoked by Next.js runtime
 - `app/api/health/route.ts` — standalone health endpoint
