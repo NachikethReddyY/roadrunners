@@ -36,7 +36,7 @@ node ~/.claude/skills/codebase-explorer/scripts/generate-outputs.js docs/explora
 ## Architecture at a glance
 
 ```
-Request → middleware.ts → lib/supabase/middleware.ts (session + auth redirect)
+Request → proxy.ts → lib/supabase/middleware.ts (session + auth redirect)
        → app/**/page.tsx (RSC, fetches via lib/supabase/server.ts)
        → components/** (UI)
        → lib/actions/** (server actions: mutations)
@@ -58,7 +58,7 @@ Request → middleware.ts → lib/supabase/middleware.ts (session + auth redirec
 | `/api/health` | public | Health check |
 | `/api/ai/next-node` | private | AI node (fallback today) |
 
-Route constants live in **`lib/constants/routes.ts`**. Middleware treats `/onboarding` and `/journey/*` as private.
+Route constants live in **`lib/constants/routes.ts`**. The proxy treats `/onboarding` and `/journey/*` as private.
 
 ### Data model
 
@@ -123,7 +123,7 @@ Next.js 16 requires explicit return types on exported server actions that return
 
 ### Working (scaffold)
 
-- Full route structure, middleware auth gate
+- Full route structure, proxy auth gate
 - Login (Google + magic link actions), auth callback
 - Onboarding wizard → profile upsert + journey insert
 - Journey pages read from Supabase
@@ -152,7 +152,7 @@ When implementing AI flow, read the **Persistence contract** section in `docs/ha
 
 ### Auth
 
-`LoginForm` → `lib/actions/auth.ts` → Supabase → `/auth/callback` → middleware redirects to `/journey`.
+`LoginForm` → `lib/actions/auth.ts` → Supabase → `/auth/callback` → proxy redirects to `/journey`.
 
 ### Onboarding
 
@@ -214,11 +214,11 @@ Supabase: run `supabase/migrations/001_initial.sql` then `seed.sql` in your proj
 
 | Role | Start with |
 |------|------------|
-| New engineer | `docs/handoff-roadrunner-hackathon.md` → `middleware.ts` → `lib/actions/journey.ts` → migration SQL |
+| New engineer | `docs/handoff-roadrunner-hackathon.md` → `proxy.ts` → `lib/actions/journey.ts` → migration SQL |
 | Frontend | `docs/design/DESIGN.md` → `app/layout.tsx` → `components/journey/*` |
 | Backend / API | `lib/actions/*` → `app/api/ai/next-node/route.ts` → `lib/schemas/ai.ts` |
 | Database | `supabase/migrations/001_initial.sql` → `lib/schemas/journey.ts` |
-| Auth | `middleware.ts` → `lib/supabase/middleware.ts` → `lib/actions/auth.ts` |
+| Auth | `proxy.ts` → `lib/supabase/middleware.ts` → `lib/actions/auth.ts` |
 
 Full paths: **`docs/exploration/onboarding.md`**.
 
