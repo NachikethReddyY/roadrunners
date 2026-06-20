@@ -199,7 +199,9 @@ Supabase: run `supabase/migrations/001_initial.sql` then `seed.sql` in your proj
 |----------|----------|-------|
 | `NEXT_PUBLIC_SUPABASE_URL` | yes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes | Anon key (RLS protects data) |
-| `OPENAI_API_KEY` | no | Server-only when LLM is wired |
+| `CHIKKY_AI_API_KEY` | no | Server-only AI key (Chikky AI / Gemini / OpenAI) |
+| `CHIKKY_AI_MODEL` | no | Model id, e.g. `gemini-2.0-flash` or `gpt-4.1-mini` |
+| `CHIKKY_AI_PROVIDER` | no | `gemini` or `openai` (auto-inferred from model if omitted) |
 
 ## What agents should NOT do
 
