@@ -47,7 +47,7 @@ supabase/
 docs/design/               # DESIGN.md + preview.html
 docs/exploration/          # Graph explorer + agent onboarding docs
 types/database.ts
-middleware.ts
+proxy.ts
 ```
 
 ## Setup
