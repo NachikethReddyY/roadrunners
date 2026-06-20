@@ -18,9 +18,10 @@ AI-guided, gamified learning journeys — hackathon MVP for B1 (learning → ear
 app/
   page.tsx                 # Landing (public)
   login/page.tsx           # Auth (public)
-  onboarding/page.tsx      # 2-step wizard (private)
+  onboarding/page.tsx      # Redirect → /roadmap/new
+  roadmap/new/page.tsx     # Bubble creator (private)
   journey/
-    page.tsx               # Journey list (private)
+    page.tsx               # Roadmap dashboard + progress (private)
     [id]/page.tsx          # Current node view (private)
     [id]/map/page.tsx      # Journey map (private)
   auth/callback/route.ts   # OAuth / magic link callback
@@ -30,8 +31,8 @@ app/
 components/
   brand/                   # Logo
   layout/                  # TopNav, AppShell, progress bar
-  journey/                 # Node card, choices, map
-  onboarding/
+  journey/                 # Node card, choices, map, continue
+  roadmap/                 # Bubble creator
   auth/
   ui/                      # shadcn primitives
 lib/
@@ -63,11 +64,12 @@ proxy.ts
 |-------|------|
 | `/` | public |
 | `/login` | public |
-| `/onboarding` | private |
+| `/onboarding` | private (redirect) |
+| `/roadmap/new` | private |
 | `/journey` | private |
 | `/journey/[id]` | private |
 | `/journey/[id]/map` | private |
 | `/api/health` | public |
 | `/api/ai/next-node` | private |
 
-Design system: `docs/design/DESIGN.md` · Preview: `docs/design/preview.html`
+Design system: `docs/design/DESIGN.md` · Product roadmap: `docs/product-roadmap.md` · Preview: `docs/design/preview.html`

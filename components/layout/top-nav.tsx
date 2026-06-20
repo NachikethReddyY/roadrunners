@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { SignOutButton } from "@/components/layout/sign-out-button";
+import { buttonVariants } from "@/components/ui/button";
 import { ROUTES } from "@/lib/constants/routes";
-import { signOut } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
 
 type TopNavProps = {
@@ -42,11 +42,14 @@ export function TopNav({ authenticated = false, className }: TopNavProps) {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           {authenticated ? (
-            <form action={signOut}>
-              <Button type="submit" variant="outline" className="h-11 rounded-full px-5">
-                Sign out
-              </Button>
-            </form>
+            <SignOutButton
+              className={buttonVariants({
+                variant: "outline",
+                className: "h-11 rounded-full px-5",
+              })}
+            >
+              Sign out
+            </SignOutButton>
           ) : (
             <Link href={ROUTES.login} className={buttonVariants({ className: "h-11 rounded-full px-5" })}>
               Sign in

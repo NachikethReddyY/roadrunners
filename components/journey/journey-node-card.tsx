@@ -1,4 +1,6 @@
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import rehypeSanitize from "rehype-sanitize";
 import { Logo } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -36,11 +38,19 @@ export function JourneyNodeCard({
     <Card className="rounded-xl border-border">
       <CardHeader className="space-y-3">
         <div className="flex items-start justify-between gap-3">
-          <Badge className={cn("rounded-full uppercase tracking-wider", skillBadgeClass[skillCategory] ?? skillBadgeClass.explore)}>
+          <Badge
+            className={cn(
+              "rounded-full uppercase tracking-wider",
+              skillBadgeClass[skillCategory] ?? skillBadgeClass.explore
+            )}
+          >
             {skillTag}
           </Badge>
           {fallback && (
-            <Badge variant="outline" className="rounded-full uppercase tracking-wider text-[var(--semantic-warning)]">
+            <Badge
+              variant="outline"
+              className="rounded-full uppercase tracking-wider text-[var(--semantic-warning)]"
+            >
               Suggested path
             </Badge>
           )}
@@ -48,9 +58,9 @@ export function JourneyNodeCard({
         <CardTitle className="font-heading text-2xl font-semibold tracking-tight">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-[17px] leading-[1.47] tracking-[-0.01em] text-foreground/90 whitespace-pre-wrap">
-          {content}
-        </p>
+        <div className="prose prose-neutral max-w-none text-[17px] leading-[1.47] tracking-[-0.01em] dark:prose-invert">
+          <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{content}</ReactMarkdown>
+        </div>
       </CardContent>
       {children && (
         <CardFooter className="flex flex-col items-stretch gap-3 border-t border-border pt-6">
@@ -79,10 +89,10 @@ export function EmptyJourneyCard() {
     <Card className="rounded-xl border-border py-8 text-center">
       <CardContent className="space-y-4">
         <Logo size="lg" className="mx-auto text-primary/50" />
-        <p className="font-heading text-xl font-semibold">No journey yet</p>
-        <p className="text-muted-foreground">Complete onboarding to generate your first AI-guided path.</p>
-        <Link href={ROUTES.onboarding} className={buttonVariants({ className: "h-11 rounded-full px-6" })}>
-          Start onboarding
+        <p className="font-heading text-xl font-semibold">No roadmap yet</p>
+        <p className="text-muted-foreground">Create your first AI-guided learning path.</p>
+        <Link href={ROUTES.roadmapNew} className={buttonVariants({ className: "h-11 rounded-full px-6" })}>
+          Create roadmap
         </Link>
       </CardContent>
     </Card>
