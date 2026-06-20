@@ -4,6 +4,7 @@ import {
   SchemaType,
   type ResponseSchema,
 } from "@google/generative-ai";
+import { getAiConfig, isAiConfigured, type AiConfig } from "@/lib/ai/config";
 import { aiNodeOutputSchema, type AiNodeOutput } from "@/lib/schemas/ai";
 
 export type GenerateNodeContext = {
@@ -53,9 +54,7 @@ const nodeResponseSchema: ResponseSchema = {
   required: ["title", "content_md", "skill_tag", "node_type", "choices"],
 };
 
-export function isGeminiConfigured(): boolean {
-  return Boolean(process.env.GEMINI_API_KEY?.trim());
-}
+export { isAiConfigured };
 
 function buildUserPrompt(context: GenerateNodeContext): string {
   const recent =
@@ -77,16 +76,35 @@ function buildUserPrompt(context: GenerateNodeContext): string {
     .join("\n\n");
 }
 
-export async function generateNextNode(
+async function generateWithGemini(
+  config: AiConfig,
   context: GenerateNodeContext
 ): Promise<AiNodeOutput> {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OpenAI is not configured");
-  }
+  const genAI = new GoogleGenerativeAI(config.apiKey);
+  const model = genAI.getGenerativeModel({
+    model: config.model,
+    systemInstruction: SYSTEM_PROMPT,
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: nodeResponseSchema,
+      temperature: 0.7,
+      maxOutputTokens: 2048,
+    },
+  });
 
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const result = await model.generateContent(buildUserPrompt(context));
+  const text = result.response.text();
+  if (!text) throw new Error("AI returned an empty response");
+  return aiNodeOutputSchema.parse(JSON.parse(text));
+}
+
+async function generateWithOpenAI(
+  config: AiConfig,
+  context: GenerateNodeContext
+): Promise<AiNodeOutput> {
+  const client = new OpenAI({ apiKey: config.apiKey });
   const response = await client.chat.completions.create({
-    model: process.env.OPENAI_MODEL ?? "gpt-4.1-mini",
+    model: config.model,
     messages: [
       {
         role: "system",
@@ -134,34 +152,21 @@ export async function generateNextNode(
   });
 
   const content = response.choices[0]?.message.content;
-  if (!content) throw new Error("OpenAI returned an empty response");
-
+  if (!content) throw new Error("AI returned an empty response");
   return aiNodeOutputSchema.parse(JSON.parse(content));
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY not configured");
+}
+
+export async function generateNextNode(
+  context: GenerateNodeContext
+): Promise<AiNodeOutput> {
+  const config = getAiConfig();
+  if (!config) {
+    throw new Error("Chikky AI is not configured — set CHIKKY_AI_API_KEY");
   }
 
-  const modelName = process.env.GEMINI_MODEL?.trim() || "gemini-2.0-flash";
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    systemInstruction: SYSTEM_PROMPT,
-    generationConfig: {
-      responseMimeType: "application/json",
-      responseSchema: nodeResponseSchema,
-      temperature: 0.7,
-      maxOutputTokens: 2048,
-    },
-  });
-
-  const result = await model.generateContent(buildUserPrompt(context));
-  const text = result.response.text();
-
-  if (!text) {
-    throw new Error("Empty Gemini response");
+  if (config.provider === "openai") {
+    return generateWithOpenAI(config, context);
   }
 
-  const parsed = aiNodeOutputSchema.parse(JSON.parse(text));
-  return parsed;
+  return generateWithGemini(config, context);
 }

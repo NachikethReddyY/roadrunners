@@ -107,6 +107,8 @@
   --popover-foreground: #ececec;
   --primary: #d97706;
   --primary-foreground: #ffffff;
+  --primary-soft: #422006;
+  --primary-active: #fbbf24;
   --secondary: #2a2926;
   --secondary-foreground: #ececec;
   --muted: #2a2926;

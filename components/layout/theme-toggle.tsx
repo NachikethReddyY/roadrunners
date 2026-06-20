@@ -28,7 +28,7 @@ export function ThemeToggle() {
       type="button"
       variant="outline"
       size="icon"
-      className="size-11 rounded-full"
+      className="size-11 rounded-full border border-border/70 bg-background/55 shadow-sm backdrop-blur-md ring-1 ring-foreground/5 transition-colors hover:border-primary/30 hover:bg-background/80 focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/25 dark:ring-white/10"
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
     >
