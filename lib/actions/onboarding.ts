@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ROUTES } from "@/lib/constants/routes";
+import { createAndPersistNextNode } from "@/lib/ai/create-next-node";
 import { onboardingSchema } from "@/lib/schemas/onboarding";
 import { createClient } from "@/lib/supabase/server";
 
@@ -47,6 +48,15 @@ export async function completeOnboarding(formData: FormData): Promise<void> {
     .single();
 
   if (journeyError || !journey) return;
+
+  try {
+    await createAndPersistNextNode(supabase, {
+      journeyId: journey.id,
+      userId: user.id,
+    });
+  } catch {
+    // The journey remains valid and can retry generation from its empty state.
+  }
 
   revalidatePath(ROUTES.journey);
   redirect(ROUTES.journeyDetail(journey.id));

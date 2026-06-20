@@ -44,7 +44,7 @@ export default async function JourneyDetailPage({ params }: PageProps) {
   const { data: node } = journey.current_node_id
     ? await supabase
         .from("journey_nodes")
-        .select("id, title, content_md, skill_tag, node_type")
+        .select("id, title, content_md, skill_tag, node_type, is_fallback")
         .eq("id", journey.current_node_id)
         .maybeSingle()
     : { data: null };
@@ -88,6 +88,7 @@ export default async function JourneyDetailPage({ params }: PageProps) {
           content={node.content_md}
           skillTag={node.skill_tag}
           skillCategory="web"
+          fallback={node.is_fallback}
         >
           {choices && choices.length > 0 ? (
             <ChoicePanel journeyId={id} nodeId={node.id} choices={choices} />
