@@ -34,21 +34,24 @@ export default async function JourneyMapPage({ params }: PageProps) {
 
   if (!journey) notFound();
 
-  const { data: nodes } = await supabase
-    .from("journey_nodes")
-    .select("id, title, archived_at")
-    .eq("journey_id", id)
-    .order("created_at", { ascending: true });
+  const [{ data: nodes }, { data: decisions }] = await Promise.all([
+    supabase
+      .from("journey_nodes")
+      .select("id, title, archived_at")
+      .eq("journey_id", id)
+      .order("created_at", { ascending: true }),
+    supabase.from("decisions").select("node_id").eq("journey_id", id),
+  ]);
 
-  const mapNodes: MapNode[] = (nodes ?? []).map((n) => ({
-    id: n.id,
-    title: n.title,
-    state: n.archived_at
-      ? "archived"
-      : n.id === journey.current_node_id
-        ? "current"
-        : "complete",
-  }));
+  const decidedIds = new Set((decisions ?? []).map((d) => d.node_id));
+
+  const mapNodes: MapNode[] = (nodes ?? []).map((n) => {
+    let state: MapNode["state"] = "upcoming";
+    if (n.archived_at) state = "archived";
+    else if (n.id === journey.current_node_id) state = "current";
+    else if (decidedIds.has(n.id)) state = "complete";
+    return { id: n.id, title: n.title, state };
+  });
 
   return (
     <AppShell
@@ -58,10 +61,15 @@ export default async function JourneyMapPage({ params }: PageProps) {
     >
       <div className="mb-8 flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Journey map</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Journey map
+          </p>
           <h1 className="font-heading text-2xl font-semibold tracking-tight">{journey.title}</h1>
         </div>
-        <Link href={ROUTES.journeyDetail(id)} className={buttonVariants({ variant: "outline", className: "rounded-full" })}>
+        <Link
+          href={ROUTES.journeyDetail(id)}
+          className={buttonVariants({ variant: "outline", className: "rounded-full" })}
+        >
           Back to step
         </Link>
       </div>

@@ -2,11 +2,12 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { ChoicePanel } from "@/components/journey/choice-panel";
+import { ContinueForm } from "@/components/journey/continue-form";
 import {
-  EmptyJourneyCard,
   JourneyNodeCard,
   JourneyNodeSkeleton,
 } from "@/components/journey/journey-node-card";
+import { RetryNodeForm } from "@/components/journey/retry-node-form";
 import { ROUTES } from "@/lib/constants/routes";
 import { createClient } from "@/lib/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
@@ -30,7 +31,7 @@ export default async function JourneyDetailPage({ params }: PageProps) {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (!profile?.onboarding_complete) redirect(ROUTES.onboarding);
+  if (!profile?.onboarding_complete) redirect(ROUTES.roadmapNew);
 
   const { data: journey } = await supabase
     .from("journeys")
@@ -41,13 +42,16 @@ export default async function JourneyDetailPage({ params }: PageProps) {
 
   if (!journey) notFound();
 
-  const { data: node } = journey.current_node_id
-    ? await supabase
-        .from("journey_nodes")
-        .select("id, title, content_md, skill_tag, node_type, is_fallback")
-        .eq("id", journey.current_node_id)
-        .maybeSingle()
-    : { data: null };
+  const [{ data: node }, { data: skills }] = await Promise.all([
+    journey.current_node_id
+      ? supabase
+          .from("journey_nodes")
+          .select("id, title, content_md, skill_tag, node_type, is_fallback")
+          .eq("id", journey.current_node_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase.from("skill_catalog").select("slug, name, category").order("name"),
+  ]);
 
   const { data: choices } = node
     ? await supabase
@@ -55,6 +59,18 @@ export default async function JourneyDetailPage({ params }: PageProps) {
         .select("id, label, description, target_skill_tag")
         .eq("node_id", node.id)
     : { data: [] };
+
+  const { data: decision } = node
+    ? await supabase
+        .from("decisions")
+        .select("id")
+        .eq("journey_id", id)
+        .eq("node_id", node.id)
+        .maybeSingle()
+    : { data: null };
+
+  const skillCategory =
+    skills?.find((s) => s.slug === node?.skill_tag)?.category ?? "explore";
 
   return (
     <AppShell
@@ -69,33 +85,48 @@ export default async function JourneyDetailPage({ params }: PageProps) {
           </p>
           <h1 className="font-heading text-2xl font-semibold tracking-tight">Current step</h1>
         </div>
-        <Link href={ROUTES.journeyMap(id)} className={buttonVariants({ variant: "outline", className: "rounded-full" })}>
-          View map
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href={ROUTES.journey}
+            className={buttonVariants({ variant: "ghost", className: "rounded-full" })}
+          >
+            Dashboard
+          </Link>
+          <Link
+            href={ROUTES.journeyMap(id)}
+            className={buttonVariants({ variant: "outline", className: "rounded-full" })}
+          >
+            View map
+          </Link>
+        </div>
       </div>
 
       {!node ? (
         <div className="space-y-4">
           <JourneyNodeSkeleton />
           <p className="text-sm text-muted-foreground">
-            No node yet — generate the first step from onboarding or the AI endpoint.
+            Your first step hasn&apos;t been generated yet.
           </p>
-          <EmptyJourneyCard />
+          <RetryNodeForm journeyId={id} />
         </div>
       ) : (
         <JourneyNodeCard
           title={node.title}
           content={node.content_md}
           skillTag={node.skill_tag}
-          skillCategory="web"
+          skillCategory={skillCategory}
           fallback={node.is_fallback}
         >
           {choices && choices.length > 0 ? (
-            <ChoicePanel journeyId={id} nodeId={node.id} choices={choices} />
+            <ChoicePanel
+              journeyId={id}
+              nodeId={node.id}
+              choices={choices}
+              skills={(skills ?? []).filter((s) => s.slug !== "explore")}
+              decided={!!decision}
+            />
           ) : (
-            <button type="button" className={buttonVariants({ className: "h-11 w-full rounded-full" })}>
-              Continue
-            </button>
+            !decision && <ContinueForm journeyId={id} nodeId={node.id} />
           )}
         </JourneyNodeCard>
       )}

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { NavDock } from "@/components/layout/nav-dock";
 import { getOAuthProviders } from "@/lib/auth/oauth";
 import { ROUTES } from "@/lib/constants/routes";
 
@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:32px_32px] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)]"
       />
 
-      <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:py-6">
+      <header className="absolute inset-x-0 top-0 z-20 p-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:py-6">
         <Link
           href={ROUTES.home}
           className="inline-flex min-h-11 min-w-11 items-center gap-1 rounded-full border border-border/70 bg-background/55 px-1 pr-3 text-sm font-medium text-foreground/80 shadow-sm backdrop-blur-md ring-1 ring-foreground/5 transition-colors hover:border-primary/30 hover:bg-background/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary/25 active:scale-[0.97] motion-reduce:active:scale-100 dark:ring-white/10"
@@ -33,7 +33,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <ChevronLeft className="size-5 shrink-0" aria-hidden />
           Back
         </Link>
-        <ThemeToggle />
       </header>
 
       <main className="relative z-10 mx-auto grid min-h-[100dvh] w-full max-w-6xl lg:grid-cols-[1fr_minmax(0,520px)] lg:items-center lg:gap-8 lg:pl-4 lg:pr-8 xl:pl-6">
@@ -66,6 +65,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           />
         </div>
       </main>
+
+      <NavDock />
     </div>
   );
 }
