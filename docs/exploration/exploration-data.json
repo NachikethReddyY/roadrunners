@@ -1,0 +1,1935 @@
+{
+  "projectName": "RoadRunners",
+  "nodes": [
+    {
+      "id": "app/api/ai/next-node/route.ts",
+      "label": "route.ts",
+      "type": "route",
+      "path": "app/api/ai/next-node/route.ts",
+      "imports": [
+        "lib/ai/fallback.ts",
+        "lib/schemas/ai.ts",
+        "lib/supabase/server.ts"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "keyFunctions": [
+        "POST()"
+      ],
+      "connected": 3,
+      "dependents": [],
+      "purpose": "POST endpoint: validates request, returns fallback AI node (LLM TODO)."
+    },
+    {
+      "id": "app/api/health/route.ts",
+      "label": "route.ts",
+      "type": "route",
+      "path": "app/api/health/route.ts",
+      "imports": [],
+      "exports": [
+        "GET"
+      ],
+      "keyFunctions": [
+        "GET()"
+      ],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /api/health"
+    },
+    {
+      "id": "app/auth/callback/route.ts",
+      "label": "route.ts",
+      "type": "route",
+      "path": "app/auth/callback/route.ts",
+      "imports": [
+        "lib/constants/routes.ts",
+        "lib/supabase/server.ts"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "keyFunctions": [
+        "GET()"
+      ],
+      "connected": 2,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /auth/callback"
+    },
+    {
+      "id": "app/journey/[id]/map/page.tsx",
+      "label": "page.tsx",
+      "type": "route",
+      "path": "app/journey/[id]/map/page.tsx",
+      "imports": [
+        "components/layout/app-shell.tsx",
+        "components/journey/journey-map.tsx",
+        "lib/constants/routes.ts",
+        "lib/supabase/server.ts",
+        "components/ui/button.tsx"
+      ],
+      "exports": [
+        "default"
+      ],
+      "keyFunctions": [
+        "JourneyMapPage()"
+      ],
+      "connected": 5,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /journey/[id]/map"
+    },
+    {
+      "id": "app/journey/[id]/not-found.tsx",
+      "label": "not-found.tsx",
+      "type": "util",
+      "path": "app/journey/[id]/not-found.tsx",
+      "imports": [
+        "components/journey/journey-node-card.tsx"
+      ],
+      "exports": [
+        "default"
+      ],
+      "keyFunctions": [
+        "JourneyNotFound()"
+      ],
+      "connected": 1,
+      "dependents": [],
+      "purpose": "Shared utilities/schemas: not-found.tsx"
+    },
+    {
+      "id": "app/journey/[id]/page.tsx",
+      "label": "page.tsx",
+      "type": "route",
+      "path": "app/journey/[id]/page.tsx",
+      "imports": [
+        "components/layout/app-shell.tsx",
+        "components/journey/choice-panel.tsx",
+        "components/journey/journey-node-card.tsx",
+        "lib/constants/routes.ts",
+        "lib/supabase/server.ts",
+        "components/ui/button.tsx"
+      ],
+      "exports": [
+        "default"
+      ],
+      "keyFunctions": [
+        "JourneyDetailPage()"
+      ],
+      "connected": 6,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /journey/[id]"
+    },
+    {
+      "id": "app/journey/page.tsx",
+      "label": "page.tsx",
+      "type": "route",
+      "path": "app/journey/page.tsx",
+      "imports": [
+        "components/layout/app-shell.tsx",
+        "components/journey/journey-node-card.tsx",
+        "components/ui/button.tsx",
+        "lib/constants/routes.ts",
+        "lib/supabase/server.ts"
+      ],
+      "exports": [
+        "default"
+      ],
+      "keyFunctions": [
+        "JourneyIndexPage()"
+      ],
+      "connected": 5,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /journey"
+    },
+    {
+      "id": "app/layout.tsx",
+      "label": "layout.tsx",
+      "type": "util",
+      "path": "app/layout.tsx",
+      "imports": [],
+      "exports": [
+        "metadata",
+        "default"
+      ],
+      "keyFunctions": [
+        "RootLayout()"
+      ],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "Shared utilities/schemas: layout.tsx"
+    },
+    {
+      "id": "app/login/page.tsx",
+      "label": "page.tsx",
+      "type": "route",
+      "path": "app/login/page.tsx",
+      "imports": [
+        "components/auth/login-form.tsx",
+        "components/layout/top-nav.tsx"
+      ],
+      "exports": [
+        "default"
+      ],
+      "keyFunctions": [
+        "LoginPage()"
+      ],
+      "connected": 2,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /login"
+    },
+    {
+      "id": "app/onboarding/page.tsx",
+      "label": "page.tsx",
+      "type": "route",
+      "path": "app/onboarding/page.tsx",
+      "imports": [
+        "components/layout/app-shell.tsx",
+        "components/onboarding/onboarding-wizard.tsx",
+        "lib/constants/routes.ts",
+        "lib/supabase/server.ts"
+      ],
+      "exports": [
+        "default"
+      ],
+      "keyFunctions": [
+        "OnboardingPage()"
+      ],
+      "connected": 4,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /onboarding"
+    },
+    {
+      "id": "app/page.tsx",
+      "label": "page.tsx",
+      "type": "route",
+      "path": "app/page.tsx",
+      "imports": [
+        "components/brand/logo.tsx",
+        "components/layout/top-nav.tsx",
+        "components/ui/button.tsx",
+        "lib/constants/routes.ts"
+      ],
+      "exports": [
+        "default"
+      ],
+      "keyFunctions": [
+        "LandingPage()"
+      ],
+      "connected": 4,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at "
+    },
+    {
+      "id": "components/auth/login-form.tsx",
+      "label": "login-form.tsx",
+      "type": "component",
+      "path": "components/auth/login-form.tsx",
+      "imports": [
+        "components/ui/button.tsx",
+        "components/ui/card.tsx",
+        "components/ui/input.tsx",
+        "components/ui/label.tsx",
+        "lib/actions/auth.ts"
+      ],
+      "exports": [
+        "LoginForm"
+      ],
+      "keyFunctions": [
+        "LoginForm()"
+      ],
+      "connected": 6,
+      "dependents": [
+        "app/login/page.tsx"
+      ],
+      "purpose": "React UI component: login-form.tsx"
+    },
+    {
+      "id": "components/brand/logo.tsx",
+      "label": "logo.tsx",
+      "type": "component",
+      "path": "components/brand/logo.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "Logo"
+      ],
+      "keyFunctions": [
+        "Logo()"
+      ],
+      "connected": 4,
+      "dependents": [
+        "app/page.tsx",
+        "components/journey/journey-node-card.tsx",
+        "components/layout/top-nav.tsx"
+      ],
+      "purpose": "React UI component: logo.tsx"
+    },
+    {
+      "id": "components/journey/choice-panel.tsx",
+      "label": "choice-panel.tsx",
+      "type": "component",
+      "path": "components/journey/choice-panel.tsx",
+      "imports": [
+        "lib/actions/journey.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "Choice",
+        "ChoicePanel"
+      ],
+      "keyFunctions": [
+        "ChoicePanel()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "app/journey/[id]/page.tsx"
+      ],
+      "purpose": "React UI component: choice-panel.tsx"
+    },
+    {
+      "id": "components/journey/journey-map.tsx",
+      "label": "journey-map.tsx",
+      "type": "component",
+      "path": "components/journey/journey-map.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "MapNode",
+        "JourneyMap"
+      ],
+      "keyFunctions": [
+        "JourneyMap()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "app/journey/[id]/map/page.tsx"
+      ],
+      "purpose": "React UI component: journey-map.tsx"
+    },
+    {
+      "id": "components/journey/journey-node-card.tsx",
+      "label": "journey-node-card.tsx",
+      "type": "component",
+      "path": "components/journey/journey-node-card.tsx",
+      "imports": [
+        "components/brand/logo.tsx",
+        "components/ui/badge.tsx",
+        "components/ui/button.tsx",
+        "components/ui/card.tsx",
+        "lib/constants/routes.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "JourneyNodeCard",
+        "JourneyNodeSkeleton",
+        "EmptyJourneyCard"
+      ],
+      "keyFunctions": [
+        "JourneyNodeCard()",
+        "JourneyNodeSkeleton()",
+        "EmptyJourneyCard()"
+      ],
+      "connected": 9,
+      "dependents": [
+        "app/journey/[id]/not-found.tsx",
+        "app/journey/[id]/page.tsx",
+        "app/journey/page.tsx"
+      ],
+      "purpose": "React UI component: journey-node-card.tsx"
+    },
+    {
+      "id": "components/layout/app-shell.tsx",
+      "label": "app-shell.tsx",
+      "type": "component",
+      "path": "components/layout/app-shell.tsx",
+      "imports": [
+        "components/layout/sticky-progress-bar.tsx",
+        "components/layout/top-nav.tsx"
+      ],
+      "exports": [
+        "AppShell"
+      ],
+      "keyFunctions": [
+        "AppShell()"
+      ],
+      "connected": 6,
+      "dependents": [
+        "app/journey/[id]/map/page.tsx",
+        "app/journey/[id]/page.tsx",
+        "app/journey/page.tsx",
+        "app/onboarding/page.tsx"
+      ],
+      "purpose": "React UI component: app-shell.tsx"
+    },
+    {
+      "id": "components/layout/sticky-progress-bar.tsx",
+      "label": "sticky-progress-bar.tsx",
+      "type": "component",
+      "path": "components/layout/sticky-progress-bar.tsx",
+      "imports": [
+        "components/ui/badge.tsx",
+        "components/ui/progress.tsx",
+        "lib/gamification/xp.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "StickyProgressBar"
+      ],
+      "keyFunctions": [
+        "StickyProgressBar()"
+      ],
+      "connected": 5,
+      "dependents": [
+        "components/layout/app-shell.tsx"
+      ],
+      "purpose": "React UI component: sticky-progress-bar.tsx"
+    },
+    {
+      "id": "components/layout/theme-toggle.tsx",
+      "label": "theme-toggle.tsx",
+      "type": "component",
+      "path": "components/layout/theme-toggle.tsx",
+      "imports": [
+        "components/ui/button.tsx"
+      ],
+      "exports": [
+        "ThemeToggle"
+      ],
+      "keyFunctions": [
+        "ThemeToggle()",
+        "toggle()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "components/layout/top-nav.tsx"
+      ],
+      "purpose": "React UI component: theme-toggle.tsx"
+    },
+    {
+      "id": "components/layout/top-nav.tsx",
+      "label": "top-nav.tsx",
+      "type": "component",
+      "path": "components/layout/top-nav.tsx",
+      "imports": [
+        "components/brand/logo.tsx",
+        "components/layout/theme-toggle.tsx",
+        "components/ui/button.tsx",
+        "lib/constants/routes.ts",
+        "lib/actions/auth.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "TopNav"
+      ],
+      "keyFunctions": [
+        "TopNav()"
+      ],
+      "connected": 9,
+      "dependents": [
+        "app/login/page.tsx",
+        "app/page.tsx",
+        "components/layout/app-shell.tsx"
+      ],
+      "purpose": "React UI component: top-nav.tsx"
+    },
+    {
+      "id": "components/onboarding/onboarding-wizard.tsx",
+      "label": "onboarding-wizard.tsx",
+      "type": "component",
+      "path": "components/onboarding/onboarding-wizard.tsx",
+      "imports": [
+        "components/ui/button.tsx",
+        "components/ui/card.tsx",
+        "components/ui/input.tsx",
+        "components/ui/label.tsx",
+        "lib/actions/onboarding.ts",
+        "lib/schemas/onboarding.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "OnboardingWizard"
+      ],
+      "keyFunctions": [
+        "OnboardingWizard()",
+        "toggleInterest()"
+      ],
+      "connected": 8,
+      "dependents": [
+        "app/onboarding/page.tsx"
+      ],
+      "purpose": "React UI component: onboarding-wizard.tsx"
+    },
+    {
+      "id": "components/ui/badge.tsx",
+      "label": "badge.tsx",
+      "type": "component",
+      "path": "components/ui/badge.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "Badge",
+        "badgeVariants"
+      ],
+      "keyFunctions": [
+        "Badge()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "components/journey/journey-node-card.tsx",
+        "components/layout/sticky-progress-bar.tsx"
+      ],
+      "purpose": "React UI component: badge.tsx"
+    },
+    {
+      "id": "components/ui/button.tsx",
+      "label": "button.tsx",
+      "type": "component",
+      "path": "components/ui/button.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "Button",
+        "buttonVariants"
+      ],
+      "keyFunctions": [
+        "Button()"
+      ],
+      "connected": 11,
+      "dependents": [
+        "app/journey/[id]/map/page.tsx",
+        "app/journey/[id]/page.tsx",
+        "app/journey/page.tsx",
+        "app/page.tsx",
+        "components/auth/login-form.tsx",
+        "components/journey/journey-node-card.tsx",
+        "components/layout/theme-toggle.tsx",
+        "components/layout/top-nav.tsx"
+      ],
+      "purpose": "React UI component: button.tsx"
+    },
+    {
+      "id": "components/ui/card.tsx",
+      "label": "card.tsx",
+      "type": "component",
+      "path": "components/ui/card.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "Card",
+        "CardHeader",
+        "CardFooter",
+        "CardTitle",
+        "CardAction",
+        "CardDescription",
+        "CardContent"
+      ],
+      "keyFunctions": [
+        "Card()",
+        "CardHeader()",
+        "CardTitle()",
+        "CardDescription()",
+        "CardAction()",
+        "CardContent()",
+        "CardFooter()"
+      ],
+      "connected": 4,
+      "dependents": [
+        "components/auth/login-form.tsx",
+        "components/journey/journey-node-card.tsx",
+        "components/onboarding/onboarding-wizard.tsx"
+      ],
+      "purpose": "React UI component: card.tsx"
+    },
+    {
+      "id": "components/ui/dialog.tsx",
+      "label": "dialog.tsx",
+      "type": "component",
+      "path": "components/ui/dialog.tsx",
+      "imports": [
+        "lib/utils.ts",
+        "components/ui/button.tsx"
+      ],
+      "exports": [
+        "Dialog",
+        "DialogClose",
+        "DialogContent",
+        "DialogDescription",
+        "DialogFooter",
+        "DialogHeader",
+        "DialogOverlay",
+        "DialogPortal",
+        "DialogTitle",
+        "DialogTrigger"
+      ],
+      "keyFunctions": [
+        "Dialog()",
+        "DialogTrigger()",
+        "DialogPortal()",
+        "DialogClose()",
+        "DialogOverlay()",
+        "DialogContent()",
+        "DialogHeader()",
+        "DialogFooter()"
+      ],
+      "connected": 2,
+      "dependents": [],
+      "purpose": "React UI component: dialog.tsx"
+    },
+    {
+      "id": "components/ui/input.tsx",
+      "label": "input.tsx",
+      "type": "component",
+      "path": "components/ui/input.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "Input"
+      ],
+      "keyFunctions": [
+        "Input()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "components/auth/login-form.tsx",
+        "components/onboarding/onboarding-wizard.tsx"
+      ],
+      "purpose": "React UI component: input.tsx"
+    },
+    {
+      "id": "components/ui/label.tsx",
+      "label": "label.tsx",
+      "type": "component",
+      "path": "components/ui/label.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "Label"
+      ],
+      "keyFunctions": [
+        "Label()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "components/auth/login-form.tsx",
+        "components/onboarding/onboarding-wizard.tsx"
+      ],
+      "purpose": "React UI component: label.tsx"
+    },
+    {
+      "id": "components/ui/progress.tsx",
+      "label": "progress.tsx",
+      "type": "component",
+      "path": "components/ui/progress.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "Progress",
+        "ProgressTrack",
+        "ProgressIndicator",
+        "ProgressLabel",
+        "ProgressValue"
+      ],
+      "keyFunctions": [
+        "Progress()",
+        "ProgressTrack()",
+        "ProgressIndicator()",
+        "ProgressLabel()",
+        "ProgressValue()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "components/layout/sticky-progress-bar.tsx"
+      ],
+      "purpose": "React UI component: progress.tsx"
+    },
+    {
+      "id": "components/ui/skeleton.tsx",
+      "label": "skeleton.tsx",
+      "type": "component",
+      "path": "components/ui/skeleton.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "Skeleton"
+      ],
+      "keyFunctions": [
+        "Skeleton()"
+      ],
+      "connected": 1,
+      "dependents": [],
+      "purpose": "React UI component: skeleton.tsx"
+    },
+    {
+      "id": "lib/actions/auth.ts",
+      "label": "auth.ts",
+      "type": "service",
+      "path": "lib/actions/auth.ts",
+      "imports": [
+        "lib/constants/routes.ts",
+        "lib/supabase/server.ts"
+      ],
+      "exports": [
+        "signOut",
+        "signInWithGoogle",
+        "signInWithMagicLink"
+      ],
+      "keyFunctions": [
+        "signOut()",
+        "signInWithGoogle()",
+        "signInWithMagicLink()"
+      ],
+      "connected": 4,
+      "dependents": [
+        "components/auth/login-form.tsx",
+        "components/layout/top-nav.tsx"
+      ],
+      "purpose": "Server actions: Google OAuth, magic link, sign out."
+    },
+    {
+      "id": "lib/actions/journey.ts",
+      "label": "journey.ts",
+      "type": "service",
+      "path": "lib/actions/journey.ts",
+      "imports": [
+        "lib/constants/routes.ts",
+        "lib/gamification/streak.ts",
+        "lib/gamification/xp.ts",
+        "lib/supabase/server.ts"
+      ],
+      "exports": [
+        "submitChoice",
+        "acknowledgeNode",
+        "pivotTrack",
+        "submitChoiceAction"
+      ],
+      "keyFunctions": [
+        "submitChoice()",
+        "acknowledgeNode()",
+        "pivotTrack()",
+        "submitChoiceAction()",
+        "awardXp()"
+      ],
+      "connected": 5,
+      "dependents": [
+        "components/journey/choice-panel.tsx"
+      ],
+      "purpose": "Choice submit, acknowledge, pivot, XP/streak updates via Supabase."
+    },
+    {
+      "id": "lib/actions/onboarding.ts",
+      "label": "onboarding.ts",
+      "type": "service",
+      "path": "lib/actions/onboarding.ts",
+      "imports": [
+        "lib/constants/routes.ts",
+        "lib/schemas/onboarding.ts",
+        "lib/supabase/server.ts"
+      ],
+      "exports": [
+        "completeOnboarding"
+      ],
+      "keyFunctions": [
+        "completeOnboarding()"
+      ],
+      "connected": 4,
+      "dependents": [
+        "components/onboarding/onboarding-wizard.tsx"
+      ],
+      "purpose": "Creates profile + first journey after 2-step onboarding wizard."
+    },
+    {
+      "id": "lib/ai/fallback.ts",
+      "label": "fallback.ts",
+      "type": "service",
+      "path": "lib/ai/fallback.ts",
+      "imports": [
+        "lib/schemas/ai.ts"
+      ],
+      "exports": [
+        "getFallbackNode"
+      ],
+      "keyFunctions": [
+        "getFallbackNode()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "app/api/ai/next-node/route.ts"
+      ],
+      "purpose": "Deterministic AI node template when LLM unavailable or invalid."
+    },
+    {
+      "id": "lib/ai/generate-node.ts",
+      "label": "generate-node.ts",
+      "type": "service",
+      "path": "lib/ai/generate-node.ts",
+      "imports": [
+        "lib/schemas/ai.ts"
+      ],
+      "exports": [
+        "GenerateNodeContext",
+        "generateNextNode"
+      ],
+      "keyFunctions": [
+        "generateNextNode()"
+      ],
+      "connected": 1,
+      "dependents": [],
+      "purpose": "Stub for future OpenAI streaming node generation."
+    },
+    {
+      "id": "lib/constants/routes.ts",
+      "label": "routes.ts",
+      "type": "config",
+      "path": "lib/constants/routes.ts",
+      "imports": [],
+      "exports": [
+        "ROUTES",
+        "PUBLIC_ROUTES",
+        "AUTH_ROUTES"
+      ],
+      "keyFunctions": [],
+      "connected": 12,
+      "dependents": [
+        "app/auth/callback/route.ts",
+        "app/journey/[id]/map/page.tsx",
+        "app/journey/[id]/page.tsx",
+        "app/journey/page.tsx",
+        "app/onboarding/page.tsx",
+        "app/page.tsx",
+        "components/journey/journey-node-card.tsx",
+        "components/layout/top-nav.tsx"
+      ],
+      "purpose": "Single source of truth for route paths and public/auth route lists."
+    },
+    {
+      "id": "lib/gamification/streak.ts",
+      "label": "streak.ts",
+      "type": "util",
+      "path": "lib/gamification/streak.ts",
+      "imports": [],
+      "exports": [
+        "shouldIncrementStreak",
+        "nextStreakDays"
+      ],
+      "keyFunctions": [
+        "shouldIncrementStreak()",
+        "nextStreakDays()"
+      ],
+      "connected": 1,
+      "dependents": [
+        "lib/actions/journey.ts"
+      ],
+      "purpose": "Shared utilities/schemas: streak.ts"
+    },
+    {
+      "id": "lib/gamification/xp.ts",
+      "label": "xp.ts",
+      "type": "util",
+      "path": "lib/gamification/xp.ts",
+      "imports": [],
+      "exports": [
+        "levelFromXp",
+        "xpProgressInLevel",
+        "xpToNextLevel",
+        "XP_PER_LEVEL"
+      ],
+      "keyFunctions": [
+        "levelFromXp()",
+        "xpProgressInLevel()",
+        "xpToNextLevel()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "components/layout/sticky-progress-bar.tsx",
+        "lib/actions/journey.ts"
+      ],
+      "purpose": "Shared utilities/schemas: xp.ts"
+    },
+    {
+      "id": "lib/schemas/ai.ts",
+      "label": "ai.ts",
+      "type": "util",
+      "path": "lib/schemas/ai.ts",
+      "imports": [],
+      "exports": [
+        "aiChoiceSchema",
+        "aiNodeOutputSchema",
+        "aiNextNodeRequestSchema",
+        "AiNodeOutput",
+        "AiNextNodeRequest"
+      ],
+      "keyFunctions": [],
+      "connected": 3,
+      "dependents": [
+        "app/api/ai/next-node/route.ts",
+        "lib/ai/fallback.ts",
+        "lib/ai/generate-node.ts"
+      ],
+      "purpose": "Shared utilities/schemas: ai.ts"
+    },
+    {
+      "id": "lib/schemas/index.ts",
+      "label": "index.ts",
+      "type": "util",
+      "path": "lib/schemas/index.ts",
+      "imports": [],
+      "exports": [
+        "*"
+      ],
+      "keyFunctions": [],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "Shared utilities/schemas: index.ts"
+    },
+    {
+      "id": "lib/schemas/journey.ts",
+      "label": "journey.ts",
+      "type": "util",
+      "path": "lib/schemas/journey.ts",
+      "imports": [],
+      "exports": [
+        "journeyStatusSchema",
+        "nodeTypeSchema",
+        "journeySchema",
+        "journeyNodeSchema",
+        "journeyChoiceSchema",
+        "decisionSchema",
+        "Journey",
+        "JourneyNode",
+        "JourneyChoice",
+        "Decision"
+      ],
+      "keyFunctions": [],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "Shared utilities/schemas: journey.ts"
+    },
+    {
+      "id": "lib/schemas/onboarding.ts",
+      "label": "onboarding.ts",
+      "type": "util",
+      "path": "lib/schemas/onboarding.ts",
+      "imports": [],
+      "exports": [
+        "onboardingSchema",
+        "OnboardingInput",
+        "INTEREST_OPTIONS"
+      ],
+      "keyFunctions": [],
+      "connected": 2,
+      "dependents": [
+        "components/onboarding/onboarding-wizard.tsx",
+        "lib/actions/onboarding.ts"
+      ],
+      "purpose": "Shared utilities/schemas: onboarding.ts"
+    },
+    {
+      "id": "lib/schemas/profile.ts",
+      "label": "profile.ts",
+      "type": "util",
+      "path": "lib/schemas/profile.ts",
+      "imports": [],
+      "exports": [
+        "profileSchema",
+        "profileUpdateSchema",
+        "Profile"
+      ],
+      "keyFunctions": [],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "Shared utilities/schemas: profile.ts"
+    },
+    {
+      "id": "lib/schemas/skill.ts",
+      "label": "skill.ts",
+      "type": "util",
+      "path": "lib/schemas/skill.ts",
+      "imports": [],
+      "exports": [
+        "skillCategorySchema",
+        "skillCatalogSchema",
+        "SkillCategory",
+        "SkillCatalog"
+      ],
+      "keyFunctions": [],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "Shared utilities/schemas: skill.ts"
+    },
+    {
+      "id": "lib/supabase/client.ts",
+      "label": "client.ts",
+      "type": "service",
+      "path": "lib/supabase/client.ts",
+      "imports": [],
+      "exports": [
+        "createClient"
+      ],
+      "keyFunctions": [
+        "createClient()"
+      ],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "Server-side logic: client.ts"
+    },
+    {
+      "id": "lib/supabase/middleware.ts",
+      "label": "middleware.ts",
+      "type": "service",
+      "path": "lib/supabase/middleware.ts",
+      "imports": [
+        "lib/constants/routes.ts"
+      ],
+      "exports": [
+        "updateSession"
+      ],
+      "keyFunctions": [
+        "updateSession()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "middleware.ts"
+      ],
+      "purpose": "Session refresh + redirect logic invoked from root middleware."
+    },
+    {
+      "id": "lib/supabase/server.ts",
+      "label": "server.ts",
+      "type": "service",
+      "path": "lib/supabase/server.ts",
+      "imports": [],
+      "exports": [
+        "createClient"
+      ],
+      "keyFunctions": [
+        "createClient()"
+      ],
+      "connected": 9,
+      "dependents": [
+        "app/api/ai/next-node/route.ts",
+        "app/auth/callback/route.ts",
+        "app/journey/[id]/map/page.tsx",
+        "app/journey/[id]/page.tsx",
+        "app/journey/page.tsx",
+        "app/onboarding/page.tsx",
+        "lib/actions/auth.ts",
+        "lib/actions/journey.ts"
+      ],
+      "purpose": "Server-side Supabase client (cookies). Used by pages, actions, API routes."
+    },
+    {
+      "id": "lib/utils.ts",
+      "label": "utils.ts",
+      "type": "util",
+      "path": "lib/utils.ts",
+      "imports": [],
+      "exports": [
+        "cn"
+      ],
+      "keyFunctions": [
+        "cn()"
+      ],
+      "connected": 15,
+      "dependents": [
+        "components/brand/logo.tsx",
+        "components/journey/choice-panel.tsx",
+        "components/journey/journey-map.tsx",
+        "components/journey/journey-node-card.tsx",
+        "components/layout/sticky-progress-bar.tsx",
+        "components/layout/top-nav.tsx",
+        "components/onboarding/onboarding-wizard.tsx",
+        "components/ui/badge.tsx"
+      ],
+      "purpose": "Shared utilities/schemas: utils.ts"
+    },
+    {
+      "id": "middleware.ts",
+      "label": "middleware.ts",
+      "type": "config",
+      "path": "middleware.ts",
+      "imports": [
+        "lib/supabase/middleware.ts"
+      ],
+      "exports": [
+        "middleware",
+        "config"
+      ],
+      "keyFunctions": [
+        "middleware()"
+      ],
+      "connected": 1,
+      "dependents": [],
+      "purpose": "Auth gate: refreshes Supabase session, redirects unauthenticated users from private routes."
+    },
+    {
+      "id": "next.config.ts",
+      "label": "next.config.ts",
+      "type": "config",
+      "path": "next.config.ts",
+      "imports": [],
+      "exports": [
+        "default"
+      ],
+      "keyFunctions": [],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "Configuration: next.config.ts"
+    },
+    {
+      "id": "types/database.ts",
+      "label": "database.ts",
+      "type": "util",
+      "path": "types/database.ts",
+      "imports": [],
+      "exports": [
+        "Json",
+        "Database"
+      ],
+      "keyFunctions": [],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "Shared utilities/schemas: database.ts"
+    },
+    {
+      "id": "supabase/migrations/001_initial.sql#profiles",
+      "label": "001_initial.sql",
+      "type": "db",
+      "path": "supabase/migrations/001_initial.sql#profiles",
+      "imports": [],
+      "exports": [
+        "profiles"
+      ],
+      "keyFunctions": [],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "PostgreSQL table: profiles"
+    },
+    {
+      "id": "supabase/migrations/001_initial.sql#journeys",
+      "label": "001_initial.sql",
+      "type": "db",
+      "path": "supabase/migrations/001_initial.sql#journeys",
+      "imports": [],
+      "exports": [
+        "journeys"
+      ],
+      "keyFunctions": [],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "PostgreSQL table: journeys"
+    },
+    {
+      "id": "supabase/migrations/001_initial.sql#journey_nodes",
+      "label": "001_initial.sql",
+      "type": "db",
+      "path": "supabase/migrations/001_initial.sql#journey_nodes",
+      "imports": [],
+      "exports": [
+        "journey_nodes"
+      ],
+      "keyFunctions": [],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "PostgreSQL table: journey_nodes"
+    },
+    {
+      "id": "supabase/migrations/001_initial.sql#decisions",
+      "label": "001_initial.sql",
+      "type": "db",
+      "path": "supabase/migrations/001_initial.sql#decisions",
+      "imports": [],
+      "exports": [
+        "decisions"
+      ],
+      "keyFunctions": [],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "PostgreSQL table: decisions"
+    },
+    {
+      "id": "supabase/migrations/001_initial.sql#journey_choices",
+      "label": "001_initial.sql",
+      "type": "db",
+      "path": "supabase/migrations/001_initial.sql#journey_choices",
+      "imports": [],
+      "exports": [
+        "journey_choices"
+      ],
+      "keyFunctions": [],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "PostgreSQL table: journey_choices"
+    }
+  ],
+  "edges": [
+    {
+      "source": "app/api/ai/next-node/route.ts",
+      "target": "lib/ai/fallback.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/api/ai/next-node/route.ts",
+      "target": "lib/schemas/ai.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/api/ai/next-node/route.ts",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/auth/callback/route.ts",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/auth/callback/route.ts",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/map/page.tsx",
+      "target": "components/layout/app-shell.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/map/page.tsx",
+      "target": "components/journey/journey-map.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/map/page.tsx",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/map/page.tsx",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/map/page.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/not-found.tsx",
+      "target": "components/journey/journey-node-card.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
+      "target": "components/layout/app-shell.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
+      "target": "components/journey/choice-panel.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
+      "target": "components/journey/journey-node-card.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/page.tsx",
+      "target": "components/layout/app-shell.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/page.tsx",
+      "target": "components/journey/journey-node-card.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/page.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/page.tsx",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/page.tsx",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/login/page.tsx",
+      "target": "components/auth/login-form.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/login/page.tsx",
+      "target": "components/layout/top-nav.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/onboarding/page.tsx",
+      "target": "components/layout/app-shell.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/onboarding/page.tsx",
+      "target": "components/onboarding/onboarding-wizard.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/onboarding/page.tsx",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/onboarding/page.tsx",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/page.tsx",
+      "target": "components/brand/logo.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/page.tsx",
+      "target": "components/layout/top-nav.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/page.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/page.tsx",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/auth/login-form.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/auth/login-form.tsx",
+      "target": "components/ui/card.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/auth/login-form.tsx",
+      "target": "components/ui/input.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/auth/login-form.tsx",
+      "target": "components/ui/label.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/auth/login-form.tsx",
+      "target": "lib/actions/auth.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/brand/logo.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/choice-panel.tsx",
+      "target": "lib/actions/journey.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/choice-panel.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/journey-map.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/journey-node-card.tsx",
+      "target": "components/brand/logo.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/journey-node-card.tsx",
+      "target": "components/ui/badge.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/journey-node-card.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/journey-node-card.tsx",
+      "target": "components/ui/card.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/journey-node-card.tsx",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/journey-node-card.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/app-shell.tsx",
+      "target": "components/layout/sticky-progress-bar.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/app-shell.tsx",
+      "target": "components/layout/top-nav.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/sticky-progress-bar.tsx",
+      "target": "components/ui/badge.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/sticky-progress-bar.tsx",
+      "target": "components/ui/progress.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/sticky-progress-bar.tsx",
+      "target": "lib/gamification/xp.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/sticky-progress-bar.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/theme-toggle.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/top-nav.tsx",
+      "target": "components/brand/logo.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/top-nav.tsx",
+      "target": "components/layout/theme-toggle.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/top-nav.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/top-nav.tsx",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/top-nav.tsx",
+      "target": "lib/actions/auth.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/top-nav.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/onboarding/onboarding-wizard.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/onboarding/onboarding-wizard.tsx",
+      "target": "components/ui/card.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/onboarding/onboarding-wizard.tsx",
+      "target": "components/ui/input.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/onboarding/onboarding-wizard.tsx",
+      "target": "components/ui/label.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/onboarding/onboarding-wizard.tsx",
+      "target": "lib/actions/onboarding.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/onboarding/onboarding-wizard.tsx",
+      "target": "lib/schemas/onboarding.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/onboarding/onboarding-wizard.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/ui/badge.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/ui/button.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/ui/card.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/ui/dialog.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/ui/dialog.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/ui/input.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/ui/label.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/ui/progress.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/ui/skeleton.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/auth.ts",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/auth.ts",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/journey.ts",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/journey.ts",
+      "target": "lib/gamification/streak.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/journey.ts",
+      "target": "lib/gamification/xp.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/journey.ts",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/onboarding.ts",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/onboarding.ts",
+      "target": "lib/schemas/onboarding.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/onboarding.ts",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/ai/fallback.ts",
+      "target": "lib/schemas/ai.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/ai/generate-node.ts",
+      "target": "lib/schemas/ai.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/supabase/middleware.ts",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "middleware.ts",
+      "target": "lib/supabase/middleware.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/page.tsx",
+      "target": "middleware.ts",
+      "type": "middleware"
+    },
+    {
+      "source": "app/login/page.tsx",
+      "target": "components/auth/login-form.tsx",
+      "type": "renders"
+    },
+    {
+      "source": "app/onboarding/page.tsx",
+      "target": "lib/actions/onboarding.ts",
+      "type": "uses"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
+      "target": "lib/actions/journey.ts",
+      "type": "uses"
+    },
+    {
+      "source": "app/api/ai/next-node/route.ts",
+      "target": "lib/ai/fallback.ts",
+      "type": "uses"
+    },
+    {
+      "source": "middleware.ts",
+      "target": "lib/supabase/middleware.ts",
+      "type": "delegates"
+    },
+    {
+      "source": "lib/actions/journey.ts",
+      "target": "supabase/migrations/001_initial.sql#profiles",
+      "type": "db"
+    },
+    {
+      "source": "lib/actions/journey.ts",
+      "target": "supabase/migrations/001_initial.sql#journeys",
+      "type": "db"
+    },
+    {
+      "source": "lib/actions/journey.ts",
+      "target": "supabase/migrations/001_initial.sql#journey_nodes",
+      "type": "db"
+    },
+    {
+      "source": "lib/actions/journey.ts",
+      "target": "supabase/migrations/001_initial.sql#decisions",
+      "type": "db"
+    },
+    {
+      "source": "lib/actions/onboarding.ts",
+      "target": "supabase/migrations/001_initial.sql#profiles",
+      "type": "db"
+    },
+    {
+      "source": "lib/actions/onboarding.ts",
+      "target": "supabase/migrations/001_initial.sql#journeys",
+      "type": "db"
+    },
+    {
+      "source": "app/api/ai/next-node/route.ts",
+      "target": "supabase/migrations/001_initial.sql#journeys",
+      "type": "db"
+    },
+    {
+      "source": "app/journey/page.tsx",
+      "target": "supabase/migrations/001_initial.sql#journeys",
+      "type": "db"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
+      "target": "supabase/migrations/001_initial.sql#journeys",
+      "type": "db"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
+      "target": "supabase/migrations/001_initial.sql#journey_nodes",
+      "type": "db"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
+      "target": "supabase/migrations/001_initial.sql#journey_choices",
+      "type": "db"
+    }
+  ],
+  "hotspots": [
+    {
+      "file": "lib/utils.ts",
+      "inbound": 15,
+      "outbound": 0,
+      "total": 15
+    },
+    {
+      "file": "lib/constants/routes.ts",
+      "inbound": 12,
+      "outbound": 0,
+      "total": 12
+    },
+    {
+      "file": "components/ui/button.tsx",
+      "inbound": 10,
+      "outbound": 1,
+      "total": 11
+    },
+    {
+      "file": "components/journey/journey-node-card.tsx",
+      "inbound": 3,
+      "outbound": 6,
+      "total": 9
+    },
+    {
+      "file": "components/layout/top-nav.tsx",
+      "inbound": 3,
+      "outbound": 6,
+      "total": 9
+    },
+    {
+      "file": "lib/supabase/server.ts",
+      "inbound": 9,
+      "outbound": 0,
+      "total": 9
+    },
+    {
+      "file": "components/onboarding/onboarding-wizard.tsx",
+      "inbound": 1,
+      "outbound": 7,
+      "total": 8
+    },
+    {
+      "file": "app/journey/[id]/page.tsx",
+      "inbound": 0,
+      "outbound": 6,
+      "total": 6
+    },
+    {
+      "file": "components/auth/login-form.tsx",
+      "inbound": 1,
+      "outbound": 5,
+      "total": 6
+    },
+    {
+      "file": "components/layout/app-shell.tsx",
+      "inbound": 4,
+      "outbound": 2,
+      "total": 6
+    },
+    {
+      "file": "app/journey/[id]/map/page.tsx",
+      "inbound": 0,
+      "outbound": 5,
+      "total": 5
+    },
+    {
+      "file": "app/journey/page.tsx",
+      "inbound": 0,
+      "outbound": 5,
+      "total": 5
+    },
+    {
+      "file": "components/layout/sticky-progress-bar.tsx",
+      "inbound": 1,
+      "outbound": 4,
+      "total": 5
+    },
+    {
+      "file": "lib/actions/journey.ts",
+      "inbound": 1,
+      "outbound": 4,
+      "total": 5
+    },
+    {
+      "file": "app/onboarding/page.tsx",
+      "inbound": 0,
+      "outbound": 4,
+      "total": 4
+    }
+  ],
+  "criticalPaths": [
+    {
+      "name": "Auth Flow",
+      "path": [
+        "app/login/page.tsx",
+        "components/auth/login-form.tsx",
+        "lib/actions/auth.ts",
+        "app/auth/callback/route.ts",
+        "lib/supabase/server.ts",
+        "middleware.ts",
+        "lib/supabase/middleware.ts"
+      ]
+    },
+    {
+      "name": "Onboarding → First Journey",
+      "path": [
+        "app/onboarding/page.tsx",
+        "components/onboarding/onboarding-wizard.tsx",
+        "lib/actions/onboarding.ts",
+        "lib/schemas/onboarding.ts",
+        "lib/supabase/server.ts",
+        "supabase/migrations/001_initial.sql#profiles",
+        "supabase/migrations/001_initial.sql#journeys"
+      ]
+    },
+    {
+      "name": "Journey Choice + XP",
+      "path": [
+        "app/journey/[id]/page.tsx",
+        "components/journey/choice-panel.tsx",
+        "lib/actions/journey.ts",
+        "lib/gamification/xp.ts",
+        "lib/gamification/streak.ts",
+        "supabase/migrations/001_initial.sql#decisions"
+      ]
+    },
+    {
+      "name": "AI Next Node (MVP fallback)",
+      "path": [
+        "app/api/ai/next-node/route.ts",
+        "lib/schemas/ai.ts",
+        "lib/ai/fallback.ts",
+        "lib/supabase/server.ts"
+      ]
+    }
+  ],
+  "onboardingPaths": {
+    "New Engineer": [
+      "docs/handoff-roadrunner-hackathon.md",
+      "app/layout.tsx",
+      "middleware.ts",
+      "lib/constants/routes.ts",
+      "lib/supabase/server.ts",
+      "app/onboarding/page.tsx",
+      "lib/actions/journey.ts",
+      "supabase/migrations/001_initial.sql"
+    ],
+    "Frontend": [
+      "app/layout.tsx",
+      "components/layout/app-shell.tsx",
+      "components/journey/journey-node-card.tsx",
+      "components/onboarding/onboarding-wizard.tsx",
+      "docs/design/DESIGN.md"
+    ],
+    "Backend": [
+      "lib/actions/journey.ts",
+      "lib/actions/onboarding.ts",
+      "lib/actions/auth.ts",
+      "app/api/ai/next-node/route.ts",
+      "lib/supabase/server.ts"
+    ],
+    "Database": [
+      "supabase/migrations/001_initial.sql",
+      "supabase/seed.sql",
+      "types/database.ts",
+      "lib/schemas/journey.ts"
+    ],
+    "Authentication": [
+      "middleware.ts",
+      "lib/supabase/middleware.ts",
+      "lib/actions/auth.ts",
+      "app/auth/callback/route.ts",
+      "components/auth/login-form.tsx"
+    ],
+    "Design": [
+      "docs/design/DESIGN.md",
+      "docs/design/preview.html",
+      "app/globals.css",
+      "components/brand/logo.tsx"
+    ]
+  },
+  "deadAreas": [
+    "components/ui/dialog.tsx",
+    "components/ui/skeleton.tsx",
+    "lib/ai/generate-node.ts",
+    "lib/schemas/index.ts",
+    "lib/schemas/journey.ts",
+    "lib/schemas/profile.ts",
+    "lib/schemas/skill.ts",
+    "lib/supabase/client.ts",
+    "next.config.ts",
+    "types/database.ts"
+  ],
+  "circularDeps": [],
+  "categories": {
+    "component": {
+      "color": "#3b82f6",
+      "shape": "round-rectangle"
+    },
+    "service": {
+      "color": "#8b5cf6",
+      "shape": "hexagon"
+    },
+    "route": {
+      "color": "#10b981",
+      "shape": "rectangle"
+    },
+    "context": {
+      "color": "#f59e0b",
+      "shape": "round-rectangle"
+    },
+    "util": {
+      "color": "#6b7280",
+      "shape": "ellipse"
+    },
+    "config": {
+      "color": "#ef4444",
+      "shape": "diamond"
+    },
+    "db": {
+      "color": "#06b6d4",
+      "shape": "cylinder"
+    },
+    "hook": {
+      "color": "#ec4899",
+      "shape": "round-rectangle"
+    }
+  }
+}

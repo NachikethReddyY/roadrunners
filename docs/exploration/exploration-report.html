@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoadRunners — Codebase Explorer</title>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape@3/dist/cytoscape.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-cose-bilkent@4/cytoscape-cose-bilkent.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@0/cytoscape-dagre.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg-alt: #f3f4f6; --bg-hover: #e5e7eb;
+    --text: #111827; --text-muted: #6b7280; --text-dim: #9ca3af;
+    --border: #d1d5db; --accent: #3b82f6; --accent-bg: #eff6ff;
+    --sidebar-w: 280px; --panel-w: 360px; --bottom-h: 44px; --top-h: 48px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --radius: 6px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f172a; --bg-alt: #1e293b; --bg-hover: #334155;
+      --text: #f1f5f9; --text-muted: #94a3b8; --text-dim: #64748b;
+      --border: #334155; --accent: #60a5fa; --accent-bg: #1e3a5f;
+      --shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+  }
+  html, body { height: 100%; overflow: hidden; font-family: var(--font); color: var(--text); background: var(--bg); }
+  input, button { font-family: inherit; font-size: inherit; }
+
+  /* Top toolbar */
+  .toolbar {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--top-h);
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px; padding: 0 12px; z-index: 100;
+  }
+  .toolbar .project-name { font-weight: 600; font-size: 14px; margin-right: 16px; white-space: nowrap; }
+  .toolbar input[type="search"] {
+    flex: 1; max-width: 360px; height: 30px; border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 0 10px; background: var(--bg-alt); color: var(--text);
+    outline: none; font-size: 13px;
+  }
+  .toolbar input[type="search"]:focus { border-color: var(--accent); }
+  .toolbar .btn-group { display: flex; gap: 2px; margin-left: auto; }
+  .toolbar button {
+    height: 30px; padding: 0 10px; border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--bg); color: var(--text); cursor: pointer; font-size: 13px; white-space: nowrap;
+  }
+  .toolbar button:hover { background: var(--bg-hover); }
+  .toolbar button.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+
+  /* Left sidebar */
+  .sidebar {
+    position: fixed; top: var(--top-h); left: 0; bottom: var(--bottom-h); width: var(--sidebar-w);
+    background: var(--bg-alt); border-right: 1px solid var(--border); overflow-y: auto; z-index: 50;
+    display: flex; flex-direction: column;
+  }
+  .sidebar-section { border-bottom: 1px solid var(--border); }
+  .sidebar-section summary { padding: 8px 12px; cursor: pointer; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+  .sidebar-section summary:hover { color: var(--text); }
+  .sidebar-item {
+    padding: 5px 12px 5px 20px; font-size: 13px; cursor: pointer; border-left: 3px solid transparent;
+    display: flex; align-items: center; gap: 6px; transition: 0.1s;
+  }
+  .sidebar-item:hover { background: var(--bg-hover); border-left-color: var(--accent); }
+  .sidebar-item .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .sidebar-item .badge {
+    margin-left: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0 6px; font-size: 11px; color: var(--text-muted);
+  }
+  .sidebar-item.hotspot { border-left-color: #ef4444; }
+  .sidebar-item.dead { opacity: 0.5; border-left-color: var(--text-dim); }
+  .sidebar-item.path { border-left-color: #10b981; }
+
+  /* Graph canvas */
+  #cy {
+    position: fixed; top: var(--top-h); left: var(--sidebar-w); right: 0; bottom: var(--bottom-h);
+    background: var(--bg);
+  }
+
+  /* Detail panel */
+  .detail-panel {
+    position: fixed; top: var(--top-h); right: 0; bottom: var(--bottom-h); width: var(--panel-w);
+    background: var(--bg); border-left: 1px solid var(--border); z-index: 60;
+    transform: translateX(100%); transition: transform 0.25s ease; overflow-y: auto;
+    padding: 16px; box-shadow: -4px 0 12px rgba(0,0,0,0.08);
+  }
+  .detail-panel.open { transform: translateX(0); }
+  .detail-panel .close {
+    position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: none;
+    background: var(--bg-alt); border-radius: 50%; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center; color: var(--text-muted);
+  }
+  .detail-panel .close:hover { background: var(--bg-hover); }
+  .detail-panel h2 { font-size: 16px; margin-bottom: 4px; }
+  .detail-panel .path { font-family: var(--mono); font-size: 12px; color: var(--text-muted); margin-bottom: 12px; word-break: break-all; }
+  .detail-panel .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px;
+    color: white; margin-bottom: 12px;
+  }
+  .detail-panel .section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; margin: 12px 0 4px; }
+  .detail-panel .item-list { list-style: none; }
+  .detail-panel .item-list li {
+    padding: 3px 0; font-family: var(--mono); font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .detail-panel .item-list li:hover { color: var(--accent); }
+  .detail-panel .item-list li::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+
+  /* Bottom bar */
+  .bottombar {
+    position: fixed; bottom: 0; left: 0; right: 0; height: var(--bottom-h);
+    background: var(--bg); border-top: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 12px; font-size: 12px; color: var(--text-muted); z-index: 50;
+    gap: 8px;
+  }
+  .bottombar .breadcrumb { display: flex; gap: 4px; align-items: center; }
+  .bottombar .breadcrumb span { cursor: pointer; padding: 2px 6px; border-radius: 3px; }
+  .bottombar .breadcrumb span:hover { background: var(--bg-hover); color: var(--text); }
+  .bottombar .sep { color: var(--text-dim); }
+  .bottombar .stats { margin-left: auto; }
+
+  /* Empty / loading state */
+  .empty-state {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    text-align: center; color: var(--text-muted); z-index: 10;
+  }
+  .empty-state h2 { font-size: 18px; margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 56px; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); padding: 8px 16px; border-radius: var(--radius);
+    font-size: 13px; z-index: 200; opacity: 0; transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 768px) {
+    :root { --sidebar-w: 0px; --panel-w: 100%; }
+    .sidebar { display: none; }
+    #cy { left: 0; }
+    .toolbar input[type="search"] { max-width: 140px; }
+    .toolbar .btn-group button { padding: 0 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span class="project-name">{{PROJECT_NAME}}</span>
+  <input type="search" id="search" placeholder="Search files..." spellcheck="false">
+  <div class="btn-group">
+    <button id="btn-zoom-in" title="Zoom in">+</button>
+    <button id="btn-zoom-out" title="Zoom out">−</button>
+    <button id="btn-fit" title="Fit to view">⊞</button>
+    <button id="btn-layout" title="Reset layout">⟳</button>
+    <button id="btn-labels" title="Toggle labels" class="active">Aa</button>
+    <button id="btn-dark" title="Toggle dark mode">◑</button>
+  </div>
+</div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-section" id="section-onboarding">
+    <details open>
+      <summary>Learning Paths</summary>
+      <div id="onboarding-list"></div>
+    </details>
+  </div>
+  <div class="sidebar-section" id="section-hotspots">
+    <details open>
+      <summary>Hotspots</summary>
+      <div id="hotspots-list"></div>
+    </details>
+  </div>
+  <div class="sidebar-section" id="section-critical">
+    <details open>
+      <summary>Critical Paths</summary>
+      <div id="critical-list"></div>
+    </details>
+  </div>
+  <div class="sidebar-section" id="section-dead">
+    <details>
+      <summary>Dead Areas</summary>
+      <div id="dead-list"></div>
+    </details>
+  </div>
+  <div class="sidebar-section" id="section-circular">
+    <details>
+      <summary>Circular Dependencies</summary>
+      <div id="circular-list"></div>
+    </details>
+  </div>
+</aside>
+
+<div id="cy"></div>
+
+<div class="detail-panel" id="detail-panel">
+  <button class="close" id="panel-close">×</button>
+  <div id="panel-content"></div>
+</div>
+
+<div class="bottombar">
+  <div class="breadcrumb" id="breadcrumb"><span>Graph View</span></div>
+  <div class="stats" id="stats"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="empty-state" id="empty-state">
+  <h2>No Graph Data</h2>
+  <p>Run <code>scripts/generate-outputs.js</code> with valid graph data to explore.<br>Look for <code>exploration-data.json</code> in the output directory.</p>
+</div>
+
+<script>
+const DATA = {"projectName":"RoadRunners","nodes":[{"id":"app/api/ai/next-node/route.ts","label":"route.ts","type":"route","path":"app/api/ai/next-node/route.ts","imports":["lib/ai/fallback.ts","lib/schemas/ai.ts","lib/supabase/server.ts"],"exports":["POST"],"keyFunctions":["POST()"],"connected":3,"dependents":[],"purpose":"POST endpoint: validates request, returns fallback AI node (LLM TODO)."},{"id":"app/api/health/route.ts","label":"route.ts","type":"route","path":"app/api/health/route.ts","imports":[],"exports":["GET"],"keyFunctions":["GET()"],"connected":0,"dependents":[],"purpose":"Next.js App Router page or API handler at /api/health"},{"id":"app/auth/callback/route.ts","label":"route.ts","type":"route","path":"app/auth/callback/route.ts","imports":["lib/constants/routes.ts","lib/supabase/server.ts"],"exports":["GET"],"keyFunctions":["GET()"],"connected":2,"dependents":[],"purpose":"Next.js App Router page or API handler at /auth/callback"},{"id":"app/journey/[id]/map/page.tsx","label":"page.tsx","type":"route","path":"app/journey/[id]/map/page.tsx","imports":["components/layout/app-shell.tsx","components/journey/journey-map.tsx","lib/constants/routes.ts","lib/supabase/server.ts","components/ui/button.tsx"],"exports":["default"],"keyFunctions":["JourneyMapPage()"],"connected":5,"dependents":[],"purpose":"Next.js App Router page or API handler at /journey/[id]/map"},{"id":"app/journey/[id]/not-found.tsx","label":"not-found.tsx","type":"util","path":"app/journey/[id]/not-found.tsx","imports":["components/journey/journey-node-card.tsx"],"exports":["default"],"keyFunctions":["JourneyNotFound()"],"connected":1,"dependents":[],"purpose":"Shared utilities/schemas: not-found.tsx"},{"id":"app/journey/[id]/page.tsx","label":"page.tsx","type":"route","path":"app/journey/[id]/page.tsx","imports":["components/layout/app-shell.tsx","components/journey/choice-panel.tsx","components/journey/journey-node-card.tsx","lib/constants/routes.ts","lib/supabase/server.ts","components/ui/button.tsx"],"exports":["default"],"keyFunctions":["JourneyDetailPage()"],"connected":6,"dependents":[],"purpose":"Next.js App Router page or API handler at /journey/[id]"},{"id":"app/journey/page.tsx","label":"page.tsx","type":"route","path":"app/journey/page.tsx","imports":["components/layout/app-shell.tsx","components/journey/journey-node-card.tsx","components/ui/button.tsx","lib/constants/routes.ts","lib/supabase/server.ts"],"exports":["default"],"keyFunctions":["JourneyIndexPage()"],"connected":5,"dependents":[],"purpose":"Next.js App Router page or API handler at /journey"},{"id":"app/layout.tsx","label":"layout.tsx","type":"util","path":"app/layout.tsx","imports":[],"exports":["metadata","default"],"keyFunctions":["RootLayout()"],"connected":0,"dependents":[],"purpose":"Shared utilities/schemas: layout.tsx"},{"id":"app/login/page.tsx","label":"page.tsx","type":"route","path":"app/login/page.tsx","imports":["components/auth/login-form.tsx","components/layout/top-nav.tsx"],"exports":["default"],"keyFunctions":["LoginPage()"],"connected":2,"dependents":[],"purpose":"Next.js App Router page or API handler at /login"},{"id":"app/onboarding/page.tsx","label":"page.tsx","type":"route","path":"app/onboarding/page.tsx","imports":["components/layout/app-shell.tsx","components/onboarding/onboarding-wizard.tsx","lib/constants/routes.ts","lib/supabase/server.ts"],"exports":["default"],"keyFunctions":["OnboardingPage()"],"connected":4,"dependents":[],"purpose":"Next.js App Router page or API handler at /onboarding"},{"id":"app/page.tsx","label":"page.tsx","type":"route","path":"app/page.tsx","imports":["components/brand/logo.tsx","components/layout/top-nav.tsx","components/ui/button.tsx","lib/constants/routes.ts"],"exports":["default"],"keyFunctions":["LandingPage()"],"connected":4,"dependents":[],"purpose":"Next.js App Router page or API handler at "},{"id":"components/auth/login-form.tsx","label":"login-form.tsx","type":"component","path":"components/auth/login-form.tsx","imports":["components/ui/button.tsx","components/ui/card.tsx","components/ui/input.tsx","components/ui/label.tsx","lib/actions/auth.ts"],"exports":["LoginForm"],"keyFunctions":["LoginForm()"],"connected":6,"dependents":["app/login/page.tsx"],"purpose":"React UI component: login-form.tsx"},{"id":"components/brand/logo.tsx","label":"logo.tsx","type":"component","path":"components/brand/logo.tsx","imports":["lib/utils.ts"],"exports":["Logo"],"keyFunctions":["Logo()"],"connected":4,"dependents":["app/page.tsx","components/journey/journey-node-card.tsx","components/layout/top-nav.tsx"],"purpose":"React UI component: logo.tsx"},{"id":"components/journey/choice-panel.tsx","label":"choice-panel.tsx","type":"component","path":"components/journey/choice-panel.tsx","imports":["lib/actions/journey.ts","lib/utils.ts"],"exports":["Choice","ChoicePanel"],"keyFunctions":["ChoicePanel()"],"connected":3,"dependents":["app/journey/[id]/page.tsx"],"purpose":"React UI component: choice-panel.tsx"},{"id":"components/journey/journey-map.tsx","label":"journey-map.tsx","type":"component","path":"components/journey/journey-map.tsx","imports":["lib/utils.ts"],"exports":["MapNode","JourneyMap"],"keyFunctions":["JourneyMap()"],"connected":2,"dependents":["app/journey/[id]/map/page.tsx"],"purpose":"React UI component: journey-map.tsx"},{"id":"components/journey/journey-node-card.tsx","label":"journey-node-card.tsx","type":"component","path":"components/journey/journey-node-card.tsx","imports":["components/brand/logo.tsx","components/ui/badge.tsx","components/ui/button.tsx","components/ui/card.tsx","lib/constants/routes.ts","lib/utils.ts"],"exports":["JourneyNodeCard","JourneyNodeSkeleton","EmptyJourneyCard"],"keyFunctions":["JourneyNodeCard()","JourneyNodeSkeleton()","EmptyJourneyCard()"],"connected":9,"dependents":["app/journey/[id]/not-found.tsx","app/journey/[id]/page.tsx","app/journey/page.tsx"],"purpose":"React UI component: journey-node-card.tsx"},{"id":"components/layout/app-shell.tsx","label":"app-shell.tsx","type":"component","path":"components/layout/app-shell.tsx","imports":["components/layout/sticky-progress-bar.tsx","components/layout/top-nav.tsx"],"exports":["AppShell"],"keyFunctions":["AppShell()"],"connected":6,"dependents":["app/journey/[id]/map/page.tsx","app/journey/[id]/page.tsx","app/journey/page.tsx","app/onboarding/page.tsx"],"purpose":"React UI component: app-shell.tsx"},{"id":"components/layout/sticky-progress-bar.tsx","label":"sticky-progress-bar.tsx","type":"component","path":"components/layout/sticky-progress-bar.tsx","imports":["components/ui/badge.tsx","components/ui/progress.tsx","lib/gamification/xp.ts","lib/utils.ts"],"exports":["StickyProgressBar"],"keyFunctions":["StickyProgressBar()"],"connected":5,"dependents":["components/layout/app-shell.tsx"],"purpose":"React UI component: sticky-progress-bar.tsx"},{"id":"components/layout/theme-toggle.tsx","label":"theme-toggle.tsx","type":"component","path":"components/layout/theme-toggle.tsx","imports":["components/ui/button.tsx"],"exports":["ThemeToggle"],"keyFunctions":["ThemeToggle()","toggle()"],"connected":2,"dependents":["components/layout/top-nav.tsx"],"purpose":"React UI component: theme-toggle.tsx"},{"id":"components/layout/top-nav.tsx","label":"top-nav.tsx","type":"component","path":"components/layout/top-nav.tsx","imports":["components/brand/logo.tsx","components/layout/theme-toggle.tsx","components/ui/button.tsx","lib/constants/routes.ts","lib/actions/auth.ts","lib/utils.ts"],"exports":["TopNav"],"keyFunctions":["TopNav()"],"connected":9,"dependents":["app/login/page.tsx","app/page.tsx","components/layout/app-shell.tsx"],"purpose":"React UI component: top-nav.tsx"},{"id":"components/onboarding/onboarding-wizard.tsx","label":"onboarding-wizard.tsx","type":"component","path":"components/onboarding/onboarding-wizard.tsx","imports":["components/ui/button.tsx","components/ui/card.tsx","components/ui/input.tsx","components/ui/label.tsx","lib/actions/onboarding.ts","lib/schemas/onboarding.ts","lib/utils.ts"],"exports":["OnboardingWizard"],"keyFunctions":["OnboardingWizard()","toggleInterest()"],"connected":8,"dependents":["app/onboarding/page.tsx"],"purpose":"React UI component: onboarding-wizard.tsx"},{"id":"components/ui/badge.tsx","label":"badge.tsx","type":"component","path":"components/ui/badge.tsx","imports":["lib/utils.ts"],"exports":["Badge","badgeVariants"],"keyFunctions":["Badge()"],"connected":3,"dependents":["components/journey/journey-node-card.tsx","components/layout/sticky-progress-bar.tsx"],"purpose":"React UI component: badge.tsx"},{"id":"components/ui/button.tsx","label":"button.tsx","type":"component","path":"components/ui/button.tsx","imports":["lib/utils.ts"],"exports":["Button","buttonVariants"],"keyFunctions":["Button()"],"connected":11,"dependents":["app/journey/[id]/map/page.tsx","app/journey/[id]/page.tsx","app/journey/page.tsx","app/page.tsx","components/auth/login-form.tsx","components/journey/journey-node-card.tsx","components/layout/theme-toggle.tsx","components/layout/top-nav.tsx"],"purpose":"React UI component: button.tsx"},{"id":"components/ui/card.tsx","label":"card.tsx","type":"component","path":"components/ui/card.tsx","imports":["lib/utils.ts"],"exports":["Card","CardHeader","CardFooter","CardTitle","CardAction","CardDescription","CardContent"],"keyFunctions":["Card()","CardHeader()","CardTitle()","CardDescription()","CardAction()","CardContent()","CardFooter()"],"connected":4,"dependents":["components/auth/login-form.tsx","components/journey/journey-node-card.tsx","components/onboarding/onboarding-wizard.tsx"],"purpose":"React UI component: card.tsx"},{"id":"components/ui/dialog.tsx","label":"dialog.tsx","type":"component","path":"components/ui/dialog.tsx","imports":["lib/utils.ts","components/ui/button.tsx"],"exports":["Dialog","DialogClose","DialogContent","DialogDescription","DialogFooter","DialogHeader","DialogOverlay","DialogPortal","DialogTitle","DialogTrigger"],"keyFunctions":["Dialog()","DialogTrigger()","DialogPortal()","DialogClose()","DialogOverlay()","DialogContent()","DialogHeader()","DialogFooter()"],"connected":2,"dependents":[],"purpose":"React UI component: dialog.tsx"},{"id":"components/ui/input.tsx","label":"input.tsx","type":"component","path":"components/ui/input.tsx","imports":["lib/utils.ts"],"exports":["Input"],"keyFunctions":["Input()"],"connected":3,"dependents":["components/auth/login-form.tsx","components/onboarding/onboarding-wizard.tsx"],"purpose":"React UI component: input.tsx"},{"id":"components/ui/label.tsx","label":"label.tsx","type":"component","path":"components/ui/label.tsx","imports":["lib/utils.ts"],"exports":["Label"],"keyFunctions":["Label()"],"connected":3,"dependents":["components/auth/login-form.tsx","components/onboarding/onboarding-wizard.tsx"],"purpose":"React UI component: label.tsx"},{"id":"components/ui/progress.tsx","label":"progress.tsx","type":"component","path":"components/ui/progress.tsx","imports":["lib/utils.ts"],"exports":["Progress","ProgressTrack","ProgressIndicator","ProgressLabel","ProgressValue"],"keyFunctions":["Progress()","ProgressTrack()","ProgressIndicator()","ProgressLabel()","ProgressValue()"],"connected":2,"dependents":["components/layout/sticky-progress-bar.tsx"],"purpose":"React UI component: progress.tsx"},{"id":"components/ui/skeleton.tsx","label":"skeleton.tsx","type":"component","path":"components/ui/skeleton.tsx","imports":["lib/utils.ts"],"exports":["Skeleton"],"keyFunctions":["Skeleton()"],"connected":1,"dependents":[],"purpose":"React UI component: skeleton.tsx"},{"id":"lib/actions/auth.ts","label":"auth.ts","type":"service","path":"lib/actions/auth.ts","imports":["lib/constants/routes.ts","lib/supabase/server.ts"],"exports":["signOut","signInWithGoogle","signInWithMagicLink"],"keyFunctions":["signOut()","signInWithGoogle()","signInWithMagicLink()"],"connected":4,"dependents":["components/auth/login-form.tsx","components/layout/top-nav.tsx"],"purpose":"Server actions: Google OAuth, magic link, sign out."},{"id":"lib/actions/journey.ts","label":"journey.ts","type":"service","path":"lib/actions/journey.ts","imports":["lib/constants/routes.ts","lib/gamification/streak.ts","lib/gamification/xp.ts","lib/supabase/server.ts"],"exports":["submitChoice","acknowledgeNode","pivotTrack","submitChoiceAction"],"keyFunctions":["submitChoice()","acknowledgeNode()","pivotTrack()","submitChoiceAction()","awardXp()"],"connected":5,"dependents":["components/journey/choice-panel.tsx"],"purpose":"Choice submit, acknowledge, pivot, XP/streak updates via Supabase."},{"id":"lib/actions/onboarding.ts","label":"onboarding.ts","type":"service","path":"lib/actions/onboarding.ts","imports":["lib/constants/routes.ts","lib/schemas/onboarding.ts","lib/supabase/server.ts"],"exports":["completeOnboarding"],"keyFunctions":["completeOnboarding()"],"connected":4,"dependents":["components/onboarding/onboarding-wizard.tsx"],"purpose":"Creates profile + first journey after 2-step onboarding wizard."},{"id":"lib/ai/fallback.ts","label":"fallback.ts","type":"service","path":"lib/ai/fallback.ts","imports":["lib/schemas/ai.ts"],"exports":["getFallbackNode"],"keyFunctions":["getFallbackNode()"],"connected":2,"dependents":["app/api/ai/next-node/route.ts"],"purpose":"Deterministic AI node template when LLM unavailable or invalid."},{"id":"lib/ai/generate-node.ts","label":"generate-node.ts","type":"service","path":"lib/ai/generate-node.ts","imports":["lib/schemas/ai.ts"],"exports":["GenerateNodeContext","generateNextNode"],"keyFunctions":["generateNextNode()"],"connected":1,"dependents":[],"purpose":"Stub for future OpenAI streaming node generation."},{"id":"lib/constants/routes.ts","label":"routes.ts","type":"config","path":"lib/constants/routes.ts","imports":[],"exports":["ROUTES","PUBLIC_ROUTES","AUTH_ROUTES"],"keyFunctions":[],"connected":12,"dependents":["app/auth/callback/route.ts","app/journey/[id]/map/page.tsx","app/journey/[id]/page.tsx","app/journey/page.tsx","app/onboarding/page.tsx","app/page.tsx","components/journey/journey-node-card.tsx","components/layout/top-nav.tsx"],"purpose":"Single source of truth for route paths and public/auth route lists."},{"id":"lib/gamification/streak.ts","label":"streak.ts","type":"util","path":"lib/gamification/streak.ts","imports":[],"exports":["shouldIncrementStreak","nextStreakDays"],"keyFunctions":["shouldIncrementStreak()","nextStreakDays()"],"connected":1,"dependents":["lib/actions/journey.ts"],"purpose":"Shared utilities/schemas: streak.ts"},{"id":"lib/gamification/xp.ts","label":"xp.ts","type":"util","path":"lib/gamification/xp.ts","imports":[],"exports":["levelFromXp","xpProgressInLevel","xpToNextLevel","XP_PER_LEVEL"],"keyFunctions":["levelFromXp()","xpProgressInLevel()","xpToNextLevel()"],"connected":2,"dependents":["components/layout/sticky-progress-bar.tsx","lib/actions/journey.ts"],"purpose":"Shared utilities/schemas: xp.ts"},{"id":"lib/schemas/ai.ts","label":"ai.ts","type":"util","path":"lib/schemas/ai.ts","imports":[],"exports":["aiChoiceSchema","aiNodeOutputSchema","aiNextNodeRequestSchema","AiNodeOutput","AiNextNodeRequest"],"keyFunctions":[],"connected":3,"dependents":["app/api/ai/next-node/route.ts","lib/ai/fallback.ts","lib/ai/generate-node.ts"],"purpose":"Shared utilities/schemas: ai.ts"},{"id":"lib/schemas/index.ts","label":"index.ts","type":"util","path":"lib/schemas/index.ts","imports":[],"exports":["*"],"keyFunctions":[],"connected":0,"dependents":[],"purpose":"Shared utilities/schemas: index.ts"},{"id":"lib/schemas/journey.ts","label":"journey.ts","type":"util","path":"lib/schemas/journey.ts","imports":[],"exports":["journeyStatusSchema","nodeTypeSchema","journeySchema","journeyNodeSchema","journeyChoiceSchema","decisionSchema","Journey","JourneyNode","JourneyChoice","Decision"],"keyFunctions":[],"connected":0,"dependents":[],"purpose":"Shared utilities/schemas: journey.ts"},{"id":"lib/schemas/onboarding.ts","label":"onboarding.ts","type":"util","path":"lib/schemas/onboarding.ts","imports":[],"exports":["onboardingSchema","OnboardingInput","INTEREST_OPTIONS"],"keyFunctions":[],"connected":2,"dependents":["components/onboarding/onboarding-wizard.tsx","lib/actions/onboarding.ts"],"purpose":"Shared utilities/schemas: onboarding.ts"},{"id":"lib/schemas/profile.ts","label":"profile.ts","type":"util","path":"lib/schemas/profile.ts","imports":[],"exports":["profileSchema","profileUpdateSchema","Profile"],"keyFunctions":[],"connected":0,"dependents":[],"purpose":"Shared utilities/schemas: profile.ts"},{"id":"lib/schemas/skill.ts","label":"skill.ts","type":"util","path":"lib/schemas/skill.ts","imports":[],"exports":["skillCategorySchema","skillCatalogSchema","SkillCategory","SkillCatalog"],"keyFunctions":[],"connected":0,"dependents":[],"purpose":"Shared utilities/schemas: skill.ts"},{"id":"lib/supabase/client.ts","label":"client.ts","type":"service","path":"lib/supabase/client.ts","imports":[],"exports":["createClient"],"keyFunctions":["createClient()"],"connected":0,"dependents":[],"purpose":"Server-side logic: client.ts"},{"id":"lib/supabase/middleware.ts","label":"middleware.ts","type":"service","path":"lib/supabase/middleware.ts","imports":["lib/constants/routes.ts"],"exports":["updateSession"],"keyFunctions":["updateSession()"],"connected":2,"dependents":["middleware.ts"],"purpose":"Session refresh + redirect logic invoked from root middleware."},{"id":"lib/supabase/server.ts","label":"server.ts","type":"service","path":"lib/supabase/server.ts","imports":[],"exports":["createClient"],"keyFunctions":["createClient()"],"connected":9,"dependents":["app/api/ai/next-node/route.ts","app/auth/callback/route.ts","app/journey/[id]/map/page.tsx","app/journey/[id]/page.tsx","app/journey/page.tsx","app/onboarding/page.tsx","lib/actions/auth.ts","lib/actions/journey.ts"],"purpose":"Server-side Supabase client (cookies). Used by pages, actions, API routes."},{"id":"lib/utils.ts","label":"utils.ts","type":"util","path":"lib/utils.ts","imports":[],"exports":["cn"],"keyFunctions":["cn()"],"connected":15,"dependents":["components/brand/logo.tsx","components/journey/choice-panel.tsx","components/journey/journey-map.tsx","components/journey/journey-node-card.tsx","components/layout/sticky-progress-bar.tsx","components/layout/top-nav.tsx","components/onboarding/onboarding-wizard.tsx","components/ui/badge.tsx"],"purpose":"Shared utilities/schemas: utils.ts"},{"id":"middleware.ts","label":"middleware.ts","type":"config","path":"middleware.ts","imports":["lib/supabase/middleware.ts"],"exports":["middleware","config"],"keyFunctions":["middleware()"],"connected":1,"dependents":[],"purpose":"Auth gate: refreshes Supabase session, redirects unauthenticated users from private routes."},{"id":"next.config.ts","label":"next.config.ts","type":"config","path":"next.config.ts","imports":[],"exports":["default"],"keyFunctions":[],"connected":0,"dependents":[],"purpose":"Configuration: next.config.ts"},{"id":"types/database.ts","label":"database.ts","type":"util","path":"types/database.ts","imports":[],"exports":["Json","Database"],"keyFunctions":[],"connected":0,"dependents":[],"purpose":"Shared utilities/schemas: database.ts"},{"id":"supabase/migrations/001_initial.sql#profiles","label":"001_initial.sql","type":"db","path":"supabase/migrations/001_initial.sql#profiles","imports":[],"exports":["profiles"],"keyFunctions":[],"connected":0,"dependents":[],"purpose":"PostgreSQL table: profiles"},{"id":"supabase/migrations/001_initial.sql#journeys","label":"001_initial.sql","type":"db","path":"supabase/migrations/001_initial.sql#journeys","imports":[],"exports":["journeys"],"keyFunctions":[],"connected":0,"dependents":[],"purpose":"PostgreSQL table: journeys"},{"id":"supabase/migrations/001_initial.sql#journey_nodes","label":"001_initial.sql","type":"db","path":"supabase/migrations/001_initial.sql#journey_nodes","imports":[],"exports":["journey_nodes"],"keyFunctions":[],"connected":0,"dependents":[],"purpose":"PostgreSQL table: journey_nodes"},{"id":"supabase/migrations/001_initial.sql#decisions","label":"001_initial.sql","type":"db","path":"supabase/migrations/001_initial.sql#decisions","imports":[],"exports":["decisions"],"keyFunctions":[],"connected":0,"dependents":[],"purpose":"PostgreSQL table: decisions"},{"id":"supabase/migrations/001_initial.sql#journey_choices","label":"001_initial.sql","type":"db","path":"supabase/migrations/001_initial.sql#journey_choices","imports":[],"exports":["journey_choices"],"keyFunctions":[],"connected":0,"dependents":[],"purpose":"PostgreSQL table: journey_choices"}],"edges":[{"source":"app/api/ai/next-node/route.ts","target":"lib/ai/fallback.ts","type":"import"},{"source":"app/api/ai/next-node/route.ts","target":"lib/schemas/ai.ts","type":"import"},{"source":"app/api/ai/next-node/route.ts","target":"lib/supabase/server.ts","type":"import"},{"source":"app/auth/callback/route.ts","target":"lib/constants/routes.ts","type":"import"},{"source":"app/auth/callback/route.ts","target":"lib/supabase/server.ts","type":"import"},{"source":"app/journey/[id]/map/page.tsx","target":"components/layout/app-shell.tsx","type":"import"},{"source":"app/journey/[id]/map/page.tsx","target":"components/journey/journey-map.tsx","type":"import"},{"source":"app/journey/[id]/map/page.tsx","target":"lib/constants/routes.ts","type":"import"},{"source":"app/journey/[id]/map/page.tsx","target":"lib/supabase/server.ts","type":"import"},{"source":"app/journey/[id]/map/page.tsx","target":"components/ui/button.tsx","type":"import"},{"source":"app/journey/[id]/not-found.tsx","target":"components/journey/journey-node-card.tsx","type":"import"},{"source":"app/journey/[id]/page.tsx","target":"components/layout/app-shell.tsx","type":"import"},{"source":"app/journey/[id]/page.tsx","target":"components/journey/choice-panel.tsx","type":"import"},{"source":"app/journey/[id]/page.tsx","target":"components/journey/journey-node-card.tsx","type":"import"},{"source":"app/journey/[id]/page.tsx","target":"lib/constants/routes.ts","type":"import"},{"source":"app/journey/[id]/page.tsx","target":"lib/supabase/server.ts","type":"import"},{"source":"app/journey/[id]/page.tsx","target":"components/ui/button.tsx","type":"import"},{"source":"app/journey/page.tsx","target":"components/layout/app-shell.tsx","type":"import"},{"source":"app/journey/page.tsx","target":"components/journey/journey-node-card.tsx","type":"import"},{"source":"app/journey/page.tsx","target":"components/ui/button.tsx","type":"import"},{"source":"app/journey/page.tsx","target":"lib/constants/routes.ts","type":"import"},{"source":"app/journey/page.tsx","target":"lib/supabase/server.ts","type":"import"},{"source":"app/login/page.tsx","target":"components/auth/login-form.tsx","type":"import"},{"source":"app/login/page.tsx","target":"components/layout/top-nav.tsx","type":"import"},{"source":"app/onboarding/page.tsx","target":"components/layout/app-shell.tsx","type":"import"},{"source":"app/onboarding/page.tsx","target":"components/onboarding/onboarding-wizard.tsx","type":"import"},{"source":"app/onboarding/page.tsx","target":"lib/constants/routes.ts","type":"import"},{"source":"app/onboarding/page.tsx","target":"lib/supabase/server.ts","type":"import"},{"source":"app/page.tsx","target":"components/brand/logo.tsx","type":"import"},{"source":"app/page.tsx","target":"components/layout/top-nav.tsx","type":"import"},{"source":"app/page.tsx","target":"components/ui/button.tsx","type":"import"},{"source":"app/page.tsx","target":"lib/constants/routes.ts","type":"import"},{"source":"components/auth/login-form.tsx","target":"components/ui/button.tsx","type":"import"},{"source":"components/auth/login-form.tsx","target":"components/ui/card.tsx","type":"import"},{"source":"components/auth/login-form.tsx","target":"components/ui/input.tsx","type":"import"},{"source":"components/auth/login-form.tsx","target":"components/ui/label.tsx","type":"import"},{"source":"components/auth/login-form.tsx","target":"lib/actions/auth.ts","type":"import"},{"source":"components/brand/logo.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/journey/choice-panel.tsx","target":"lib/actions/journey.ts","type":"import"},{"source":"components/journey/choice-panel.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/journey/journey-map.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/journey/journey-node-card.tsx","target":"components/brand/logo.tsx","type":"import"},{"source":"components/journey/journey-node-card.tsx","target":"components/ui/badge.tsx","type":"import"},{"source":"components/journey/journey-node-card.tsx","target":"components/ui/button.tsx","type":"import"},{"source":"components/journey/journey-node-card.tsx","target":"components/ui/card.tsx","type":"import"},{"source":"components/journey/journey-node-card.tsx","target":"lib/constants/routes.ts","type":"import"},{"source":"components/journey/journey-node-card.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/layout/app-shell.tsx","target":"components/layout/sticky-progress-bar.tsx","type":"import"},{"source":"components/layout/app-shell.tsx","target":"components/layout/top-nav.tsx","type":"import"},{"source":"components/layout/sticky-progress-bar.tsx","target":"components/ui/badge.tsx","type":"import"},{"source":"components/layout/sticky-progress-bar.tsx","target":"components/ui/progress.tsx","type":"import"},{"source":"components/layout/sticky-progress-bar.tsx","target":"lib/gamification/xp.ts","type":"import"},{"source":"components/layout/sticky-progress-bar.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/layout/theme-toggle.tsx","target":"components/ui/button.tsx","type":"import"},{"source":"components/layout/top-nav.tsx","target":"components/brand/logo.tsx","type":"import"},{"source":"components/layout/top-nav.tsx","target":"components/layout/theme-toggle.tsx","type":"import"},{"source":"components/layout/top-nav.tsx","target":"components/ui/button.tsx","type":"import"},{"source":"components/layout/top-nav.tsx","target":"lib/constants/routes.ts","type":"import"},{"source":"components/layout/top-nav.tsx","target":"lib/actions/auth.ts","type":"import"},{"source":"components/layout/top-nav.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/onboarding/onboarding-wizard.tsx","target":"components/ui/button.tsx","type":"import"},{"source":"components/onboarding/onboarding-wizard.tsx","target":"components/ui/card.tsx","type":"import"},{"source":"components/onboarding/onboarding-wizard.tsx","target":"components/ui/input.tsx","type":"import"},{"source":"components/onboarding/onboarding-wizard.tsx","target":"components/ui/label.tsx","type":"import"},{"source":"components/onboarding/onboarding-wizard.tsx","target":"lib/actions/onboarding.ts","type":"import"},{"source":"components/onboarding/onboarding-wizard.tsx","target":"lib/schemas/onboarding.ts","type":"import"},{"source":"components/onboarding/onboarding-wizard.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/ui/badge.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/ui/button.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/ui/card.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/ui/dialog.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/ui/dialog.tsx","target":"components/ui/button.tsx","type":"import"},{"source":"components/ui/input.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/ui/label.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/ui/progress.tsx","target":"lib/utils.ts","type":"import"},{"source":"components/ui/skeleton.tsx","target":"lib/utils.ts","type":"import"},{"source":"lib/actions/auth.ts","target":"lib/constants/routes.ts","type":"import"},{"source":"lib/actions/auth.ts","target":"lib/supabase/server.ts","type":"import"},{"source":"lib/actions/journey.ts","target":"lib/constants/routes.ts","type":"import"},{"source":"lib/actions/journey.ts","target":"lib/gamification/streak.ts","type":"import"},{"source":"lib/actions/journey.ts","target":"lib/gamification/xp.ts","type":"import"},{"source":"lib/actions/journey.ts","target":"lib/supabase/server.ts","type":"import"},{"source":"lib/actions/onboarding.ts","target":"lib/constants/routes.ts","type":"import"},{"source":"lib/actions/onboarding.ts","target":"lib/schemas/onboarding.ts","type":"import"},{"source":"lib/actions/onboarding.ts","target":"lib/supabase/server.ts","type":"import"},{"source":"lib/ai/fallback.ts","target":"lib/schemas/ai.ts","type":"import"},{"source":"lib/ai/generate-node.ts","target":"lib/schemas/ai.ts","type":"import"},{"source":"lib/supabase/middleware.ts","target":"lib/constants/routes.ts","type":"import"},{"source":"middleware.ts","target":"lib/supabase/middleware.ts","type":"import"},{"source":"app/page.tsx","target":"middleware.ts","type":"middleware"},{"source":"app/login/page.tsx","target":"components/auth/login-form.tsx","type":"renders"},{"source":"app/onboarding/page.tsx","target":"lib/actions/onboarding.ts","type":"uses"},{"source":"app/journey/[id]/page.tsx","target":"lib/actions/journey.ts","type":"uses"},{"source":"app/api/ai/next-node/route.ts","target":"lib/ai/fallback.ts","type":"uses"},{"source":"middleware.ts","target":"lib/supabase/middleware.ts","type":"delegates"},{"source":"lib/actions/journey.ts","target":"supabase/migrations/001_initial.sql#profiles","type":"db"},{"source":"lib/actions/journey.ts","target":"supabase/migrations/001_initial.sql#journeys","type":"db"},{"source":"lib/actions/journey.ts","target":"supabase/migrations/001_initial.sql#journey_nodes","type":"db"},{"source":"lib/actions/journey.ts","target":"supabase/migrations/001_initial.sql#decisions","type":"db"},{"source":"lib/actions/onboarding.ts","target":"supabase/migrations/001_initial.sql#profiles","type":"db"},{"source":"lib/actions/onboarding.ts","target":"supabase/migrations/001_initial.sql#journeys","type":"db"},{"source":"app/api/ai/next-node/route.ts","target":"supabase/migrations/001_initial.sql#journeys","type":"db"},{"source":"app/journey/page.tsx","target":"supabase/migrations/001_initial.sql#journeys","type":"db"},{"source":"app/journey/[id]/page.tsx","target":"supabase/migrations/001_initial.sql#journeys","type":"db"},{"source":"app/journey/[id]/page.tsx","target":"supabase/migrations/001_initial.sql#journey_nodes","type":"db"},{"source":"app/journey/[id]/page.tsx","target":"supabase/migrations/001_initial.sql#journey_choices","type":"db"}],"hotspots":[{"file":"lib/utils.ts","inbound":15,"outbound":0,"total":15},{"file":"lib/constants/routes.ts","inbound":12,"outbound":0,"total":12},{"file":"components/ui/button.tsx","inbound":10,"outbound":1,"total":11},{"file":"components/journey/journey-node-card.tsx","inbound":3,"outbound":6,"total":9},{"file":"components/layout/top-nav.tsx","inbound":3,"outbound":6,"total":9},{"file":"lib/supabase/server.ts","inbound":9,"outbound":0,"total":9},{"file":"components/onboarding/onboarding-wizard.tsx","inbound":1,"outbound":7,"total":8},{"file":"app/journey/[id]/page.tsx","inbound":0,"outbound":6,"total":6},{"file":"components/auth/login-form.tsx","inbound":1,"outbound":5,"total":6},{"file":"components/layout/app-shell.tsx","inbound":4,"outbound":2,"total":6},{"file":"app/journey/[id]/map/page.tsx","inbound":0,"outbound":5,"total":5},{"file":"app/journey/page.tsx","inbound":0,"outbound":5,"total":5},{"file":"components/layout/sticky-progress-bar.tsx","inbound":1,"outbound":4,"total":5},{"file":"lib/actions/journey.ts","inbound":1,"outbound":4,"total":5},{"file":"app/onboarding/page.tsx","inbound":0,"outbound":4,"total":4}],"criticalPaths":[{"name":"Auth Flow","path":["app/login/page.tsx","components/auth/login-form.tsx","lib/actions/auth.ts","app/auth/callback/route.ts","lib/supabase/server.ts","middleware.ts","lib/supabase/middleware.ts"]},{"name":"Onboarding → First Journey","path":["app/onboarding/page.tsx","components/onboarding/onboarding-wizard.tsx","lib/actions/onboarding.ts","lib/schemas/onboarding.ts","lib/supabase/server.ts","supabase/migrations/001_initial.sql#profiles","supabase/migrations/001_initial.sql#journeys"]},{"name":"Journey Choice + XP","path":["app/journey/[id]/page.tsx","components/journey/choice-panel.tsx","lib/actions/journey.ts","lib/gamification/xp.ts","lib/gamification/streak.ts","supabase/migrations/001_initial.sql#decisions"]},{"name":"AI Next Node (MVP fallback)","path":["app/api/ai/next-node/route.ts","lib/schemas/ai.ts","lib/ai/fallback.ts","lib/supabase/server.ts"]}],"onboardingPaths":{"New Engineer":["docs/handoff-roadrunner-hackathon.md","app/layout.tsx","middleware.ts","lib/constants/routes.ts","lib/supabase/server.ts","app/onboarding/page.tsx","lib/actions/journey.ts","supabase/migrations/001_initial.sql"],"Frontend":["app/layout.tsx","components/layout/app-shell.tsx","components/journey/journey-node-card.tsx","components/onboarding/onboarding-wizard.tsx","docs/design/DESIGN.md"],"Backend":["lib/actions/journey.ts","lib/actions/onboarding.ts","lib/actions/auth.ts","app/api/ai/next-node/route.ts","lib/supabase/server.ts"],"Database":["supabase/migrations/001_initial.sql","supabase/seed.sql","types/database.ts","lib/schemas/journey.ts"],"Authentication":["middleware.ts","lib/supabase/middleware.ts","lib/actions/auth.ts","app/auth/callback/route.ts","components/auth/login-form.tsx"],"Design":["docs/design/DESIGN.md","docs/design/preview.html","app/globals.css","components/brand/logo.tsx"]},"deadAreas":["components/ui/dialog.tsx","components/ui/skeleton.tsx","lib/ai/generate-node.ts","lib/schemas/index.ts","lib/schemas/journey.ts","lib/schemas/profile.ts","lib/schemas/skill.ts","lib/supabase/client.ts","next.config.ts","types/database.ts"],"circularDeps":[],"categories":{"component":{"color":"#3b82f6","shape":"round-rectangle"},"service":{"color":"#8b5cf6","shape":"hexagon"},"route":{"color":"#10b981","shape":"rectangle"},"context":{"color":"#f59e0b","shape":"round-rectangle"},"util":{"color":"#6b7280","shape":"ellipse"},"config":{"color":"#ef4444","shape":"diamond"},"db":{"color":"#06b6d4","shape":"cylinder"},"hook":{"color":"#ec4899","shape":"round-rectangle"}}};
+
+cytoscape.use(require('cytoscape-cose-bilkent'));
+cytoscape.use(require('cytoscape-dagre'));
+
+const DEFAULT_CATEGORIES = {
+  component: { color: '#3b82f6', shape: 'round-rectangle' },
+  service:   { color: '#8b5cf6', shape: 'hexagon' },
+  route:     { color: '#10b981', shape: 'rectangle' },
+  context:   { color: '#f59e0b', shape: 'round-rectangle' },
+  util:      { color: '#6b7280', shape: 'ellipse' },
+  config:    { color: '#ef4444', shape: 'diamond' },
+  db:        { color: '#06b6d4', shape: 'cylinder' },
+  hook:      { color: '#ec4899', shape: 'round-rectangle' },
+};
+
+const cats = DATA.categories || DEFAULT_CATEGORIES;
+let showLabels = true;
+let nodeCount = 0, edgeCount = 0;
+let toastTimeout = null;
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimeout); toastTimeout = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+function getStyle() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const nodeColor = isDark ? '#1e293b' : '#ffffff';
+  const borderColor = isDark ? '#475569' : '#d1d5db';
+  const labelColor = isDark ? '#f1f5f9' : '#111827';
+  const edgeColor = isDark ? '#475569' : '#9ca3af';
+  const edgeActive = isDark ? '#60a5fa' : '#3b82f6';
+
+  const styles = [
+    { selector: 'node', style: {
+      'background-color': nodeColor,
+      'border-width': 2,
+      'border-color': borderColor,
+      'label': showLabels ? 'data(label)' : '',
+      'font-size': '11px',
+      'font-family': '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+      'color': labelColor,
+      'text-valign': 'bottom',
+      'text-halign': 'center',
+      'text-margin-y': 4,
+      'width': 'mapData(connected, 0, 50, 30, 80)',
+      'height': 'mapData(connected, 0, 50, 30, 80)',
+      'min-zoomed-font-size': 8,
+      'transition-property': 'border-color, background-color',
+      'transition-duration': 150,
+    }},
+    { selector: 'edge', style: {
+      'width': 'mapData(weight, 0, 20, 1, 4)',
+      'line-color': edgeColor,
+      'target-arrow-color': edgeColor,
+      'target-arrow-shape': 'triangle',
+      'arrow-scale': 0.8,
+      'curve-style': 'bezier',
+      'opacity': 0.6,
+    }},
+    { selector: 'node:selected', style: {
+      'border-width': 3,
+    }},
+    { selector: 'node.highlighted', style: {
+      'border-color': edgeActive,
+      'border-width': 3,
+    }},
+    { selector: 'edge.highlighted', style: {
+      'line-color': edgeActive,
+      'target-arrow-color': edgeActive,
+      'width': 3,
+      'opacity': 1,
+    }},
+    { selector: 'node.faded', style: { 'opacity': 0.2 }},
+    { selector: 'edge.faded', style: { 'opacity': 0.05 }},
+    { selector: 'node.path-highlight', style: {
+      'border-color': '#10b981',
+      'border-width': 4,
+      'background-color': isDark ? '#064e3b' : '#d1fae5',
+    }},
+  ];
+
+  Object.entries(cats).forEach(([type, cfg]) => {
+    styles.push({ selector: `node[type="${type}"]`, style: {
+      'border-color': cfg.color,
+      'border-width': 3,
+    }});
+  });
+
+  return styles;
+}
+
+function initCy() {
+  if (!DATA.nodes || DATA.nodes.length === 0) {
+    document.getElementById('empty-state').style.display = 'block';
+    return;
+  }
+  document.getElementById('empty-state').style.display = 'none';
+
+  const cy = cytoscape({
+    container: document.getElementById('cy'),
+    elements: {
+      nodes: DATA.nodes.map(n => ({
+        data: {
+          id: n.id, label: n.label || n.id, type: n.type || 'util',
+          path: n.path || '', connected: n.connected || 0,
+          imports: n.imports || [], exports: n.exports || [],
+          keyFunctions: n.keyFunctions || [], dependents: n.dependents || [],
+        }
+      })),
+      edges: DATA.edges.map(e => ({
+        data: { id: `${e.source}-${e.target}`, source: e.source, target: e.target, type: e.type || 'dep', weight: e.weight || 1 }
+      })),
+    },
+    style: getStyle(),
+    layout: { name: 'cose-bilkent', idealEdgeLength: 120, nodeRepulsion: 8000, gravity: 0.25, numIter: 1000 },
+    minZoom: 0.1, maxZoom: 8,
+    wheelSensitivity: 0.3,
+  });
+
+  nodeCount = DATA.nodes.length;
+  edgeCount = DATA.edges.length;
+  document.getElementById('stats').textContent = `${nodeCount} nodes · ${edgeCount} edges`;
+
+  // Hover: highlight connected
+  cy.on('mouseover', 'node', function(evt) {
+    const n = evt.target;
+    n.addClass('highlighted');
+    n.neighborhood().addClass('highlighted');
+    n.connectedEdges().addClass('highlighted');
+    cy.elements().not(n).not(n.neighborhood()).addClass('faded');
+  });
+  cy.on('mouseout', 'node', function() {
+    cy.elements().removeClass('highlighted faded');
+  });
+
+  // Click: show detail panel
+  cy.on('tap', 'node', function(evt) {
+    const n = evt.target;
+    showDetail(n);
+    updateBreadcrumb(n.id());
+  });
+  cy.on('tap', function(evt) {
+    if (evt.target === cy) closeDetail();
+  });
+
+  // Search
+  document.getElementById('search').addEventListener('input', function() {
+    const q = this.value.toLowerCase().trim();
+    cy.nodes().forEach(n => {
+      if (!q) { n.style('opacity', 1); return; }
+      const match = n.id().toLowerCase().includes(q) || (n.data('label') || '').toLowerCase().includes(q);
+      n.style('opacity', match ? 1 : 0.15);
+    });
+  });
+
+  // Controls
+  document.getElementById('btn-zoom-in').onclick = () => cy.zoom(cy.zoom() * 1.3);
+  document.getElementById('btn-zoom-out').onclick = () => cy.zoom(cy.zoom() / 1.3);
+  document.getElementById('btn-fit').onclick = () => cy.fit(undefined, 50);
+  document.getElementById('btn-layout').onclick = () => cy.layout({ name: 'cose-bilkent', idealEdgeLength: 120, nodeRepulsion: 8000, gravity: 0.25, numIter: 500 }).run();
+  document.getElementById('btn-labels').onclick = function() {
+    showLabels = !showLabels; this.classList.toggle('active');
+    cy.nodes().forEach(n => n.style('label', showLabels ? n.data('label') : ''));
+  };
+  document.getElementById('btn-dark').onclick = () => toggleDark();
+
+  function toggleDark() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
+    cy.style(getStyle());
+  }
+
+  // Populate sidebar
+  populateSidebar(cy);
+  // Trace onboarding path on load
+  if (DATA.onboardingPaths && Object.keys(DATA.onboardingPaths).length > 0) {
+    const firstPath = Object.entries(DATA.onboardingPaths)[0];
+    setTimeout(() => traceOnboardingPath(firstPath[1], cy), 500);
+  }
+
+  return cy;
+}
+
+function showDetail(node) {
+  const d = node.data();
+  const panel = document.getElementById('detail-panel');
+  const content = document.getElementById('panel-content');
+  const cat = cats[d.type] || { color: '#6b7280' };
+
+  let html = `<h2>${d.label}</h2>
+    <div class="path">${d.path || d.id}</div>
+    <span class="tag" style="background:${cat.color}">${d.type}</span>
+    <div style="margin-bottom:8px;font-size:13px;color:var(--text-muted)">Connected: ${d.connected} files</div>`;
+
+  if (d.keyFunctions && d.keyFunctions.length) {
+    html += `<div class="section-title">Key Functions</div><ul class="item-list">`;
+    d.keyFunctions.forEach(f => { html += `<li>${f}</li>`; });
+    html += `</ul>`;
+  }
+
+  if (d.imports && d.imports.length) {
+    html += `<div class="section-title">Imports (${d.imports.length})</div><ul class="item-list">`;
+    d.imports.forEach(f => { html += `<li data-node="${f}">${f}</li>`; });
+    html += `</ul>`;
+  }
+  if (d.exports && d.exports.length) {
+    html += `<div class="section-title">Exports (${d.exports.length})</div><ul class="item-list">`;
+    d.exports.forEach(f => { html += `<li>${f}</li>`; });
+    html += `</ul>`;
+  }
+  if (d.dependents && d.dependents.length) {
+    html += `<div class="section-title">Dependents (${d.dependents.length})</div><ul class="item-list">`;
+    d.dependents.forEach(f => { html += `<li data-node="${f}">${f}</li>`; });
+    html += `</ul>`;
+  }
+
+  content.innerHTML = html;
+  panel.classList.add('open');
+
+  // Click dependent/import nodes in panel
+  panel.querySelectorAll('[data-node]').forEach(el => {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function() {
+      const id = this.getAttribute('data-node');
+      const target = cy.getElementById(id);
+      if (target.length) {
+        cy.zoom(cy.zoom() * 1.5);
+        cy.center(target);
+        showDetail(target);
+        updateBreadcrumb(id);
+      } else {
+        toast(`"${id}" not in graph (may be external dep)`);
+      }
+    });
+  });
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+}
+
+function updateBreadcrumb(id) {
+  const bc = document.getElementById('breadcrumb');
+  bc.innerHTML = `<span onclick="resetBreadcrumb()">Graph View</span><span class="sep">›</span><span>${id}</span>`;
+}
+function resetBreadcrumb() {
+  document.getElementById('breadcrumb').innerHTML = '<span>Graph View</span>';
+  closeDetail();
+  cy.fit(undefined, 50);
+}
+
+function populateSidebar(cy) {
+  // Onboarding paths
+  const ol = document.getElementById('onboarding-list');
+  if (DATA.onboardingPaths) {
+    Object.entries(DATA.onboardingPaths).forEach(([name, files]) => {
+      const div = document.createElement('div');
+      div.className = 'sidebar-item path';
+      div.innerHTML = `<span class="dot" style="background:#10b981"></span>${name}`;
+      div.title = files.join(' → ');
+      div.addEventListener('click', () => {
+        traceOnboardingPath(files, cy);
+        toast(`Tracing "${name}" path`);
+      });
+      ol.appendChild(div);
+    });
+  }
+
+  // Hotspots
+  const hl = document.getElementById('hotspots-list');
+  if (DATA.hotspots) {
+    DATA.hotspots.slice(0, 15).forEach(h => {
+      const div = document.createElement('div');
+      div.className = 'sidebar-item hotspot';
+      div.innerHTML = `${h.file} <span class="badge">${h.inbound}→${h.outbound}</span>`;
+      div.addEventListener('click', () => focusNode(h.file, cy));
+      hl.appendChild(div);
+    });
+  }
+
+  // Critical paths
+  const cl = document.getElementById('critical-list');
+  if (DATA.criticalPaths) {
+    DATA.criticalPaths.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'sidebar-item path';
+      div.innerHTML = `<span class="dot" style="background:#f59e0b"></span>${p.name}`;
+      div.title = p.path.join(' → ');
+      div.addEventListener('click', () => {
+        traceOnboardingPath(p.path, cy);
+        toast(`Tracing "${p.name}"`);
+      });
+      cl.appendChild(div);
+    });
+  }
+
+  // Dead areas
+  const dl = document.getElementById('dead-list');
+  if (DATA.deadAreas) {
+    DATA.deadAreas.forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'sidebar-item dead';
+      div.innerHTML = `<span class="dot" style="background:var(--text-dim)"></span>${f}`;
+      div.addEventListener('click', () => focusNode(f, cy));
+      dl.appendChild(div);
+    });
+  }
+
+  // Circular deps
+  const cir = document.getElementById('circular-list');
+  if (DATA.circularDeps) {
+    DATA.circularDeps.forEach(d => {
+      const div = document.createElement('div');
+      div.className = 'sidebar-item';
+      div.innerHTML = `<span class="dot" style="background:#ef4444"></span>${d.cycle ? d.cycle.join(' → ') : d}`;
+      div.addEventListener('click', () => {
+        if (d.cycle) traceOnboardingPath(d.cycle, cy);
+      });
+      cir.appendChild(div);
+    });
+  }
+}
+
+function traceOnboardingPath(files, cy) {
+  cy.elements().removeClass('path-highlight');
+  cy.nodes().forEach(n => n.style('opacity', 0.15));
+  cy.edges().style('opacity', 0.05);
+
+  files.forEach((f, i) => {
+    const n = cy.getElementById(f);
+    if (n.length) {
+      n.style('opacity', 1);
+      n.addClass('path-highlight');
+      if (i < files.length - 1) {
+        const next = cy.getElementById(files[i+1]);
+        if (next.length) {
+          const edge = cy.getElementById(`${f}-${files[i+1]}`) || cy.getElementById(`${files[i+1]}-${f}`);
+          if (edge.length) { edge.style('opacity', 1); edge.addClass('path-highlight'); }
+          next.style('opacity', 1);
+        }
+      }
+    }
+  });
+
+  const first = cy.getElementById(files[0]);
+  if (first.length) { cy.fit(cy.elements('.path-highlight'), 80); }
+}
+
+function focusNode(id, cy) {
+  const n = cy.getElementById(id);
+  if (n.length) {
+    cy.zoom(cy.zoom() * 1.5);
+    cy.center(n);
+    showDetail(n);
+  }
+}
+
+document.getElementById('panel-close').onclick = closeDetail;
+
+let cy;
+document.addEventListener('DOMContentLoaded', () => { cy = initCy(); });
+</script>
+</body>
+</html>

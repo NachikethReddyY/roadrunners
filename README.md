@@ -2,6 +2,8 @@
 
 AI-guided, gamified learning journeys — hackathon MVP for B1 (learning → earning).
 
+**Agents:** read [`AGENTS.md`](./AGENTS.md) first. Interactive architecture map: [`docs/exploration/exploration-report.html`](./docs/exploration/exploration-report.html) (open in browser).
+
 ## Stack
 
 - **Next.js 16** App Router
@@ -42,7 +44,8 @@ lib/
 supabase/
   migrations/001_initial.sql
   seed.sql
-design-inspirations/       # DESIGN.md + preview.html
+docs/design/               # DESIGN.md + preview.html
+docs/exploration/          # Graph explorer + agent onboarding docs
 types/database.ts
 middleware.ts
 ```
@@ -67,4 +70,4 @@ middleware.ts
 | `/api/health` | public |
 | `/api/ai/next-node` | private |
 
-Design system: `design-inspirations/DESIGN.md` · Preview: `design-inspirations/preview.html`
+Design system: `docs/design/DESIGN.md` · Preview: `docs/design/preview.html`
