@@ -6,7 +6,7 @@ import { retryFirstNodeFormAction } from "@/lib/actions/roadmap";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type RetryNodeButtonProps = {
+type DashboardRetryFormProps = {
   journeyId: string;
 };
 
@@ -16,20 +16,25 @@ function RetryButton() {
     <button
       type="submit"
       disabled={pending}
-      className={cn(buttonVariants({ className: "h-11 rounded-full px-6" }), pending && "opacity-60")}
+      onClick={(e) => e.stopPropagation()}
+      className={cn(
+        buttonVariants({ variant: "outline", size: "sm", className: "rounded-full" }),
+        pending && "opacity-60"
+      )}
     >
       {pending ? "Generating…" : "Generate first step"}
     </button>
   );
 }
 
-export function RetryNodeForm({ journeyId }: RetryNodeButtonProps) {
+export function DashboardRetryForm({ journeyId }: DashboardRetryFormProps) {
   const [state, formAction] = useActionState(retryFirstNodeFormAction, null);
 
   return (
-    <div className="space-y-3">
+    <div className="mt-3 space-y-2">
+      <p className="text-xs text-[var(--semantic-warning)]">First step not generated yet</p>
       {state && "error" in state && (
-        <p className="text-sm text-destructive" role="alert">
+        <p className="text-xs text-destructive" role="alert">
           {state.error}
         </p>
       )}

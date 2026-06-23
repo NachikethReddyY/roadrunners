@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
-  pivotTrackAction,
-  submitChoiceAction,
+  pivotTrackFormAction,
+  submitChoiceFormAction,
+  type JourneyActionState,
 } from "@/lib/actions/journey";
+import { RetryNextNodeForm } from "@/components/journey/retry-next-node-form";
+import { XpToast } from "@/components/journey/xp-toast";
 import { cn } from "@/lib/utils";
 
 export type Choice = {
@@ -25,6 +28,7 @@ type ChoicePanelProps = {
   choices: Choice[];
   skills: SkillOption[];
   decided?: boolean;
+  generationFailed?: boolean;
 };
 
 function ChoiceSubmitButton({ label }: { label: string }) {
@@ -50,21 +54,42 @@ export function ChoicePanel({
   choices,
   skills,
   decided = false,
+  generationFailed = false,
 }: ChoicePanelProps) {
   const [showPivot, setShowPivot] = useState(false);
+  const [choiceState, choiceAction] = useActionState<JourneyActionState, FormData>(
+    submitChoiceFormAction,
+    null
+  );
+  const [pivotState, pivotAction] = useActionState<JourneyActionState, FormData>(
+    pivotTrackFormAction,
+    null
+  );
+
+  if (decided && generationFailed) {
+    return <RetryNextNodeForm journeyId={journeyId} nodeId={nodeId} />;
+  }
 
   if (decided) {
     return (
       <p className="text-sm text-muted-foreground">
-        Choice recorded — refresh if the next step hasn&apos;t appeared yet.
+        Choice recorded — loading your next step…
       </p>
     );
   }
 
   return (
     <div className="space-y-3">
+      <XpToast xpGain={choiceState?.xpGain ?? pivotState?.xpGain} />
+
+      {choiceState?.error && (
+        <p className="text-sm text-destructive" role="alert">
+          {choiceState.error}
+        </p>
+      )}
+
       {choices.map((choice) => (
-        <form key={choice.id} action={submitChoiceAction}>
+        <form key={choice.id} action={choiceAction}>
           <input type="hidden" name="journeyId" value={journeyId} />
           <input type="hidden" name="nodeId" value={nodeId} />
           <input type="hidden" name="choiceId" value={choice.id} />
@@ -86,9 +111,14 @@ export function ChoicePanel({
       ) : (
         <div className="rounded-xl border border-border p-4">
           <p className="mb-3 text-sm font-medium">Pick a new skill track</p>
+          {pivotState?.error && (
+            <p className="mb-3 text-sm text-destructive" role="alert">
+              {pivotState.error}
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             {skills.map((skill) => (
-              <form key={skill.slug} action={pivotTrackAction}>
+              <form key={skill.slug} action={pivotAction}>
                 <input type="hidden" name="journeyId" value={journeyId} />
                 <input type="hidden" name="pivotSkill" value={skill.slug} />
                 <PivotButton name={skill.name} />

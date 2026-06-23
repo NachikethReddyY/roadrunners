@@ -1,0 +1,65 @@
+{
+  "slug": "hello-python",
+  "title": "Hello Python",
+  "skill_tag": "python-data",
+  "template": "python",
+  "initial_files": {
+    "main.py": "print('Welcome to Python on RoadRunners')"
+  },
+  "duration_ms": 8000,
+  "slides": [
+    {
+      "id": "intro",
+      "title": "Python basics",
+      "markdown": "Use `print()` to send output to the console."
+    }
+  ],
+  "timeline": {
+    "durationMs": 8000,
+    "events": [
+      {
+        "t": 0,
+        "type": "caption",
+        "text": "Welcome to Python — let's print your first message."
+      },
+      {
+        "t": 0,
+        "type": "slide",
+        "slideId": "intro"
+      },
+      {
+        "t": 0,
+        "type": "files",
+        "files": {
+          "main.py": "print('')"
+        }
+      },
+      {
+        "t": 2500,
+        "type": "caption",
+        "text": "Inside the quotes, type your greeting."
+      },
+      {
+        "t": 2500,
+        "type": "files",
+        "files": {
+          "main.py": "print('Welcome to Python on RoadRunners')"
+        }
+      },
+      {
+        "t": 5000,
+        "type": "focus",
+        "path": "main.py"
+      },
+      {
+        "t": 6500,
+        "type": "caption",
+        "text": "Hit Run to see output in the console below."
+      },
+      {
+        "t": 8000,
+        "type": "run"
+      }
+    ]
+  }
+}

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",
+    "@codesandbox/sandpack-react": "^2.20.0",
     "@google/generative-ai": "^0.24.1",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.97.0",
@@ -20,6 +21,7 @@
     "next": "16.2.9",
     "nodemailer": "^9.0.1",
     "openai": "^6.19.0",
+    "pyodide": "^314.0.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-markdown": "^10.1.0",
