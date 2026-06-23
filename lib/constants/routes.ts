@@ -8,12 +8,18 @@ export const ROUTES = {
   journeyMap: (id: string) => `/journey/${id}/map`,
   journeyScrim: (journeyId: string, scrimId: string) =>
     `/journey/${journeyId}/scrim/${scrimId}`,
+  test: "/test",
   health: "/api/health",
   aiNextNode: "/api/ai/next-node",
   runnerExec: "/api/runner/exec",
 } as const;
 
-export const PUBLIC_ROUTES = [ROUTES.home, ROUTES.login, ROUTES.health] as const;
+export const PUBLIC_ROUTES = [
+  ROUTES.home,
+  ROUTES.login,
+  ROUTES.test,
+  ROUTES.health,
+] as const;
 
 export const AUTH_ROUTES = [
   ROUTES.onboarding,

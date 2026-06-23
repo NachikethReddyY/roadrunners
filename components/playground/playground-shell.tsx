@@ -8,7 +8,7 @@ import type {
   ScrimSlide,
 } from "@/lib/schemas/playground";
 import { ScrimPlayer } from "@/components/playground/scrim-player";
-import { SlidePane } from "@/components/playground/slide-pane";
+import { fileRecordsEqual } from "@/lib/playground/vfs";
 import { cn } from "@/lib/utils";
 
 const SandpackWorkspace = dynamic(
@@ -19,10 +19,10 @@ const SandpackWorkspace = dynamic(
   { ssr: false, loading: () => <WorkspaceSkeleton /> }
 );
 
-const PythonWorkspace = dynamic(
+const CodeWorkspace = dynamic(
   () =>
-    import("@/components/playground/python-workspace").then(
-      (m) => m.PythonWorkspace
+    import("@/components/playground/code-workspace").then(
+      (m) => m.CodeWorkspace
     ),
   { ssr: false, loading: () => <WorkspaceSkeleton /> }
 );
@@ -31,13 +31,14 @@ type PlaygroundShellProps = {
   config: PlaygroundConfig;
   title?: string;
   breadcrumb?: string;
-  /** Scrim mode: timeline drives editor state */
   scrim?: {
     durationMs: number;
     events: ScrimEvent[];
     slides: ScrimSlide[];
     initialFiles: Record<string, string>;
   };
+  /** Full-bleed IDE chrome (no rounded card). */
+  fullscreen?: boolean;
   className?: string;
   onOutput?: (output: string) => void;
   onFilesChange?: (files: Record<string, string>) => void;
@@ -45,17 +46,21 @@ type PlaygroundShellProps = {
 
 function WorkspaceSkeleton() {
   return (
-    <div className="flex h-full min-h-[360px] animate-pulse items-center justify-center bg-[var(--surface-dark)] text-sm text-[var(--on-dark-mute)]">
+    <div className="flex h-full min-h-0 animate-pulse items-center justify-center bg-[var(--canvas-dark)] text-sm text-[var(--on-dark-mute)]">
       Loading workspace…
     </div>
   );
 }
+
+const SCRIM_DOCK_PX = 48;
+export const WORKSPACE_BOTTOM_CHROME_PX = SCRIM_DOCK_PX + 8;
 
 export function PlaygroundShell({
   config,
   title,
   breadcrumb,
   scrim,
+  fullscreen = false,
   className,
   onOutput,
   onFilesChange: onFilesChangeExternal,
@@ -68,6 +73,7 @@ export function PlaygroundShell({
   const [readOnly, setReadOnly] = useState(!!scrim);
   const [activeSlideId, setActiveSlideId] = useState<string | null>(null);
   const [lastOutput, setLastOutput] = useState("");
+  const [runSignal, setRunSignal] = useState(0);
 
   const handleScrimState = useCallback(
     (state: {
@@ -77,7 +83,9 @@ export function PlaygroundShell({
       slideId: string | null;
       readOnly: boolean;
     }) => {
-      setFiles(state.files);
+      setFiles((prev) =>
+        fileRecordsEqual(prev, state.files) ? prev : state.files
+      );
       setActiveFile(state.activeFile);
       setReadOnly(state.readOnly);
       if (state.slideId) setActiveSlideId(state.slideId);
@@ -87,82 +95,68 @@ export function PlaygroundShell({
 
   const handleFilesChange = useCallback(
     (next: Record<string, string>) => {
-      setFiles(next);
+      setFiles((prev) => (fileRecordsEqual(prev, next) ? prev : next));
       onFilesChangeExternal?.(next);
     },
     [onFilesChangeExternal]
   );
 
-  const showPreview = config.preview !== false;
-  const isPython = config.template === "python";
+  const useCodeWorkspace = config.template === "python";
 
   return (
     <div
       className={cn(
-        "flex min-h-[70vh] flex-col overflow-hidden rounded-xl border border-[var(--hairline-warm)] bg-[var(--canvas-dark)]",
+        "flex h-full min-h-0 flex-col overflow-hidden bg-[var(--canvas-dark)]",
+        !fullscreen && [
+          "min-h-[70vh] rounded-xl border border-[var(--hairline-warm)]/80",
+          "shadow-[0_8px_40px_rgba(0,0,0,0.45)]",
+        ],
         className
       )}
     >
-      <header className="flex items-center justify-between border-b border-[var(--hairline-warm)] px-4 py-2">
-        <div className="min-w-0">
-          {breadcrumb && (
-            <p className="truncate text-xs text-[var(--on-dark-mute)]">
-              {breadcrumb}
-            </p>
-          )}
-          {title && (
-            <h2 className="truncate font-heading text-sm font-semibold text-[var(--on-dark)]">
-              {title}
-            </h2>
-          )}
-        </div>
-        <span className="shrink-0 rounded-full bg-[var(--surface-dark-soft)] px-2 py-0.5 font-mono text-xs uppercase text-[var(--on-dark-mute)]">
-          {config.template}
-        </span>
-      </header>
-
-      <div className="flex flex-1 flex-col lg:flex-row lg:overflow-hidden">
-        {scrim && scrim.slides.length > 0 && (
-          <aside className="hidden w-44 shrink-0 border-r border-[var(--hairline-warm)] p-2 lg:block">
-            <SlidePane
-              slides={scrim.slides}
-              activeSlideId={activeSlideId}
-              onSelectSlide={setActiveSlideId}
-            />
-          </aside>
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+        {useCodeWorkspace ? (
+          <CodeWorkspace
+            files={files}
+            activeFile={activeFile}
+            readOnly={readOnly}
+            defaultLanguage="python"
+            title={title}
+            breadcrumb={breadcrumb}
+            template={config.template}
+            slides={scrim?.slides}
+            activeSlideId={activeSlideId}
+            onSelectSlide={setActiveSlideId}
+            onFilesChange={handleFilesChange}
+            onOutput={onOutput ?? setLastOutput}
+            runSignal={runSignal}
+            scrimDockPx={scrim ? WORKSPACE_BOTTOM_CHROME_PX : 0}
+            className="h-full flex-1"
+          />
+        ) : (
+          <SandpackWorkspace
+            template={config.template === "react-ts" ? "react-ts" : "vanilla"}
+            files={files}
+            activeFile={activeFile}
+            readOnly={readOnly}
+            showPreview={config.preview !== false}
+            onFilesChange={readOnly ? undefined : handleFilesChange}
+          />
         )}
-        <div className="flex-1 overflow-hidden">
-          {isPython ? (
-            <PythonWorkspace
-              files={files}
-              activeFile={activeFile}
-              readOnly={readOnly}
-              onFilesChange={handleFilesChange}
-              onOutput={onOutput ?? setLastOutput}
+
+        {scrim && (
+          <div className="absolute inset-x-0 bottom-0 z-40">
+            <ScrimPlayer
+              durationMs={scrim.durationMs}
+              events={scrim.events}
+              initialFiles={scrim.initialFiles}
+              onStateChange={handleScrimState}
+              onRun={() => setRunSignal((n) => n + 1)}
             />
-          ) : (
-            <SandpackWorkspace
-              template={config.template === "react-ts" ? "react-ts" : "vanilla"}
-              files={files}
-              activeFile={activeFile}
-              readOnly={readOnly}
-              showPreview={showPreview}
-              onFilesChange={readOnly ? undefined : handleFilesChange}
-            />
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {scrim && (
-        <ScrimPlayer
-          durationMs={scrim.durationMs}
-          events={scrim.events}
-          initialFiles={scrim.initialFiles}
-          onStateChange={handleScrimState}
-        />
-      )}
-
-      {/* ponytail: completion check is client-only output_contains; upgrade path = server tests */}
       {config.completion === "output_contains" && config.completionTarget && (
         <p className="sr-only" data-output={lastOutput} data-target={config.completionTarget} />
       )}

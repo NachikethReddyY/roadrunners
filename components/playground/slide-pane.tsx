@@ -23,11 +23,8 @@ export function SlidePane({
   if (slides.length === 0) return null;
 
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
-      <p className="px-2 text-xs font-semibold uppercase tracking-widest text-[var(--on-dark-mute)]">
-        Slides
-      </p>
-      <div className="flex flex-col gap-1 overflow-y-auto px-1">
+    <div className={cn("flex flex-col gap-1", className)}>
+      <div className="flex flex-col gap-1 overflow-y-auto px-0.5">
         {slides.map((slide) => (
           <button
             key={slide.id}

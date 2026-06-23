@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { layoutSkillBubbles, type PlacedBubble } from "@/lib/roadmap/bubble-layout";
+import { skillBubbleClasses } from "@/lib/roadmap/skill-bubble-styles";
 import type { SkillBubble } from "@/lib/schemas/roadmap";
 import { cn } from "@/lib/utils";
 
@@ -167,6 +168,7 @@ export function SkillBubbleField({
               className={cn(
                 "glass-bubble pointer-events-auto absolute isolate cursor-pointer overflow-hidden",
                 "animate-[bubble-drift_7s_ease-in-out_infinite]",
+                skillBubbleClasses(bubble.category),
                 bubble.priority === "core" && "glass-bubble-core",
                 isActive && "pointer-events-none opacity-0"
               )}
