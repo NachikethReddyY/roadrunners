@@ -1,10 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { createAndPersistNextNode } from "@/lib/ai/create-next-node";
 import { ROUTES } from "@/lib/constants/routes";
 import { nextStreakDays, shouldIncrementStreak } from "@/lib/gamification/streak";
 import { levelFromXp } from "@/lib/gamification/xp";
 import { createClient } from "@/lib/supabase/server";
+
+export type JourneyActionState = {
+  error?: string;
+  success?: boolean;
+  xpGain?: number;
+} | null;
 
 export async function submitChoice(input: {
   journeyId: string;
@@ -17,6 +25,12 @@ export async function submitChoice(input: {
   } = await supabase.auth.getUser();
 
   if (!user) return { error: "Unauthorized" };
+
+  const { data: choice } = await supabase
+    .from("journey_choices")
+    .select("target_skill_tag")
+    .eq("id", input.choiceId)
+    .single();
 
   const { error: decisionError } = await supabase.from("decisions").insert({
     journey_id: input.journeyId,
@@ -39,8 +53,25 @@ export async function submitChoice(input: {
   const xpGain = node?.xp_value ?? 50;
   await awardXp(user.id, xpGain);
 
+  try {
+    await createAndPersistNextNode(supabase, {
+      journeyId: input.journeyId,
+      userId: user.id,
+      pivotSkill: choice?.target_skill_tag ?? undefined,
+    });
+  } catch (e) {
+    revalidatePath(ROUTES.journeyDetail(input.journeyId));
+    revalidatePath(ROUTES.journeyMap(input.journeyId));
+    revalidatePath(ROUTES.journey);
+    return {
+      error: e instanceof Error ? e.message : "Could not generate next step",
+      xpGain,
+    };
+  }
+
   revalidatePath(ROUTES.journeyDetail(input.journeyId));
   revalidatePath(ROUTES.journeyMap(input.journeyId));
+  revalidatePath(ROUTES.journey);
   return { success: true, xpGain };
 }
 
@@ -62,9 +93,24 @@ export async function acknowledgeNode(input: { journeyId: string; nodeId: string
   if (error?.code === "23505") return { error: "Already completed" };
   if (error) return { error: error.message };
 
-  await awardXp(user.id, 25);
+  const xpGain = 25;
+  await awardXp(user.id, xpGain);
+
+  try {
+    await createAndPersistNextNode(supabase, {
+      journeyId: input.journeyId,
+      userId: user.id,
+    });
+  } catch (e) {
+    revalidatePath(ROUTES.journeyDetail(input.journeyId));
+    revalidatePath(ROUTES.journey);
+    return { error: e instanceof Error ? e.message : "Could not generate next step", xpGain };
+  }
+
   revalidatePath(ROUTES.journeyDetail(input.journeyId));
-  return { success: true };
+  revalidatePath(ROUTES.journeyMap(input.journeyId));
+  revalidatePath(ROUTES.journey);
+  return { success: true, xpGain };
 }
 
 export async function pivotTrack(input: { journeyId: string; pivotSkill: string }) {
@@ -91,16 +137,141 @@ export async function pivotTrack(input: { journeyId: string; pivotSkill: string 
     .is("archived_at", null)
     .neq("id", journey.current_node_id);
 
+  try {
+    await createAndPersistNextNode(supabase, {
+      journeyId: input.journeyId,
+      userId: user.id,
+      pivotSkill: input.pivotSkill,
+    });
+  } catch (e) {
+    revalidatePath(ROUTES.journeyDetail(input.journeyId));
+    return { error: e instanceof Error ? e.message : "Could not pivot track" };
+  }
+
   revalidatePath(ROUTES.journeyDetail(input.journeyId));
+  revalidatePath(ROUTES.journeyMap(input.journeyId));
+  revalidatePath(ROUTES.journey);
   return { success: true, pivotSkill: input.pivotSkill };
 }
 
-export async function submitChoiceAction(formData: FormData): Promise<void> {
-  const journeyId = String(formData.get("journeyId") ?? "");
-  const nodeId = String(formData.get("nodeId") ?? "");
-  const choiceId = String(formData.get("choiceId") ?? "");
+export async function retryNextNode(input: { journeyId: string; nodeId: string }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  await submitChoice({ journeyId, nodeId, choiceId });
+  if (!user) return { error: "Unauthorized" };
+
+  const { data: journey } = await supabase
+    .from("journeys")
+    .select("current_node_id")
+    .eq("id", input.journeyId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!journey) return { error: "Roadmap not found" };
+  if (journey.current_node_id !== input.nodeId) {
+    return { success: true };
+  }
+
+  const { data: decision } = await supabase
+    .from("decisions")
+    .select("choice_id")
+    .eq("journey_id", input.journeyId)
+    .eq("node_id", input.nodeId)
+    .maybeSingle();
+
+  if (!decision) return { error: "Complete this step before generating the next one" };
+
+  let pivotSkill: string | undefined;
+  if (decision.choice_id) {
+    const { data: choice } = await supabase
+      .from("journey_choices")
+      .select("target_skill_tag")
+      .eq("id", decision.choice_id)
+      .maybeSingle();
+    pivotSkill = choice?.target_skill_tag ?? undefined;
+  }
+
+  try {
+    await createAndPersistNextNode(supabase, {
+      journeyId: input.journeyId,
+      userId: user.id,
+      pivotSkill,
+    });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Could not generate next step" };
+  }
+
+  revalidatePath(ROUTES.journeyDetail(input.journeyId));
+  revalidatePath(ROUTES.journeyMap(input.journeyId));
+  revalidatePath(ROUTES.journey);
+  return { success: true };
+}
+
+export async function submitChoiceFormAction(
+  _prev: JourneyActionState,
+  formData: FormData
+): Promise<JourneyActionState> {
+  const result = await submitChoice({
+    journeyId: String(formData.get("journeyId") ?? ""),
+    nodeId: String(formData.get("nodeId") ?? ""),
+    choiceId: String(formData.get("choiceId") ?? ""),
+  });
+
+  if (result.error) return { error: result.error, xpGain: result.xpGain };
+  return { success: true, xpGain: result.xpGain };
+}
+
+export async function acknowledgeNodeFormAction(
+  _prev: JourneyActionState,
+  formData: FormData
+): Promise<JourneyActionState> {
+  const result = await acknowledgeNode({
+    journeyId: String(formData.get("journeyId") ?? ""),
+    nodeId: String(formData.get("nodeId") ?? ""),
+  });
+
+  if (result.error) return { error: result.error, xpGain: result.xpGain };
+  return { success: true, xpGain: result.xpGain };
+}
+
+export async function pivotTrackFormAction(
+  _prev: JourneyActionState,
+  formData: FormData
+): Promise<JourneyActionState> {
+  const result = await pivotTrack({
+    journeyId: String(formData.get("journeyId") ?? ""),
+    pivotSkill: String(formData.get("pivotSkill") ?? ""),
+  });
+
+  if (result.error) return { error: result.error };
+  return { success: true };
+}
+
+export async function retryNextNodeFormAction(
+  _prev: JourneyActionState,
+  formData: FormData
+): Promise<JourneyActionState> {
+  const result = await retryNextNode({
+    journeyId: String(formData.get("journeyId") ?? ""),
+    nodeId: String(formData.get("nodeId") ?? ""),
+  });
+
+  if (result.error) return { error: result.error };
+  return { success: true };
+}
+
+export async function submitChoiceAction(formData: FormData): Promise<void> {
+  await submitChoiceFormAction(null, formData);
+}
+
+export async function acknowledgeNodeAction(formData: FormData): Promise<void> {
+  await acknowledgeNodeFormAction(null, formData);
+}
+
+export async function pivotTrackAction(formData: FormData): Promise<void> {
+  await pivotTrackFormAction(null, formData);
 }
 
 async function awardXp(userId: string, amount: number) {

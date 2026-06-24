@@ -8,6 +8,7 @@ Read this file first when working in this repository. It orients you to product 
 |----------|---------|
 | **`docs/exploration/exploration-report.html`** | Interactive dependency graph — open in a browser. Best 5-minute architecture overview. |
 | **`docs/handoff-roadrunner-hackathon.md`** | MVP spec, security checklist, data model, acceptance criteria |
+| **`docs/product-roadmap.md`** | Product roadmap — bubble creator, dashboard, build phases |
 | **`docs/preflight-plan.md`** | Locked foundation decisions (stack, folders, AI contract) |
 | **`docs/design/DESIGN.md`** | Design system — colors, typography, components |
 | **`README.md`** | Setup, env vars, folder map |
@@ -50,8 +51,9 @@ Request → proxy.ts → lib/supabase/middleware.ts (session + auth redirect)
 |-------|------|---------|
 | `/` | public | `app/page.tsx` |
 | `/login` | public | `app/login/page.tsx` → `LoginForm` |
-| `/onboarding` | private | `app/onboarding/page.tsx` → `completeOnboarding` |
-| `/journey` | private | Journey list |
+| `/onboarding` | private | Redirect → `/roadmap/new` |
+| `/roadmap/new` | private | Bubble creator — new roadmap |
+| `/journey` | private | Dashboard — all roadmaps + progress |
 | `/journey/[id]` | private | Current node + `ChoicePanel` |
 | `/journey/[id]/map` | private | `JourneyMap` |
 | `/auth/callback` | public | OAuth / magic-link exchange |
@@ -199,7 +201,9 @@ Supabase: run `supabase/migrations/001_initial.sql` then `seed.sql` in your proj
 |----------|----------|-------|
 | `NEXT_PUBLIC_SUPABASE_URL` | yes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes | Anon key (RLS protects data) |
-| `OPENAI_API_KEY` | no | Server-only when LLM is wired |
+| `CHIKKY_AI_API_KEY` | no | Server-only AI key (Chikky AI / Gemini / OpenAI) |
+| `CHIKKY_AI_MODEL` | no | Model id, e.g. `gemini-2.0-flash` or `gpt-4.1-mini` |
+| `CHIKKY_AI_PROVIDER` | no | `gemini` or `openai` (auto-inferred from model if omitted) |
 
 ## What agents should NOT do
 

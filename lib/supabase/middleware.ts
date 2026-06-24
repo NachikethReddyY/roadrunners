@@ -33,6 +33,7 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAuthRoute =
     pathname.startsWith(ROUTES.onboarding) ||
+    pathname.startsWith(ROUTES.roadmapNew) ||
     pathname.startsWith(ROUTES.journey);
   const isLogin = pathname === ROUTES.login;
 

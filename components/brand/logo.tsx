@@ -38,10 +38,11 @@ export function Logo({ className, size = "md" }: LogoProps) {
       role={size === "hero" ? "img" : undefined}
       aria-label={size === "hero" ? "RoadRunners" : undefined}
       className={cn(
-        "shrink-0 stroke-current [stroke-width:1.5] [stroke-linecap:round] [stroke-linejoin:round]",
+        "shrink-0 stroke-current [stroke-linecap:round] [stroke-linejoin:round] [vector-effect:non-scaling-stroke]",
         sizes[size],
         className
       )}
+      strokeWidth={2}
     >
       {PATHS}
     </svg>

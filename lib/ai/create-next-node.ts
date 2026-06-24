@@ -22,29 +22,35 @@ export async function createAndPersistNextNode(
 
   if (journeyError || !journey) throw new Error("Journey not found");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("interests")
-    .eq("user_id", input.userId)
-    .maybeSingle();
+  const [{ data: profile }, { data: recentNodes }, { data: skillCatalog }] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("interests")
+        .eq("user_id", input.userId)
+        .maybeSingle(),
+      supabase
+        .from("journey_nodes")
+        .select("title, skill_tag")
+        .eq("journey_id", input.journeyId)
+        .is("archived_at", null)
+        .order("created_at", { ascending: false })
+        .limit(5),
+      supabase.from("skill_catalog").select("slug"),
+    ]);
 
-  const { data: recentNodes } = await supabase
-    .from("journey_nodes")
-    .select("title, skill_tag")
-    .eq("journey_id", input.journeyId)
-    .is("archived_at", null)
-    .order("created_at", { ascending: false })
-    .limit(5);
+  const skillTags = skillCatalog?.map((s) => s.slug) ?? ["explore"];
 
   let fallback = false;
   let node: AiNodeOutput;
 
   try {
     node = await generateNextNode({
-      goal: journey.goal,
+      goal: journey.goal ?? "Become hireable in tech",
       interests: profile?.interests ?? [],
       recentNodes: recentNodes ?? [],
       pivotSkill: input.pivotSkill,
+      skillTags,
     });
   } catch {
     fallback = true;

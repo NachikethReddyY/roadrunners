@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Nunito } from "next/font/google";
+import { ThemeScript } from "@/components/layout/theme-script";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -31,6 +32,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body
         className={`${nunito.variable} ${inter.variable} ${jetbrainsMono.variable} min-h-screen font-sans antialiased`}
       >

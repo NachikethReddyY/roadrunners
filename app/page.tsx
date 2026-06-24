@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
-import { TopNav } from "@/components/layout/top-nav";
+import { NavDock } from "@/components/layout/nav-dock";
 import { buttonVariants } from "@/components/ui/button";
 import { ROUTES } from "@/lib/constants/routes";
 
 export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <TopNav />
 
       <section className="relative overflow-hidden border-b border-border">
         <div
@@ -68,6 +67,8 @@ export default function LandingPage() {
       <footer className="mt-auto border-t border-border bg-[var(--canvas-parchment)] px-4 py-10 text-center text-xs text-muted-foreground dark:bg-[var(--surface-dark)]">
         RoadRunners · Hackathon MVP · B1 — learning to earning
       </footer>
+
+      <NavDock />
     </div>
   );
 }

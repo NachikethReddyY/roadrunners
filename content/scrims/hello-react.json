@@ -1,0 +1,66 @@
+{
+  "slug": "hello-react",
+  "title": "Hello React",
+  "skill_tag": "react",
+  "template": "react-ts",
+  "initial_files": {
+    "App.tsx": "export default function App() {\n  return <h1>Hello RoadRunners!</h1>;\n}\n",
+    "index.tsx": "import { createRoot } from \"react-dom/client\";\nimport App from \"./App\";\n\ncreateRoot(document.getElementById(\"root\")!).render(<App />);\n"
+  },
+  "duration_ms": 12000,
+  "slides": [
+    {
+      "id": "intro",
+      "title": "Welcome",
+      "markdown": "React components return JSX — HTML-like syntax inside JavaScript."
+    }
+  ],
+  "timeline": {
+    "durationMs": 12000,
+    "events": [
+      {
+        "t": 0,
+        "type": "caption",
+        "text": "Welcome to your first React scrim on RoadRunners."
+      },
+      {
+        "t": 0,
+        "type": "slide",
+        "slideId": "intro"
+      },
+      {
+        "t": 0,
+        "type": "files",
+        "files": {
+          "App.tsx": "export default function App() {\n  return <h1></h1>;\n}\n"
+        }
+      },
+      {
+        "t": 3000,
+        "type": "caption",
+        "text": "Let's add a greeting inside the heading."
+      },
+      {
+        "t": 3000,
+        "type": "files",
+        "files": {
+          "App.tsx": "export default function App() {\n  return <h1>Hello RoadRunners!</h1>;\n}\n"
+        }
+      },
+      {
+        "t": 6000,
+        "type": "focus",
+        "path": "App.tsx"
+      },
+      {
+        "t": 9000,
+        "type": "caption",
+        "text": "Pause and try changing the message yourself."
+      },
+      {
+        "t": 12000,
+        "type": "run"
+      }
+    ]
+  }
+}
