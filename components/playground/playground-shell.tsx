@@ -1,13 +1,16 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { SaveScrimDialog } from "@/components/playground/save-scrim-dialog";
 import type {
   PlaygroundConfig,
+  PlaygroundTemplate,
   ScrimEvent,
   ScrimSlide,
 } from "@/lib/schemas/playground";
 import { ScrimPlayer } from "@/components/playground/scrim-player";
+import { saveCheckpoint } from "@/lib/actions/scrim";
 import { fileRecordsEqual } from "@/lib/playground/vfs";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +30,8 @@ const CodeWorkspace = dynamic(
   { ssr: false, loading: () => <WorkspaceSkeleton /> }
 );
 
+const LISTEN_KEY = "roadrunner-scrim-listen";
+
 type PlaygroundShellProps = {
   config: PlaygroundConfig;
   title?: string;
@@ -36,8 +41,14 @@ type PlaygroundShellProps = {
     events: ScrimEvent[];
     slides: ScrimSlide[];
     initialFiles: Record<string, string>;
+    initialTimelineMs?: number;
   };
-  /** Full-bleed IDE chrome (no rounded card). */
+  journeyId?: string;
+  nodeId?: string;
+  lessonScrimId?: string;
+  userScrimId?: string;
+  skillTag?: string;
+  ttsAvailable?: boolean;
   fullscreen?: boolean;
   className?: string;
   onOutput?: (output: string) => void;
@@ -60,20 +71,43 @@ export function PlaygroundShell({
   title,
   breadcrumb,
   scrim,
+  journeyId,
+  nodeId,
+  lessonScrimId,
+  userScrimId,
+  skillTag,
+  ttsAvailable = false,
   fullscreen = false,
   className,
   onOutput,
   onFilesChange: onFilesChangeExternal,
 }: PlaygroundShellProps) {
-  const baseFiles = scrim?.initialFiles ?? config.files;
-  const [files, setFiles] = useState(baseFiles);
+  const resumeFiles = config.files;
+  const [files, setFiles] = useState(resumeFiles);
   const [activeFile, setActiveFile] = useState<string | null>(
-    config.activeFile ?? Object.keys(baseFiles)[0] ?? null
+    config.activeFile ?? Object.keys(resumeFiles)[0] ?? null
   );
   const [readOnly, setReadOnly] = useState(!!scrim);
   const [activeSlideId, setActiveSlideId] = useState<string | null>(null);
   const [lastOutput, setLastOutput] = useState("");
   const [runSignal, setRunSignal] = useState(0);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [listenEnabled, setListenEnabled] = useState(false);
+  const scrimStateRef = useRef({ currentMs: scrim?.initialTimelineMs ?? 0, playing: false });
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = localStorage.getItem(LISTEN_KEY);
+    setListenEnabled(stored === "true");
+  }, []);
+
+  const handleListenToggle = useCallback((enabled: boolean) => {
+    setListenEnabled(enabled);
+    localStorage.setItem(LISTEN_KEY, String(enabled));
+  }, []);
 
   const handleScrimState = useCallback(
     (state: {
@@ -82,10 +116,14 @@ export function PlaygroundShell({
       caption: string | null;
       slideId: string | null;
       readOnly: boolean;
+      currentMs: number;
+      playing: boolean;
     }) => {
-      setFiles((prev) =>
-        fileRecordsEqual(prev, state.files) ? prev : state.files
-      );
+      scrimStateRef.current = { currentMs: state.currentMs, playing: state.playing };
+      setFiles((prev) => {
+        if (!state.playing) return prev;
+        return fileRecordsEqual(prev, state.files) ? prev : state.files;
+      });
       setActiveFile(state.activeFile);
       setReadOnly(state.readOnly);
       if (state.slideId) setActiveSlideId(state.slideId);
@@ -101,7 +139,36 @@ export function PlaygroundShell({
     [onFilesChangeExternal]
   );
 
+  const persistCheckpoint = useCallback(() => {
+    if (!journeyId || (!nodeId && !lessonScrimId && !userScrimId)) return;
+    setSaveStatus("saving");
+    startTransition(async () => {
+      const result = await saveCheckpoint({
+        journeyId,
+        nodeId,
+        lessonScrimId,
+        userScrimId,
+        timelineMs: scrimStateRef.current.currentMs,
+        files,
+        activeFile: activeFile ?? undefined,
+      });
+      setSaveStatus(result.ok ? "saved" : "idle");
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2500);
+    });
+  }, [activeFile, files, journeyId, lessonScrimId, nodeId, userScrimId]);
+
+  useEffect(
+    () => () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    },
+    []
+  );
+
   const useCodeWorkspace = config.template === "python";
+
+  const defaultScrimTitle =
+    title ?? `Scrim ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
 
   return (
     <div
@@ -131,6 +198,10 @@ export function PlaygroundShell({
             onOutput={onOutput ?? setLastOutput}
             runSignal={runSignal}
             scrimDockPx={scrim ? WORKSPACE_BOTTOM_CHROME_PX : 0}
+            journeyId={journeyId}
+            nodeId={nodeId}
+            lessonScrimId={lessonScrimId}
+            userScrimId={userScrimId}
             className="h-full flex-1"
           />
         ) : (
@@ -150,8 +221,16 @@ export function PlaygroundShell({
               durationMs={scrim.durationMs}
               events={scrim.events}
               initialFiles={scrim.initialFiles}
+              initialMs={scrim.initialTimelineMs ?? 0}
+              listenEnabled={listenEnabled}
+              onListenToggle={ttsAvailable ? handleListenToggle : undefined}
               onStateChange={handleScrimState}
               onRun={() => setRunSignal((n) => n + 1)}
+              onSaveCheckpoint={journeyId ? persistCheckpoint : undefined}
+              onSaveAsScrim={
+                journeyId ? () => setSaveDialogOpen(true) : undefined
+              }
+              saveStatus={saveStatus}
             />
           </div>
         )}
@@ -159,6 +238,27 @@ export function PlaygroundShell({
 
       {config.completion === "output_contains" && config.completionTarget && (
         <p className="sr-only" data-output={lastOutput} data-target={config.completionTarget} />
+      )}
+
+      {scrim && journeyId && (
+        <SaveScrimDialog
+          open={saveDialogOpen}
+          defaultTitle={defaultScrimTitle}
+          journeyId={journeyId}
+          sourceNodeId={nodeId}
+          sourceLessonScrimId={lessonScrimId}
+          skillTag={skillTag}
+          template={config.template as PlaygroundTemplate}
+          initialFiles={files}
+          timeline={{
+            durationMs: scrim.durationMs,
+            events: scrim.events,
+          }}
+          slides={scrim.slides}
+          durationMs={scrim.durationMs}
+          resumeTimelineMs={scrimStateRef.current.currentMs}
+          onClose={() => setSaveDialogOpen(false)}
+        />
       )}
     </div>
   );

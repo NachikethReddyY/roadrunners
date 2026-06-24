@@ -44,6 +44,7 @@ export const scrimEventSchema = z.discriminatedUnion("type", [
     t: z.number().nonnegative(),
     type: z.literal("caption"),
     text: z.string(),
+    audio_url: z.string().url().optional(),
   }),
   z.object({
     t: z.number().nonnegative(),
@@ -118,6 +119,22 @@ export function applyTimelineAt(
   }
 
   return { files, activeFile, caption, slideId };
+}
+
+/** Latest caption event at or before `timeMs`. */
+export function captionEventAt(
+  events: ScrimEvent[],
+  timeMs: number
+): Extract<ScrimEvent, { type: "caption" }> | null {
+  const captions = events
+    .filter((e): e is Extract<ScrimEvent, { type: "caption" }> => e.type === "caption")
+    .sort((a, b) => a.t - b.t);
+  let latest: Extract<ScrimEvent, { type: "caption" }> | null = null;
+  for (const event of captions) {
+    if (event.t > timeMs) break;
+    latest = event;
+  }
+  return latest;
 }
 
 // ponytail: self-check — fails if timeline merge breaks

@@ -15,6 +15,7 @@ import {
   runTerminalLine,
   type RuntimeStatus,
 } from "@/lib/playground/execute";
+import { runViaDaytona } from "@/lib/playground/daytona-run";
 import {
   defaultFilename,
   fileRecordKey,
@@ -39,8 +40,11 @@ type CodeWorkspaceProps = {
   onFilesChange?: (files: Record<string, string>) => void;
   onOutput?: (output: string) => void;
   runSignal?: number;
-  /** Reserve space at bottom for scrim transport (px). */
   scrimDockPx?: number;
+  journeyId?: string;
+  nodeId?: string;
+  lessonScrimId?: string;
+  userScrimId?: string;
   className?: string;
 };
 
@@ -59,6 +63,10 @@ export function CodeWorkspace({
   onOutput,
   runSignal = 0,
   scrimDockPx = 0,
+  journeyId,
+  nodeId,
+  lessonScrimId,
+  userScrimId,
   className,
 }: CodeWorkspaceProps) {
   const [vfs, setVfs] = useState<VfsState>(() => vfsFromRecord(files));
@@ -82,6 +90,7 @@ export function CodeWorkspace({
   const [runtimeStatus, setRuntimeStatus] =
     useState<RuntimeStatus>("loading");
   const [running, setRunning] = useState(false);
+  const daytonaSessionRef = useRef<string | undefined>(undefined);
 
   const externalFilesKey = fileRecordKey(files);
   const lastExternalKeyRef = useRef(externalFilesKey);
@@ -214,7 +223,22 @@ export function CodeWorkspace({
       getPythonRuntimeStatus() === "offline" ? "offline" : "running"
     );
     const record = vfsToRecord(vfsRef.current);
-    const result = await runActiveFile(activeFile, record);
+    let result =
+      template === "python"
+        ? await runViaDaytona(record, activeFile, {
+            sessionId: daytonaSessionRef.current,
+            journeyId,
+            nodeId,
+            scrimId: lessonScrimId ?? userScrimId,
+            template,
+          })
+        : null;
+
+    if (!result) {
+      result = await runActiveFile(activeFile, record);
+    } else if (result.sessionId) {
+      daytonaSessionRef.current = result.sessionId;
+    }
     const lines: string[] = [];
     if (result.stdout) lines.push(result.stdout);
     if (result.stderr) lines.push(result.stderr);
@@ -229,7 +253,7 @@ export function CodeWorkspace({
     onOutput?.(result.error ?? result.stdout);
     setRunning(false);
     setRuntimeStatus(getPythonRuntimeStatus());
-  }, [activeFile, onOutput, running, terminalVisible]);
+  }, [activeFile, journeyId, lessonScrimId, nodeId, onOutput, running, template, terminalVisible, userScrimId]);
 
   const runTerminalInput = useCallback(
     async (line: string) => {

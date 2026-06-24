@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ScrimLessonView } from "@/components/playground/scrim-lesson-view";
 import { AppShell } from "@/components/layout/app-shell";
+import { loadLatestCheckpoint } from "@/lib/actions/scrim";
+import { isTtsConfigured } from "@/lib/config/scrim";
 import { ROUTES } from "@/lib/constants/routes";
 import { parseLessonScrim } from "@/lib/scrims/load-scrim";
 import { createClient } from "@/lib/supabase/server";
@@ -20,7 +22,7 @@ export default async function ScrimLessonPage({ params }: PageProps) {
 
   if (!user) redirect(ROUTES.login);
 
-  const [{ data: journey }, { data: scrimRow }, { data: profile }] =
+  const [{ data: journey }, { data: scrimRow }, { data: profile }, checkpoint] =
     await Promise.all([
       supabase
         .from("journeys")
@@ -34,6 +36,7 @@ export default async function ScrimLessonPage({ params }: PageProps) {
         .select("level, streak_days")
         .eq("user_id", user.id)
         .maybeSingle(),
+      loadLatestCheckpoint({ journeyId, lessonScrimId: scrimId }),
     ]);
 
   if (!journey || !scrimRow) notFound();
@@ -42,6 +45,9 @@ export default async function ScrimLessonPage({ params }: PageProps) {
     ...scrimRow,
     initial_files: scrimRow.initial_files as Record<string, string>,
   });
+
+  const resumeFiles = checkpoint?.files ?? scrim.initial_files;
+  const resumeMs = checkpoint?.timeline_ms ?? 0;
 
   return (
     <AppShell
@@ -54,19 +60,35 @@ export default async function ScrimLessonPage({ params }: PageProps) {
           <div>
             <p className="text-xs text-muted-foreground">{journey.title}</p>
             <h1 className="font-heading text-lg font-semibold">{scrim.title}</h1>
+            {checkpoint && (
+              <p className="text-xs text-[var(--primary)]">
+                Resuming from saved progress
+              </p>
+            )}
           </div>
-          <Link
-            href={ROUTES.journeyDetail(journeyId)}
-            className={buttonVariants({ variant: "outline", className: "rounded-full" })}
-          >
-            Back to journey
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href={ROUTES.journeyScrims(journeyId)}
+              className={buttonVariants({ variant: "ghost", className: "rounded-full" })}
+            >
+              Your scrims
+            </Link>
+            <Link
+              href={ROUTES.journeyDetail(journeyId)}
+              className={buttonVariants({ variant: "outline", className: "rounded-full" })}
+            >
+              Back to journey
+            </Link>
+          </div>
         </div>
         <ScrimLessonView
           journeyId={journeyId}
           scrimId={scrim.id}
           scrim={scrim}
           breadcrumb={`${journey.title} / ${scrim.title}`}
+          initialTimelineMs={resumeMs}
+          initialFiles={resumeFiles}
+          ttsAvailable={isTtsConfigured()}
         />
       </div>
     </AppShell>

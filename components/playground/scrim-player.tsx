@@ -1,23 +1,32 @@
 "use client";
 
-import { Pause, Play } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Headphones, Pause, Play, Save } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useScrimNarration } from "@/components/playground/use-scrim-narration";
 import type { ScrimEvent } from "@/lib/schemas/playground";
-import { applyTimelineAt } from "@/lib/schemas/playground";
+import { applyTimelineAt, captionEventAt } from "@/lib/schemas/playground";
 import { cn } from "@/lib/utils";
 
 type ScrimPlayerProps = {
   durationMs: number;
   events: ScrimEvent[];
   initialFiles: Record<string, string>;
+  initialMs?: number;
+  listenEnabled?: boolean;
+  onListenToggle?: (enabled: boolean) => void;
   onStateChange: (state: {
     files: Record<string, string>;
     activeFile: string | null;
     caption: string | null;
     slideId: string | null;
     readOnly: boolean;
+    currentMs: number;
+    playing: boolean;
   }) => void;
   onRun?: () => void;
+  onSaveCheckpoint?: () => void;
+  onSaveAsScrim?: () => void;
+  saveStatus?: "idle" | "saving" | "saved";
   className?: string;
 };
 
@@ -30,7 +39,8 @@ function formatTime(ms: number): string {
 
 function stateFingerprint(
   applied: ReturnType<typeof applyTimelineAt>,
-  readOnly: boolean
+  readOnly: boolean,
+  currentMs: number
 ): string {
   return JSON.stringify({
     files: applied.files,
@@ -38,6 +48,7 @@ function stateFingerprint(
     caption: applied.caption,
     slideId: applied.slideId,
     readOnly,
+    currentMs,
   });
 }
 
@@ -45,24 +56,43 @@ export function ScrimPlayer({
   durationMs,
   events,
   initialFiles,
+  initialMs = 0,
+  listenEnabled = false,
+  onListenToggle,
   onStateChange,
   onRun,
+  onSaveCheckpoint,
+  onSaveAsScrim,
+  saveStatus = "idle",
   className,
 }: ScrimPlayerProps) {
   const [playing, setPlaying] = useState(false);
-  const [currentMs, setCurrentMs] = useState(0);
+  const [currentMs, setCurrentMs] = useState(initialMs);
+  const [listenOn, setListenOn] = useState(listenEnabled);
   const rafRef = useRef<number | null>(null);
   const lastTickRef = useRef<number | null>(null);
   const lastRunAtRef = useRef<number>(-1);
   const lastFingerprintRef = useRef("");
+  const wasPlayingRef = useRef(false);
+  const [, startTransition] = useTransition();
+
+  const applied = applyTimelineAt(initialFiles, events, currentMs);
+  const captionEvent = captionEventAt(events, currentMs);
+
+  useScrimNarration({
+    caption: applied.caption,
+    audioUrl: captionEvent?.audio_url,
+    enabled: listenOn,
+    playing,
+  });
 
   const emitState = useCallback(
-    (timeMs: number, readOnly: boolean) => {
-      const applied = applyTimelineAt(initialFiles, events, timeMs);
-      const fingerprint = stateFingerprint(applied, readOnly);
+    (timeMs: number, isPlaying: boolean) => {
+      const state = applyTimelineAt(initialFiles, events, timeMs);
+      const fingerprint = stateFingerprint(state, isPlaying, timeMs);
       if (fingerprint === lastFingerprintRef.current) return;
       lastFingerprintRef.current = fingerprint;
-      onStateChange({ ...applied, readOnly });
+      onStateChange({ ...state, readOnly: isPlaying, currentMs: timeMs, playing: isPlaying });
     },
     [events, initialFiles, onStateChange]
   );
@@ -77,6 +107,13 @@ export function ScrimPlayer({
       onRun?.();
     }
   }, [currentMs, playing, emitState, events, onRun]);
+
+  useEffect(() => {
+    if (wasPlayingRef.current && !playing && onSaveCheckpoint) {
+      startTransition(() => onSaveCheckpoint());
+    }
+    wasPlayingRef.current = playing;
+  }, [playing, onSaveCheckpoint]);
 
   useEffect(() => {
     if (!playing) {
@@ -122,7 +159,12 @@ export function ScrimPlayer({
     lastRunAtRef.current = -1;
   };
 
-  const applied = applyTimelineAt(initialFiles, events, currentMs);
+  const toggleListen = () => {
+    const next = !listenOn;
+    setListenOn(next);
+    onListenToggle?.(next);
+  };
+
   const progress = durationMs > 0 ? (currentMs / durationMs) * 100 : 0;
 
   return (
@@ -142,8 +184,8 @@ export function ScrimPlayer({
 
       <div
         className={cn(
-          "pointer-events-auto flex h-12 items-center gap-2 border-t border-[var(--hairline-warm)] bg-[#16150f] px-3",
-          "sm:gap-3 sm:px-4"
+          "pointer-events-auto flex h-12 items-center gap-1.5 border-t border-[var(--hairline-warm)] bg-[#16150f] px-2",
+          "sm:gap-2 sm:px-3"
         )}
       >
         <button
@@ -163,6 +205,23 @@ export function ScrimPlayer({
           )}
         </button>
 
+        {onListenToggle !== undefined && (
+          <button
+            type="button"
+            onClick={toggleListen}
+            aria-label={listenOn ? "Disable narration" : "Enable narration"}
+            aria-pressed={listenOn}
+            className={cn(
+              "flex size-8 shrink-0 items-center justify-center rounded-full sm:size-9",
+              listenOn
+                ? "bg-[var(--primary)]/20 text-[var(--primary)]"
+                : "text-[var(--on-dark-mute)] hover:bg-white/5"
+            )}
+          >
+            <Headphones className="size-4" />
+          </button>
+        )}
+
         <div className="relative min-w-0 flex-1">
           <div
             className="pointer-events-none absolute inset-y-0 left-0 rounded-full bg-[var(--primary)]/20"
@@ -180,14 +239,37 @@ export function ScrimPlayer({
           />
         </div>
 
-        <span className="shrink-0 font-mono text-[10px] tabular-nums text-[var(--on-dark-mute)] sm:text-[11px]">
+        <span className="hidden shrink-0 font-mono text-[10px] tabular-nums text-[var(--on-dark-mute)] sm:inline sm:text-[11px]">
           {formatTime(currentMs)} / {formatTime(durationMs)}
         </span>
+
+        {!playing && onSaveCheckpoint && (
+          <button
+            type="button"
+            onClick={onSaveCheckpoint}
+            disabled={saveStatus === "saving"}
+            aria-label="Save progress"
+            title="Save progress"
+            className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--on-dark-mute)] hover:bg-white/5 hover:text-[var(--on-dark)]"
+          >
+            <Save className="size-3.5" />
+          </button>
+        )}
+
+        {!playing && onSaveAsScrim && (
+          <button
+            type="button"
+            onClick={onSaveAsScrim}
+            className="hidden shrink-0 rounded-full border border-[var(--hairline-warm)] px-2 py-1 text-[10px] text-[var(--on-dark-mute)] hover:bg-white/5 hover:text-[var(--on-dark)] sm:inline"
+          >
+            Save as scrim
+          </button>
+        )}
       </div>
 
       {!playing && (
         <p className="absolute -top-5 right-3 hidden text-[10px] text-[var(--on-dark-mute)] sm:block">
-          Paused — edit &amp; run yourself
+          {saveStatus === "saved" ? "Progress saved" : "Paused — edit & run yourself"}
         </p>
       )}
     </div>

@@ -10,6 +10,9 @@ type ScrimLessonViewProps = {
   scrimId: string;
   scrim: LessonScrim;
   breadcrumb: string;
+  initialTimelineMs?: number;
+  initialFiles?: Record<string, string>;
+  ttsAvailable?: boolean;
 };
 
 export function ScrimLessonView({
@@ -17,8 +20,12 @@ export function ScrimLessonView({
   scrimId,
   scrim,
   breadcrumb,
+  initialTimelineMs = 0,
+  initialFiles,
+  ttsAvailable = false,
 }: ScrimLessonViewProps) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resumeFiles = initialFiles ?? scrim.initial_files;
 
   const debouncedSave = useCallback(
     (files: Record<string, string>) => {
@@ -42,7 +49,7 @@ export function ScrimLessonView({
 
   const config = {
     template: scrim.template,
-    files: scrim.initial_files,
+    files: resumeFiles,
     preview: scrim.template !== "python",
     completion: "manual" as const,
   };
@@ -52,11 +59,16 @@ export function ScrimLessonView({
       config={config}
       title={scrim.title}
       breadcrumb={breadcrumb}
+      journeyId={journeyId}
+      lessonScrimId={scrimId}
+      skillTag={scrim.skill_tag}
+      ttsAvailable={ttsAvailable}
       scrim={{
         durationMs: scrim.timeline.durationMs,
         events: scrim.timeline.events,
         slides: scrim.slides,
         initialFiles: scrim.initial_files,
+        initialTimelineMs,
       }}
       className="flex-1"
       onFilesChange={debouncedSave}

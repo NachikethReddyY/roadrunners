@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
-import { execInDaytona } from "@/lib/daytona/client";
-import { shouldUseDaytona, isDaytonaConfigured } from "@/lib/config/scrim";
-import { runnerExecRequestSchema } from "@/lib/schemas/scrim";
+import { isTtsConfigured } from "@/lib/config/scrim";
+import { ttsCaptionRequestSchema } from "@/lib/schemas/scrim";
 import { createClient } from "@/lib/supabase/server";
+import { getOrCreateCaptionAudio } from "@/lib/tts/elevenlabs";
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 30;
+const RATE_LIMIT_MAX = 20;
 const requestsByUser = new Map<string, number[]>();
 
 export async function POST(request: Request) {
+  if (!isTtsConfigured()) {
+    return NextResponse.json({ error: "TTS not enabled" }, { status: 503 });
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -29,38 +33,19 @@ export async function POST(request: Request) {
   requestsByUser.set(user.id, recent);
 
   const body = await request.json().catch(() => null);
-  const parsed = runnerExecRequestSchema.safeParse(body);
+  const parsed = ttsCaptionRequestSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const { sessionId, journeyId, nodeId, scrimId, template, files, entryFile } =
-    parsed.data;
-
-  if (!shouldUseDaytona(template) || !isDaytonaConfigured()) {
-    return NextResponse.json(
-      {
-        error: "Server-side runner unavailable. Use browser runtime.",
-        hint: "Set SCRIM_RUNNER=daytona and DAYTONA_API_KEY to enable.",
-      },
-      { status: 501 }
-    );
-  }
-
   try {
-    const result = await execInDaytona({
-      userId: user.id,
-      journeyId,
-      nodeId,
-      scrimId,
-      sessionId,
-      template,
-      files,
-      entryFile,
-    });
-    return NextResponse.json(result);
+    const { audioUrl, cached } = await getOrCreateCaptionAudio(
+      parsed.data.text,
+      parsed.data.voiceId
+    );
+    return NextResponse.json({ audioUrl, cached });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Execution failed";
+    const message = error instanceof Error ? error.message : "TTS failed";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

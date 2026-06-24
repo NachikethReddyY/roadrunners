@@ -11,6 +11,7 @@ import {
 import { RetryNodeForm } from "@/components/journey/retry-node-form";
 import { ROUTES } from "@/lib/constants/routes";
 import { playgroundConfigSchema } from "@/lib/schemas/playground";
+import { loadWorkspaceSnapshot } from "@/lib/actions/workspace";
 import { createClient } from "@/lib/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -83,6 +84,11 @@ export default async function JourneyDetailPage({ params }: PageProps) {
   const playground =
     playgroundParsed?.success ? playgroundParsed.data : null;
 
+  const workspaceSnapshot =
+    node && playground
+      ? await loadWorkspaceSnapshot({ nodeId: node.id })
+      : null;
+
   const isInteractive = !!playground;
 
   return (
@@ -125,7 +131,17 @@ export default async function JourneyDetailPage({ params }: PageProps) {
         </div>
 
         {scrims && scrims.length > 0 && (
-          <div className="mb-6 flex flex-wrap gap-2">
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            <Link
+              href={ROUTES.journeyScrims(id)}
+              className={buttonVariants({
+                variant: "outline",
+                size: "sm",
+                className: "rounded-full",
+              })}
+            >
+              Your scrims
+            </Link>
             {scrims.map((scrim) => (
               <Link
                 key={scrim.id}
@@ -160,6 +176,7 @@ export default async function JourneyDetailPage({ params }: PageProps) {
             skillCategory={skillCategory}
             fallback={node.is_fallback}
             playground={playground}
+            initialFiles={workspaceSnapshot?.files}
             choices={choices ?? []}
             skills={(skills ?? []).filter((s) => s.slug !== "explore")}
             decided={!!decision}

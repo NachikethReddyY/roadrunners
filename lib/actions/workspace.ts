@@ -52,3 +52,30 @@ export async function saveWorkspaceSnapshot(
 
   return { ok: true };
 }
+
+export async function loadWorkspaceSnapshot(input: {
+  nodeId?: string;
+  scrimId?: string;
+}): Promise<{ files: Record<string, string> } | null> {
+  const { nodeId, scrimId } = input;
+  if (!nodeId && !scrimId) return null;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  let query = supabase
+    .from("user_workspace_snapshots")
+    .select("files")
+    .eq("user_id", user.id);
+
+  if (nodeId) query = query.eq("node_id", nodeId);
+  if (scrimId) query = query.eq("scrim_id", scrimId);
+
+  const { data } = await query.maybeSingle();
+  if (!data) return null;
+
+  return { files: data.files as Record<string, string> };
+}

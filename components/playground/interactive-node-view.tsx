@@ -2,7 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChoicePanel } from "@/components/journey/choice-panel";
 import { ContinueForm } from "@/components/journey/continue-form";
 import {
@@ -10,6 +10,7 @@ import {
   PlaygroundShell,
 } from "@/components/playground/playground-shell";
 import { Badge } from "@/components/ui/badge";
+import { saveWorkspaceSnapshot } from "@/lib/actions/workspace";
 import type { PlaygroundConfig } from "@/lib/schemas/playground";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ type InteractiveNodeViewProps = {
   choices: Choice[];
   skills: Skill[];
   decided: boolean;
+  initialFiles?: Record<string, string>;
 };
 
 const skillBadgeClass: Record<string, string> = {
@@ -48,6 +50,33 @@ const skillBadgeClass: Record<string, string> = {
 export function InteractiveNodeView(props: InteractiveNodeViewProps) {
   const [output, setOutput] = useState("");
   const canContinue = isCompletionMet(props.playground, output);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const playgroundConfig: PlaygroundConfig = {
+    ...props.playground,
+    files: props.initialFiles ?? props.playground.files,
+  };
+
+  const debouncedSave = useCallback(
+    (files: Record<string, string>) => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => {
+        void saveWorkspaceSnapshot({
+          journeyId: props.journeyId,
+          nodeId: props.nodeId,
+          files,
+        });
+      }, 1500);
+    },
+    [props.journeyId, props.nodeId]
+  );
+
+  useEffect(
+    () => () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    },
+    []
+  );
 
   return (
     <div className="space-y-6">
@@ -81,9 +110,13 @@ export function InteractiveNodeView(props: InteractiveNodeViewProps) {
       </div>
 
       <PlaygroundShell
-        config={props.playground}
+        config={playgroundConfig}
         title={props.title}
+        journeyId={props.journeyId}
+        nodeId={props.nodeId}
+        skillTag={props.skillTag}
         onOutput={setOutput}
+        onFilesChange={debouncedSave}
       />
 
       <div className="space-y-3 border-t border-border pt-6">
