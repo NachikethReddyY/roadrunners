@@ -13,6 +13,8 @@ export type CreateRoadmapResult =
   | { error: string }
   | { success: true; journeyId: string };
 
+export type CreateRoadmapFormState = CreateRoadmapResult | null;
+
 export async function createRoadmap(formData: FormData): Promise<CreateRoadmapResult> {
   const parsed = createRoadmapSchema.safeParse({
     mode: formData.get("mode"),
@@ -68,15 +70,25 @@ export async function createRoadmap(formData: FormData): Promise<CreateRoadmapRe
       userId: user.id,
     });
   } catch {
-    // Journey exists; user can retry from dashboard or step view
+    revalidatePath(ROUTES.journey);
+    return { success: true, journeyId: journey.id };
   }
 
   revalidatePath(ROUTES.journey);
+  return { success: true, journeyId: journey.id };
+}
+
+export async function createRoadmapFormAction(
+  _prev: CreateRoadmapFormState,
+  formData: FormData
+): Promise<CreateRoadmapFormState> {
+  const result = await createRoadmap(formData);
+  if ("error" in result) return result;
   redirect(ROUTES.journey);
 }
 
 export async function createRoadmapAction(formData: FormData): Promise<void> {
-  await createRoadmap(formData);
+  await createRoadmapFormAction(null, formData);
 }
 
 export async function retryFirstNode(journeyId: string): Promise<CreateRoadmapResult> {
@@ -111,7 +123,18 @@ export async function retryFirstNode(journeyId: string): Promise<CreateRoadmapRe
   return { success: true, journeyId };
 }
 
-export async function retryFirstNodeAction(formData: FormData): Promise<void> {
+export async function retryFirstNodeFormAction(
+  _prev: CreateRoadmapFormState,
+  formData: FormData
+): Promise<CreateRoadmapFormState> {
   const journeyId = String(formData.get("journeyId") ?? "");
-  await retryFirstNode(journeyId);
+  const result = await retryFirstNode(journeyId);
+  if ("error" in result) return result;
+  revalidatePath(ROUTES.journeyDetail(journeyId));
+  revalidatePath(ROUTES.journey);
+  return result;
+}
+
+export async function retryFirstNodeAction(formData: FormData): Promise<void> {
+  await retryFirstNodeFormAction(null, formData);
 }

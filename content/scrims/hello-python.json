@@ -1,0 +1,190 @@
+{
+  "slug": "hello-python",
+  "title": "Hello Python",
+  "skill_tag": "python-data",
+  "template": "python",
+  "initial_files": {
+    "main.py": ""
+  },
+  "duration_ms": 18000,
+  "slides": [
+    {
+      "id": "intro",
+      "title": "print() basics",
+      "markdown": "`print()` sends text to the console. Strings go inside quotes."
+    },
+    {
+      "id": "variables",
+      "title": "Variables",
+      "markdown": "Store a value in a name, then reuse it — or plug it into an f-string."
+    },
+    {
+      "id": "run",
+      "title": "Run your code",
+      "markdown": "Press **Run** (or wait for the auto-run) to see output in the terminal."
+    }
+  ],
+  "timeline": {
+    "durationMs": 18000,
+    "events": [
+      {
+        "t": 0,
+        "type": "caption",
+        "text": "Let's build a hello-world program — watch the editor fill in step by step."
+      },
+      {
+        "t": 0,
+        "type": "slide",
+        "slideId": "intro"
+      },
+      {
+        "t": 0,
+        "type": "files",
+        "files": {
+          "main.py": ""
+        }
+      },
+      {
+        "t": 600,
+        "type": "files",
+        "files": {
+          "main.py": "# My first Python program\n"
+        }
+      },
+      {
+        "t": 1200,
+        "type": "caption",
+        "text": "Start with print( — Python's built-in output function."
+      },
+      {
+        "t": 1200,
+        "type": "files",
+        "files": {
+          "main.py": "# My first Python program\nprint("
+        }
+      },
+      {
+        "t": 2000,
+        "type": "files",
+        "files": {
+          "main.py": "# My first Python program\nprint('"
+        }
+      },
+      {
+        "t": 2800,
+        "type": "files",
+        "files": {
+          "main.py": "# My first Python program\nprint('Hello"
+        }
+      },
+      {
+        "t": 3600,
+        "type": "files",
+        "files": {
+          "main.py": "# My first Python program\nprint('Hello, RoadRunners!"
+        }
+      },
+      {
+        "t": 4200,
+        "type": "caption",
+        "text": "Close the string and the call — quotes then parenthesis."
+      },
+      {
+        "t": 4200,
+        "type": "files",
+        "files": {
+          "main.py": "# My first Python program\nprint('Hello, RoadRunners!')"
+        }
+      },
+      {
+        "t": 5000,
+        "type": "focus",
+        "path": "main.py"
+      },
+      {
+        "t": 5500,
+        "type": "run"
+      },
+      {
+        "t": 6500,
+        "type": "caption",
+        "text": "Nice — now make it personal with a variable."
+      },
+      {
+        "t": 6500,
+        "type": "slide",
+        "slideId": "variables"
+      },
+      {
+        "t": 7200,
+        "type": "files",
+        "files": {
+          "main.py": "# My first Python program\nname = "
+        }
+      },
+      {
+        "t": 8000,
+        "type": "files",
+        "files": {
+          "main.py": "# My first Python program\nname = \"learner\"\n"
+        }
+      },
+      {
+        "t": 9000,
+        "type": "caption",
+        "text": "An f-string embeds {name} right inside the text."
+      },
+      {
+        "t": 9000,
+        "type": "files",
+        "files": {
+          "main.py": "# My first Python program\nname = \"learner\"\nprint(f'"
+        }
+      },
+      {
+        "t": 10000,
+        "type": "files",
+        "files": {
+          "main.py": "# My first Python program\nname = \"learner\"\nprint(f'Hello, {name}"
+        }
+      },
+      {
+        "t": 11000,
+        "type": "files",
+        "files": {
+          "main.py": "# My first Python program\nname = \"learner\"\nprint(f'Hello, {name}!')"
+        }
+      },
+      {
+        "t": 12000,
+        "type": "run"
+      },
+      {
+        "t": 13500,
+        "type": "slide",
+        "slideId": "run"
+      },
+      {
+        "t": 13500,
+        "type": "caption",
+        "text": "Your turn — edit the name or message, then hit Run."
+      },
+      {
+        "t": 15000,
+        "type": "files",
+        "files": {
+          "main.py": "# My first Python program\nname = \"learner\"\nprint(f'Hello, {name}!')\nprint('Welcome to Python on RoadRunners')"
+        }
+      },
+      {
+        "t": 16500,
+        "type": "focus",
+        "path": "main.py"
+      },
+      {
+        "t": 18000,
+        "type": "run"
+      }
+    ]
+  }
+}

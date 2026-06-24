@@ -358,6 +358,42 @@
     0 0 24px rgba(217, 119, 6, 0.14);
 }
 
+.skill-bubble-web {
+  border-color: color-mix(in oklch, var(--skill-web) 55%, var(--glass-border));
+  background: color-mix(in oklch, var(--skill-web) 28%, var(--glass-bg));
+  color: var(--glass-text);
+}
+
+.skill-bubble-mobile {
+  border-color: color-mix(in oklch, var(--skill-mobile) 55%, var(--glass-border));
+  background: color-mix(in oklch, var(--skill-mobile) 28%, var(--glass-bg));
+  color: var(--glass-text);
+}
+
+.skill-bubble-data {
+  border-color: color-mix(in oklch, var(--skill-data) 55%, var(--glass-border));
+  background: color-mix(in oklch, var(--skill-data) 28%, var(--glass-bg));
+  color: var(--glass-text);
+}
+
+.skill-bubble-ai {
+  border-color: color-mix(in oklch, var(--skill-ai) 55%, var(--glass-border));
+  background: color-mix(in oklch, var(--skill-ai) 28%, var(--glass-bg));
+  color: var(--glass-text);
+}
+
+.skill-bubble-devops {
+  border-color: color-mix(in oklch, var(--skill-devops) 55%, var(--glass-border));
+  background: color-mix(in oklch, var(--skill-devops) 28%, var(--glass-bg));
+  color: var(--glass-text);
+}
+
+.skill-bubble-explore {
+  border-color: color-mix(in oklch, var(--skill-explore) 55%, var(--glass-border));
+  background: color-mix(in oklch, var(--skill-explore) 28%, var(--glass-bg));
+  color: var(--glass-text);
+}
+
 .goal-capsule {
   border: 1px solid var(--glass-border);
   background: var(--glass-bg-strong);

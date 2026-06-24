@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { createRoadmapAction } from "@/lib/actions/roadmap";
+import { createRoadmapFormAction, type CreateRoadmapFormState } from "@/lib/actions/roadmap";
 import {
   filterKeyForGoal,
   filterSkillsForGoal,
@@ -62,6 +62,11 @@ export function GoalCreator({ skills }: GoalCreatorProps) {
     setSubject(name);
   }
 
+  const [formState, formAction] = useActionState<CreateRoadmapFormState, FormData>(
+    createRoadmapFormAction,
+    null
+  );
+
   return (
     <div className="roadmap-canvas relative min-h-[100dvh] w-full overflow-hidden">
       <div className="roadmap-canvas-glow pointer-events-none absolute inset-0" aria-hidden />
@@ -94,10 +99,15 @@ export function GoalCreator({ skills }: GoalCreatorProps) {
           </div>
 
           <form
-            action={createRoadmapAction}
+            action={formAction}
             className="relative flex w-full flex-col items-center gap-6"
           >
             <input type="hidden" name="mode" value={mode} />
+            {formState && "error" in formState && (
+              <p className="text-sm text-destructive" role="alert">
+                {formState.error}
+              </p>
+            )}
             <GoalInput
               ref={inputRef}
               mode={mode}

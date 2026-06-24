@@ -1,7 +1,9 @@
 "use client";
 
+import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { acknowledgeNodeAction } from "@/lib/actions/journey";
+import { acknowledgeNodeFormAction } from "@/lib/actions/journey";
+import { XpToast } from "@/components/journey/xp-toast";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +12,7 @@ type ContinueButtonProps = {
   nodeId: string;
 };
 
-export function ContinueButton({ journeyId, nodeId }: ContinueButtonProps) {
+function ContinueButton() {
   const { pending } = useFormStatus();
 
   return (
@@ -25,11 +27,21 @@ export function ContinueButton({ journeyId, nodeId }: ContinueButtonProps) {
 }
 
 export function ContinueForm({ journeyId, nodeId }: ContinueButtonProps) {
+  const [state, formAction] = useActionState(acknowledgeNodeFormAction, null);
+
   return (
-    <form action={acknowledgeNodeAction}>
-      <input type="hidden" name="journeyId" value={journeyId} />
-      <input type="hidden" name="nodeId" value={nodeId} />
-      <ContinueButton journeyId={journeyId} nodeId={nodeId} />
-    </form>
+    <div className="space-y-3">
+      <XpToast xpGain={state?.xpGain} />
+      {state?.error && (
+        <p className="text-sm text-destructive" role="alert">
+          {state.error}
+        </p>
+      )}
+      <form action={formAction}>
+        <input type="hidden" name="journeyId" value={journeyId} />
+        <input type="hidden" name="nodeId" value={nodeId} />
+        <ContinueButton />
+      </form>
+    </div>
   );
 }

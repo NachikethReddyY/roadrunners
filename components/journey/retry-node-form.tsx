@@ -1,7 +1,8 @@
 "use client";
 
+import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { retryFirstNodeAction } from "@/lib/actions/roadmap";
+import { retryFirstNodeFormAction } from "@/lib/actions/roadmap";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -23,10 +24,19 @@ function RetryButton() {
 }
 
 export function RetryNodeForm({ journeyId }: RetryNodeButtonProps) {
+  const [state, formAction] = useActionState(retryFirstNodeFormAction, null);
+
   return (
-    <form action={retryFirstNodeAction}>
-      <input type="hidden" name="journeyId" value={journeyId} />
-      <RetryButton />
-    </form>
+    <div className="space-y-3">
+      {state && "error" in state && (
+        <p className="text-sm text-destructive" role="alert">
+          {state.error}
+        </p>
+      )}
+      <form action={formAction}>
+        <input type="hidden" name="journeyId" value={journeyId} />
+        <RetryButton />
+      </form>
+    </div>
   );
 }

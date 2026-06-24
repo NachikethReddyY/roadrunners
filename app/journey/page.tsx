@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
+import { DashboardRetryForm } from "@/components/journey/dashboard-retry-form";
 import { buttonVariants } from "@/components/ui/button";
 import { ROUTES } from "@/lib/constants/routes";
 import { computeJourneyProgress } from "@/lib/journey/progress";
 import { createClient } from "@/lib/supabase/server";
-import { cn } from "@/lib/utils";
 
 export default async function JourneyIndexPage() {
   const supabase = await createClient();
@@ -82,34 +82,63 @@ export default async function JourneyIndexPage() {
 
             return (
               <li key={journey.id}>
-                <Link
-                  href={ROUTES.journeyDetail(journey.id)}
-                  className="block rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/30"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <h2 className="font-heading text-lg font-semibold">{journey.title}</h2>
-                      <p className="mt-1 truncate text-sm text-muted-foreground">{journey.goal}</p>
-                    </div>
-                    <span className="shrink-0 text-sm font-medium text-primary">
-                      {progress.percent}%
-                    </span>
+                {journey.current_node_id ? (
+                  <Link
+                    href={ROUTES.journeyDetail(journey.id)}
+                    className="block rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/30"
+                  >
+                    <JourneyCardContent
+                      title={journey.title}
+                      goal={journey.goal}
+                      progress={progress}
+                    />
+                  </Link>
+                ) : (
+                  <div className="rounded-xl border border-border bg-card p-5">
+                    <JourneyCardContent
+                      title={journey.title}
+                      goal={journey.goal}
+                      progress={progress}
+                    />
+                    <DashboardRetryForm journeyId={journey.id} />
                   </div>
-                  <div className="mt-4 space-y-2">
-                    <div className="h-2 overflow-hidden rounded-full bg-[var(--canvas-parchment)] dark:bg-[var(--muted)]">
-                      <div
-                        className="h-full rounded-full bg-primary transition-all"
-                        style={{ width: `${progress.percent}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">{progress.label}</p>
-                  </div>
-                </Link>
+                )}
               </li>
             );
           })}
         </ul>
       </div>
     </AppShell>
+  );
+}
+
+function JourneyCardContent({
+  title,
+  goal,
+  progress,
+}: {
+  title: string;
+  goal: string;
+  progress: { percent: number; label: string };
+}) {
+  return (
+    <>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h2 className="font-heading text-lg font-semibold">{title}</h2>
+          <p className="mt-1 truncate text-sm text-muted-foreground">{goal}</p>
+        </div>
+        <span className="shrink-0 text-sm font-medium text-primary">{progress.percent}%</span>
+      </div>
+      <div className="mt-4 space-y-2">
+        <div className="h-2 overflow-hidden rounded-full bg-[var(--canvas-parchment)] dark:bg-[var(--muted)]">
+          <div
+            className="h-full rounded-full bg-primary transition-all"
+            style={{ width: `${progress.percent}%` }}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">{progress.label}</p>
+      </div>
+    </>
   );
 }

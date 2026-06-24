@@ -1,8 +1,14 @@
 import { z } from "zod";
+import { playgroundConfigSchema } from "@/lib/schemas/playground";
 
 export const journeyStatusSchema = z.enum(["active", "completed", "archived"]);
 
-export const nodeTypeSchema = z.enum(["lesson", "choice", "milestone"]);
+export const nodeTypeSchema = z.enum([
+  "lesson",
+  "choice",
+  "milestone",
+  "interactive",
+]);
 
 export const journeySchema = z.object({
   id: z.string().uuid(),
@@ -23,6 +29,7 @@ export const journeyNodeSchema = z.object({
   title: z.string(),
   content_md: z.string(),
   node_type: nodeTypeSchema,
+  playground_config: playgroundConfigSchema.nullable().optional(),
   xp_value: z.number().int().nonnegative(),
   archived_at: z.string().datetime().nullable(),
   created_at: z.string().datetime(),

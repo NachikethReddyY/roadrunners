@@ -5,6 +5,7 @@ export type BubbleSize = { w: number; h: number };
 export type PlacedBubble = {
   slug: string;
   name: string;
+  category: string;
   x: number;
   y: number;
   w: number;
@@ -64,7 +65,7 @@ export function layoutSkillBubbles(
   containerW: number,
   containerH: number,
   exclusion: Rect,
-  skills: Array<{ slug: string; name: string }>
+  skills: Array<{ slug: string; name: string; category: string }>
 ): PlacedBubble[] {
   if (containerW < 320 || containerH < 400 || skills.length === 0) return [];
 
@@ -123,6 +124,7 @@ export function layoutSkillBubbles(
       placed.push({
         slug: skill.slug,
         name: skill.name,
+        category: skill.category,
         x,
         y,
         w,
