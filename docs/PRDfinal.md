@@ -1319,9 +1319,9 @@ NEXT_PUBLIC_AUTH_GOOGLE_ENABLED=true
 #   http://localhost:3000/auth/callback
 
 # Chikky AI (server-only — never NEXT_PUBLIC_)
-CHIKKY_AI_API_KEY=AQ.Ab8RN6L4xIVvdWKjEQnYUlJx6wwPu-L1ePu9DKiGPRd1wAPsnw
-CHIKKY_AI_MODEL=gemini-2.5-flash
-CHIKKY_AI_PROVIDER=gemini
+CHIKKY_AI_API_KEY=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
+CHIKKY_AI_MODEL=GPT-5.5
+CHIKKY_AI_PROVIDER=Openai
 
 # SMTP (server-only — email sign-in codes via nodemailer)
 SMTP_HOST=smtp.gmail.com
