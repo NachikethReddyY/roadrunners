@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { CheckpointFlow } from "@/components/journey/checkpoint-flow";
 import { ChoicePanel } from "@/components/journey/choice-panel";
 import { ContinueForm } from "@/components/journey/continue-form";
+import { PrepareScrimButton } from "@/components/playground/prepare-scrim-button";
 import {
   JourneyNodeCard,
   JourneyNodeSkeleton,
@@ -212,15 +213,15 @@ export default async function JourneyDetailPage({ params }: PageProps) {
                       separate full-screen scrim experience.
                     </p>
                   </div>
-                  {scrimHref && (
-                    <Link
-                      href={scrimHref}
-                      className={buttonVariants({
-                        className: "min-h-12 rounded-full px-6 text-sm",
-                      })}
-                    >
-                      Open full-screen CodeCast
-                    </Link>
+                  {relevantScrim ? (
+                    <PrepareScrimButton
+                      scrimId={relevantScrim.id}
+                      journeyId={id}
+                    />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No CodeCast is wired for this checkpoint yet.
+                    </p>
                   )}
                 </div>
               </div>

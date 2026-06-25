@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { listCheckpoints, listUserScrims } from "@/lib/actions/scrim";
 import { AppShell } from "@/components/layout/app-shell";
+import { PrepareScrimButton } from "@/components/playground/prepare-scrim-button";
 import { ROUTES } from "@/lib/constants/routes";
 import { createClient } from "@/lib/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
@@ -147,17 +148,13 @@ export default async function JourneyScrimsPage({ params }: PageProps) {
           <h2 className="font-heading text-lg font-semibold">Curated lessons</h2>
           <div className="flex flex-wrap gap-2">
             {(lessonScrims ?? []).map((scrim) => (
-              <Link
+              <PrepareScrimButton
                 key={scrim.id}
-                href={ROUTES.journeyScrim(journeyId, scrim.id)}
-                className={buttonVariants({
-                  variant: "secondary",
-                  size: "sm",
-                  className: "rounded-full",
-                })}
-              >
-                {lessonTitleById.get(scrim.id) ?? scrim.title}
-              </Link>
+                scrimId={scrim.id}
+                journeyId={journeyId}
+                label={lessonTitleById.get(scrim.id) ?? scrim.title}
+                className="min-h-10 rounded-full bg-[var(--secondary)] px-4 text-[var(--secondary-foreground)] hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]"
+              />
             ))}
           </div>
         </section>

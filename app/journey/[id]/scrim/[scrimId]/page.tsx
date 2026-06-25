@@ -6,7 +6,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { loadLatestCheckpoint } from "@/lib/actions/scrim";
 import { isTtsConfigured } from "@/lib/config/scrim";
 import { ROUTES } from "@/lib/constants/routes";
-import { parseLessonScrim } from "@/lib/scrims/load-scrim";
+import { loadScrimBySlug, parseLessonScrim } from "@/lib/scrims/load-scrim";
 import { createClient } from "@/lib/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -50,9 +50,15 @@ export default async function ScrimLessonPage({ params }: PageProps) {
         .maybeSingle()
     : { data: null };
 
+  const bundled = loadScrimBySlug(scrimRow.slug);
   const scrim = parseLessonScrim({
     ...scrimRow,
-    initial_files: scrimRow.initial_files as Record<string, string>,
+    initial_files: (bundled?.initial_files ??
+      (scrimRow.initial_files as Record<string, string>)) as Record<string, string>,
+    timeline: bundled?.timeline ?? scrimRow.timeline,
+    narration: bundled?.narration,
+    slides: bundled?.slides ?? scrimRow.slides,
+    duration_ms: bundled?.duration_ms ?? scrimRow.duration_ms,
   });
 
   const currentCheckpointNodeId =

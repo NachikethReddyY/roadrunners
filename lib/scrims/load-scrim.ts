@@ -25,6 +25,14 @@ export function loadScrimFromFile(filename: string): ScrimSeedJson {
   return raw;
 }
 
+export function loadScrimBySlug(slug: string): ScrimSeedJson | null {
+  try {
+    return loadScrimFromFile(`${slug}.json`);
+  } catch {
+    return null;
+  }
+}
+
 export function parseLessonScrim(row: {
   id: string;
   slug: string;
