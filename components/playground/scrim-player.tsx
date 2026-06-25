@@ -39,6 +39,7 @@ type ScrimPlayerProps = {
   onSaveCheckpoint?: () => void;
   onSaveAsScrim?: () => void;
   saveStatus?: "idle" | "saving" | "saved";
+  forcePauseSignal?: number;
   className?: string;
 };
 
@@ -109,6 +110,7 @@ export function ScrimPlayer({
   onSaveCheckpoint,
   onSaveAsScrim,
   saveStatus = "idle",
+  forcePauseSignal = 0,
   className,
 }: ScrimPlayerProps) {
   const [playing, setPlaying] = useState(false);
@@ -133,6 +135,7 @@ export function ScrimPlayer({
   const lastFingerprintRef = useRef("");
   const lastChallengeGateRef = useRef(-1);
   const wasPlayingRef = useRef(false);
+  const lastForcePauseRef = useRef(forcePauseSignal);
   const [, startTransition] = useTransition();
 
   const applied = applyTimelineAt(initialFiles, events, currentMs);
@@ -350,6 +353,13 @@ export function ScrimPlayer({
     []
   );
 
+  useEffect(() => {
+    if (forcePauseSignal === lastForcePauseRef.current) return;
+    lastForcePauseRef.current = forcePauseSignal;
+    setPlaying(false);
+    setShowSkipDialog(false);
+  }, [forcePauseSignal]);
+
   const toggleListen = () => {
     const next = !listenOn;
     setListenOn(next);
@@ -484,10 +494,10 @@ export function ScrimPlayer({
             <button
               type="button"
               onClick={onSaveAsScrim}
-              aria-label="Save as CodeCast"
+              aria-label="Save as scrim"
               className="hidden shrink-0 rounded-full border border-[var(--editor-border)] px-2 py-1 text-[10px] text-[var(--player-text-muted)] hover:bg-[var(--surface-dark-soft)] hover:text-[var(--player-text)] sm:inline"
             >
-              Save CodeCast
+              Save Scrim
             </button>
           )}
         </div>

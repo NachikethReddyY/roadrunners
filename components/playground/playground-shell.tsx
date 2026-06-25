@@ -1,8 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import dynamic from "next/dynamic";
+import { BookOpenText, CirclePlay, Code2, Library, Save } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import ReactMarkdown from "react-markdown";
+import rehypeSanitize from "rehype-sanitize";
 import { SaveScrimDialog } from "@/components/playground/save-scrim-dialog";
+import { ScrimPlayer, notifyScrimChallengeRun } from "@/components/playground/scrim-player";
+import { saveCheckpoint } from "@/lib/actions/scrim";
+import { ROUTES } from "@/lib/constants/routes";
 import type {
   PlaygroundConfig,
   PlaygroundTemplate,
@@ -11,10 +18,9 @@ import type {
   ScrimNarration,
   ScrimSlide,
 } from "@/lib/schemas/playground";
-import { applyTimelineAt } from "@/lib/schemas/playground";
-import { ScrimPlayer, notifyScrimChallengeRun } from "@/components/playground/scrim-player";
-import { saveCheckpoint } from "@/lib/actions/scrim";
+import { applyTimelineAt, captionEventAt, challengeEvents } from "@/lib/schemas/playground";
 import { fileRecordsEqual } from "@/lib/playground/vfs";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const SandpackWorkspace = dynamic(
@@ -34,6 +40,40 @@ const CodeWorkspace = dynamic(
 );
 
 const LISTEN_KEY = "roadrunner-scrim-listen";
+
+type LessonStage = "read" | "watch" | "try" | "save";
+
+const lessonStageMeta: Array<{
+  id: LessonStage;
+  label: string;
+  description: string;
+  icon: typeof BookOpenText;
+}> = [
+  {
+    id: "read",
+    label: "Read",
+    description: "Understand the concept before the walkthrough starts.",
+    icon: BookOpenText,
+  },
+  {
+    id: "watch",
+    label: "Watch",
+    description: "Follow the guided lesson like a CodeCast video.",
+    icon: CirclePlay,
+  },
+  {
+    id: "try",
+    label: "Try",
+    description: "Pause, edit the code, and run it yourself.",
+    icon: Code2,
+  },
+  {
+    id: "save",
+    label: "Save",
+    description: "Store this lesson as your own reusable scrim.",
+    icon: Save,
+  },
+];
 
 type PlaygroundShellProps = {
   config: PlaygroundConfig;
@@ -69,6 +109,27 @@ function WorkspaceSkeleton() {
   );
 }
 
+function formatLessonDuration(ms: number): string {
+  const totalSec = Math.floor(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+function captionTimeline(events: ScrimEvent[]) {
+  return events
+    .filter((event): event is Extract<ScrimEvent, { type: "caption" }> => event.type === "caption")
+    .sort((a, b) => a.t - b.t);
+}
+
+function MarkdownBlock({ markdown }: { markdown: string }) {
+  return (
+    <div className="prose prose-sm max-w-none text-foreground dark:prose-invert">
+      <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{markdown}</ReactMarkdown>
+    </div>
+  );
+}
+
 export function PlaygroundShell({
   config,
   title,
@@ -98,13 +159,16 @@ export function PlaygroundShell({
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [listenControlMounted, setListenControlMounted] = useState(false);
+  const [activeStage, setActiveStage] = useState<LessonStage>(scrim ? "read" : "try");
+  const [savedScrimId, setSavedScrimId] = useState<string | null>(userScrimId ?? null);
+  const [currentCaption, setCurrentCaption] = useState<string | null>(
+    scrim ? captionEventAt(scrim.events, scrim.initialTimelineMs ?? 0)?.text ?? null : null
+  );
+  const [forcePauseSignal, setForcePauseSignal] = useState(0);
   const hasBakedAudio =
     Boolean(scrim?.narration?.audio_url) ||
-    (scrim?.events.some(
-      (e) => e.type === "caption" && Boolean(e.audio_url)
-    ) ?? false);
+    (scrim?.events.some((event) => event.type === "caption" && Boolean(event.audio_url)) ?? false);
   const narrationAvailable = ttsAvailable || hasBakedAudio;
-
   const [listenEnabled, setListenEnabled] = useState(hasBakedAudio);
   const [resumeTimelineMs, setResumeTimelineMs] = useState(scrim?.initialTimelineMs ?? 0);
   const scrimStateRef = useRef({ currentMs: scrim?.initialTimelineMs ?? 0, playing: false });
@@ -125,6 +189,18 @@ export function PlaygroundShell({
     localStorage.setItem(LISTEN_KEY, String(enabled));
   }, []);
 
+  const moveToStage = useCallback((stage: LessonStage) => {
+    setActiveStage(stage);
+    if (stage !== "watch") {
+      setForcePauseSignal((value) => value + 1);
+    }
+  }, []);
+
+  const openSaveStage = useCallback(() => {
+    moveToStage("save");
+    setSaveDialogOpen(true);
+  }, [moveToStage]);
+
   const scrimBootstrappedRef = useRef(false);
 
   useEffect(() => {
@@ -137,6 +213,7 @@ export function PlaygroundShell({
     );
     setFiles(initial.files);
     setActiveFile(initial.activeFile);
+    setCurrentCaption(initial.caption);
     if (initial.slideId) {
       requestAnimationFrame(() => setActiveSlideId(initial.slideId));
     }
@@ -156,6 +233,7 @@ export function PlaygroundShell({
       scrimStateRef.current = { currentMs: state.currentMs, playing: state.playing };
       setResumeTimelineMs(state.currentMs);
       setActiveChallenge(state.challenge);
+      setCurrentCaption(state.caption);
       setFiles((prev) => {
         if (!state.playing) return prev;
         return fileRecordsEqual(prev, state.files) ? prev : state.files;
@@ -202,6 +280,16 @@ export function PlaygroundShell({
   );
 
   const useCodeWorkspace = config.template === "python";
+  const canSaveScrim = Boolean(scrim && journeyId);
+  const scrimLibraryHref = journeyId ? ROUTES.journeyScrims(journeyId) : null;
+  const savedScrimHref =
+    journeyId && savedScrimId ? ROUTES.journeyMyScrim(journeyId, savedScrimId) : null;
+  const activeSlide =
+    scrim?.slides.find((slide) => slide.id === activeSlideId) ?? scrim?.slides[0] ?? null;
+  const lessonCaptions = scrim ? captionTimeline(scrim.events) : [];
+  const lessonChallenges = scrim ? challengeEvents(scrim.events) : [];
+  const highlightedCaption =
+    currentCaption ?? lessonCaptions[0]?.text ?? "Use the player to step through the lesson.";
 
   const defaultScrimTitle =
     title ??
@@ -209,6 +297,326 @@ export function PlaygroundShell({
       month: "short",
       day: "numeric",
     })}`;
+
+  const stageHeader = scrim ? (
+    <div className="border-b border-[var(--hairline-warm)]/70 bg-[color:color-mix(in_oklch,var(--surface),white_3%)] px-4 py-4 sm:px-5">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+              Lesson flow
+            </p>
+            <h2 className="font-heading text-xl font-semibold text-foreground">
+              {title ?? "Interactive scrim"}
+            </h2>
+            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+              Open the lesson in phases instead of starting inside the editor: read first, watch the
+              walkthrough, try the code, then save it as a scrim from the same UI.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <span className="rounded-full border border-border px-3 py-1">
+              {formatLessonDuration(scrim.durationMs)} lesson
+            </span>
+            <span className="rounded-full border border-border px-3 py-1">
+              {scrim.slides.length} reading cards
+            </span>
+            <span className="rounded-full border border-border px-3 py-1">
+              {lessonChallenges.length} tryout checkpoints
+            </span>
+          </div>
+        </div>
+
+        <div className="grid gap-2 md:grid-cols-4">
+          {lessonStageMeta.map((stage) => {
+            const Icon = stage.icon;
+            const isActive = stage.id === activeStage;
+            return (
+              <button
+                key={stage.id}
+                type="button"
+                onClick={() => moveToStage(stage.id)}
+                className={cn(
+                  "rounded-2xl border px-4 py-3 text-left transition-colors",
+                  isActive
+                    ? "border-primary bg-primary/8 text-foreground"
+                    : "border-border bg-background/70 hover:border-primary/40 hover:bg-muted/50"
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "flex size-8 items-center justify-center rounded-full",
+                      isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    <Icon className="size-4" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold">{stage.label}</p>
+                    <p className="text-xs text-muted-foreground">{stage.description}</p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  ) : null;
+
+  const readStage = scrim ? (
+    <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(18rem,0.7fr)]">
+        <section className="rounded-2xl border border-border bg-card p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+            Reading portion
+          </p>
+          <h3 className="mt-2 font-heading text-2xl font-semibold">
+            Understand the lesson before the walkthrough begins
+          </h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            This keeps the journey lesson from feeling like a tiny W3Schools-style editor. The user
+            can read the concept first, then decide when to watch and when to code.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button type="button" onClick={() => moveToStage("watch")}>
+              Start watching
+            </Button>
+            <Button type="button" variant="outline" onClick={() => moveToStage("try")}>
+              Skip to code tryout
+            </Button>
+          </div>
+        </section>
+
+        <aside className="rounded-2xl border border-border bg-card p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+            Journey phases
+          </p>
+          <div className="mt-3 space-y-3 text-sm text-muted-foreground">
+            <div>
+              <p className="font-semibold text-foreground">Watch</p>
+              <p>Follow the scrim player as the lesson writes code and advances step by step.</p>
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">Try</p>
+              <p>Pause the lesson, edit files in the workspace, and run the result yourself.</p>
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">Save</p>
+              <p>Save the current lesson into the scrim library without leaving this page.</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        {scrim.slides.map((slide, index) => (
+          <article key={slide.id} className="rounded-2xl border border-border bg-card p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              Step {index + 1}
+            </p>
+            <h4 className="mt-2 font-heading text-lg font-semibold">{slide.title}</h4>
+            {slide.image_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={slide.image_url}
+                alt={slide.title}
+                className="mt-4 max-h-52 w-full rounded-xl border border-border object-cover"
+              />
+            )}
+            {slide.markdown ? (
+              <div className="mt-4">
+                <MarkdownBlock markdown={slide.markdown} />
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-muted-foreground">
+                This section is part of the guided walkthrough.
+              </p>
+            )}
+          </article>
+        ))}
+      </div>
+
+      {lessonChallenges.length > 0 && (
+        <section className="mt-4 rounded-2xl border border-border bg-card p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+            Practice checkpoints
+          </p>
+          <div className="mt-3 grid gap-3 lg:grid-cols-2">
+            {lessonChallenges.map((challenge) => (
+              <div key={challenge.id} className="rounded-xl border border-border bg-background/60 p-4">
+                <p className="text-sm font-semibold text-foreground">{challenge.title}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{challenge.instructions}</p>
+                {challenge.hint && (
+                  <p className="mt-2 text-xs text-muted-foreground">Hint: {challenge.hint}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  ) : null;
+
+  const watchOrTryBanner = scrim ? (
+    <div className="border-b border-[var(--hairline-warm)]/70 bg-[color:color-mix(in_oklch,var(--surface),white_2%)] px-4 py-4 sm:px-5">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
+        <section className="rounded-2xl border border-border bg-card p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+            {activeStage === "watch" ? "Video walkthrough" : "Code tryout"}
+          </p>
+          <h3 className="mt-2 font-heading text-xl font-semibold">
+            {activeStage === "watch"
+              ? "Use the player below to watch the lesson in sequence"
+              : "The editor is paused so the learner can edit and run the code"}
+          </h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {activeStage === "watch"
+              ? "The workspace stays in sync with the scrim timeline so the lesson behaves like a guided video, not just a static editor."
+              : "This stage is meant for hands-on execution. Use the Run control in the workspace toolbar and the player will keep your progress checkpointed."}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {activeStage === "watch" ? (
+              <Button type="button" onClick={() => moveToStage("try")}>
+                Switch to tryout
+              </Button>
+            ) : (
+              <Button type="button" onClick={openSaveStage}>
+                Save as scrim
+              </Button>
+            )}
+            <Button type="button" variant="outline" onClick={() => moveToStage("read")}>
+              Back to reading
+            </Button>
+          </div>
+        </section>
+
+        <aside className="rounded-2xl border border-border bg-card p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+            Current focus
+          </p>
+          <h4 className="mt-2 text-base font-semibold text-foreground">
+            {activeSlide?.title ?? "Guided walkthrough"}
+          </h4>
+          {activeSlide?.markdown ? (
+            <div className="mt-3 text-sm">
+              <MarkdownBlock markdown={activeSlide.markdown} />
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">{highlightedCaption}</p>
+          )}
+          <div className="mt-4 rounded-xl border border-border bg-background/70 p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              Live caption
+            </p>
+            <p className="mt-2 text-sm text-foreground">{highlightedCaption}</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  ) : null;
+
+  const saveStage = scrim ? (
+    <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
+        <section className="rounded-2xl border border-border bg-card p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+            Save scrim
+          </p>
+          <h3 className="mt-2 font-heading text-2xl font-semibold">
+            Keep this lesson as a reusable personal scrim
+          </h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Save the current lesson state, timeline, and workspace files without leaving the lesson
+            UI. That makes the scrim easy to reopen later from the journey library.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {canSaveScrim && (
+              <Button type="button" onClick={() => setSaveDialogOpen(true)}>
+                Save current scrim
+              </Button>
+            )}
+            <Button type="button" variant="outline" onClick={() => moveToStage("try")}>
+              Back to tryout
+            </Button>
+          </div>
+
+          {savedScrimHref && (
+            <div className="mt-4 rounded-xl border border-[var(--semantic-success)]/30 bg-[var(--semantic-success)]/10 p-4">
+              <p className="text-sm font-semibold text-foreground">Scrim saved</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Your personal copy is available from the lesson library and can be reopened directly.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link href={savedScrimHref} className={buttonVariants({ variant: "outline" })}>
+                  Open saved scrim
+                </Link>
+                {scrimLibraryHref && (
+                  <Link href={scrimLibraryHref} className={buttonVariants({ variant: "ghost" })}>
+                    Open scrim library
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+
+        <aside className="rounded-2xl border border-border bg-card p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+            What gets saved
+          </p>
+          <div className="mt-3 space-y-3 text-sm text-muted-foreground">
+            <div>
+              <p className="font-semibold text-foreground">Timeline position</p>
+              <p>
+                Resume point: {formatLessonDuration(resumeTimelineMs)} of{" "}
+                {formatLessonDuration(scrim.durationMs)}
+              </p>
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">Lesson assets</p>
+              <p>{scrim.slides.length} reading cards and the guided walkthrough timeline.</p>
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">Current files</p>
+              <p>{Object.keys(files).length} workspace file(s) will be included in the save.</p>
+            </div>
+          </div>
+
+          {scrimLibraryHref && (
+            <div className="mt-4 rounded-xl border border-border bg-background/60 p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Library className="size-4 text-primary" />
+                Scrim library
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Saved scrims continue to live in the journey CodeCast library for reuse.
+              </p>
+            </div>
+          )}
+        </aside>
+      </div>
+
+      {lessonCaptions.length > 0 && (
+        <section className="mt-4 rounded-2xl border border-border bg-card p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+            Lesson moments
+          </p>
+          <div className="mt-3 grid gap-3 lg:grid-cols-2">
+            {lessonCaptions.map((caption) => (
+              <div key={`${caption.t}-${caption.text}`} className="rounded-xl border border-border bg-background/60 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  {formatLessonDuration(caption.t)}
+                </p>
+                <p className="mt-2 text-sm text-foreground">{caption.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  ) : null;
 
   return (
     <div
@@ -221,74 +629,84 @@ export function PlaygroundShell({
         className
       )}
     >
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-        {useCodeWorkspace ? (
-          <CodeWorkspace
-            files={files}
-            activeFile={activeFile}
-            readOnly={readOnly}
-            defaultLanguage="python"
-            title={title}
-            breadcrumb={breadcrumb}
-            template={config.template}
-            slides={scrim?.slides}
-            activeSlideId={activeSlideId}
-            onSelectSlide={setActiveSlideId}
-            onFilesChange={handleFilesChange}
-            onOutput={onOutput ?? setLastOutput}
-            challengeActive={Boolean(activeChallenge)}
-            onUserRun={(result) =>
-              notifyScrimChallengeRun({
-                files,
-                stdout: result.stdout,
-                stderr: result.stderr,
-                error: result.error,
-              })
-            }
-            runSignal={runSignal}
-            journeyId={journeyId}
-            nodeId={nodeId}
-            lessonScrimId={lessonScrimId}
-            userScrimId={userScrimId}
-            demoMode={scrim?.demoMode}
-            scrimSlug={scrim?.scrimSlug}
-            className="h-full flex-1"
-          />
-        ) : (
-          <SandpackWorkspace
-            template={config.template === "react-ts" ? "react-ts" : "vanilla"}
-            files={files}
-            activeFile={activeFile}
-            readOnly={readOnly}
-            showPreview={config.preview !== false}
-            onFilesChange={readOnly ? undefined : handleFilesChange}
-          />
-        )}
-      </div>
+      {stageHeader}
 
-      {scrim && (
-        <ScrimPlayer
-          durationMs={scrim.durationMs}
-          events={scrim.events}
-          initialFiles={scrim.initialFiles}
-          narration={scrim.narration}
-          initialMs={scrim.initialTimelineMs ?? 0}
-          listenEnabled={listenEnabled}
-          onListenToggle={
-            narrationAvailable && listenControlMounted
-              ? handleListenToggle
-              : undefined
-          }
-          onStateChange={handleScrimState}
-          onRun={() => {
-            setRunSignal((n) => n + 1);
-          }}
-          onSaveCheckpoint={journeyId ? persistCheckpoint : undefined}
-          onSaveAsScrim={
-            journeyId ? () => setSaveDialogOpen(true) : undefined
-          }
-          saveStatus={saveStatus}
-        />
+      {scrim && activeStage === "read" ? (
+        readStage
+      ) : scrim && activeStage === "save" ? (
+        saveStage
+      ) : (
+        <>
+          {scrim && watchOrTryBanner}
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+            {useCodeWorkspace ? (
+              <CodeWorkspace
+                files={files}
+                activeFile={activeFile}
+                readOnly={readOnly}
+                defaultLanguage="python"
+                title={title}
+                breadcrumb={breadcrumb}
+                template={config.template}
+                slides={scrim?.slides}
+                activeSlideId={activeSlideId}
+                onSelectSlide={setActiveSlideId}
+                onFilesChange={handleFilesChange}
+                onOutput={onOutput ?? setLastOutput}
+                challengeActive={Boolean(activeChallenge)}
+                onUserRun={(result) =>
+                  notifyScrimChallengeRun({
+                    files,
+                    stdout: result.stdout,
+                    stderr: result.stderr,
+                    error: result.error,
+                  })
+                }
+                runSignal={runSignal}
+                journeyId={journeyId}
+                nodeId={nodeId}
+                lessonScrimId={lessonScrimId}
+                userScrimId={userScrimId}
+                demoMode={scrim?.demoMode}
+                scrimSlug={scrim?.scrimSlug}
+                className="h-full flex-1"
+              />
+            ) : (
+              <SandpackWorkspace
+                template={config.template === "react-ts" ? "react-ts" : "vanilla"}
+                files={files}
+                activeFile={activeFile}
+                readOnly={readOnly}
+                showPreview={config.preview !== false}
+                onFilesChange={readOnly ? undefined : handleFilesChange}
+              />
+            )}
+          </div>
+
+          {scrim && (
+            <ScrimPlayer
+              durationMs={scrim.durationMs}
+              events={scrim.events}
+              initialFiles={scrim.initialFiles}
+              narration={scrim.narration}
+              initialMs={scrim.initialTimelineMs ?? 0}
+              listenEnabled={listenEnabled}
+              onListenToggle={
+                narrationAvailable && listenControlMounted
+                  ? handleListenToggle
+                  : undefined
+              }
+              onStateChange={handleScrimState}
+              onRun={() => {
+                setRunSignal((value) => value + 1);
+              }}
+              onSaveCheckpoint={journeyId ? persistCheckpoint : undefined}
+              onSaveAsScrim={canSaveScrim ? openSaveStage : undefined}
+              saveStatus={saveStatus}
+              forcePauseSignal={forcePauseSignal}
+            />
+          )}
+        </>
       )}
 
       {config.completion === "output_contains" && config.completionTarget && (
@@ -313,6 +731,10 @@ export function PlaygroundShell({
           durationMs={scrim.durationMs}
           resumeTimelineMs={resumeTimelineMs}
           onClose={() => setSaveDialogOpen(false)}
+          onSaved={(scrimId) => {
+            setSavedScrimId(scrimId);
+            moveToStage("save");
+          }}
         />
       )}
     </div>
