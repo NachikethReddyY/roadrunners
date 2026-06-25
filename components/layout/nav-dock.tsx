@@ -71,11 +71,14 @@ function ThemeDockIcon() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    setMounted(true);
     const stored = localStorage.getItem("rr-theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const isDark = stored === "dark" || (!stored && prefersDark);
-    setTheme(isDark ? "dark" : "light");
+    const frame = window.requestAnimationFrame(() => {
+      setMounted(true);
+      setTheme(isDark ? "dark" : "light");
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   return (

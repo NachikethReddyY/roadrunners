@@ -12,7 +12,7 @@ export default async function NewRoadmapPage() {
 
   if (!user) redirect(ROUTES.login);
 
-  const { data: skills } = await supabase
+  const { data: skills, error: skillsError } = await supabase
     .from("skill_catalog")
     .select("slug, name, category")
     .neq("slug", "explore")
@@ -20,7 +20,7 @@ export default async function NewRoadmapPage() {
 
   return (
     <AppShell showProgress={false} fullBleed>
-      <GoalCreator skills={skills ?? []} />
+      <GoalCreator skills={skills ?? []} catalogUnavailable={Boolean(skillsError)} />
     </AppShell>
   );
 }

@@ -26,7 +26,7 @@ export default function LandingPage() {
           </h1>
           <p className="mt-5 max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
             RoadRunners is an AI-guided learning journey — pick your path at every step,
-            pivot between domains, and earn XP as you explore what hireable looks like now.
+            pivot between domains, and build credible project evidence as you explore.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link href={ROUTES.login} className={buttonVariants({ className: "h-11 rounded-full px-6 text-base" })}>
@@ -49,11 +49,11 @@ export default function LandingPage() {
             },
             {
               title: "Choose your path",
-              body: "At every node, AI offers 2–3 directions. Follow interest, not a fixed curriculum.",
+              body: "At each checkpoint, choose from up to three concrete feature outcomes instead of following a fixed curriculum.",
             },
             {
               title: "Pivot anytime",
-              body: "React to Swift? Web to AI? Branch without losing progress on your map.",
+              body: "Bring mobile, data, AI, or another field into the current project without losing branch history.",
             },
           ].map((item) => (
             <div key={item.title} className="rounded-xl border border-border bg-card p-6">

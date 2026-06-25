@@ -1,6 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type XpToastProps = {
@@ -8,29 +5,18 @@ type XpToastProps = {
 };
 
 export function XpToast({ xpGain }: XpToastProps) {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (!xpGain || xpGain <= 0) return;
-    setVisible(true);
-    const timer = window.setTimeout(() => setVisible(false), 2800);
-    return () => window.clearTimeout(timer);
-  }, [xpGain]);
-
-  if (!visible || !xpGain) return null;
+  if (!xpGain || xpGain <= 0) return null;
 
   return (
     <div
       role="status"
       aria-live="polite"
       className={cn(
-        "fixed bottom-28 left-1/2 z-50 -translate-x-1/2",
-        "rounded-full border border-primary/30 bg-primary/15 px-5 py-2.5",
-        "text-sm font-semibold text-primary shadow-lg backdrop-blur-md",
-        "animate-in fade-in slide-in-from-bottom-4 duration-300"
+        "inline-flex min-h-8 items-center rounded-full border border-primary/30",
+        "bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
       )}
     >
-      +{xpGain} XP
+      +{xpGain} XP recorded
     </div>
   );
 }
