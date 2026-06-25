@@ -4,14 +4,17 @@ Open **`exploration-report.html`** and click a path in the sidebar to highlight 
 
 ## New Engineer
 
-1. `docs/PRDfinal.md` — authoritative product scope and target architecture
+1. Choose the relevant package:
+   - `docs/tasks/01-product-journey.md`
+   - `docs/tasks/02-runtime-intelligence.md`
+   - `docs/tasks/03-platform-data.md`
 2. `app/layout.tsx` — fonts, metadata, global CSS
-3. `middleware.ts` + `lib/supabase/middleware.ts` — auth gate
+3. `proxy.ts` + `lib/supabase/middleware.ts` — auth gate
 4. `lib/constants/routes.ts` — route constants
 5. `lib/supabase/server.ts` — server data access
-6. `app/onboarding/page.tsx` — first private flow
-7. `lib/actions/journey.ts` — core game loop mutations
-8. `supabase/migrations/001_initial.sql` — data model + RLS
+6. `app/roadmap/new/page.tsx` — primary roadmap creation flow
+7. `lib/actions/journey.ts` — core journey mutations
+8. `supabase/migrations/` — complete data model + RLS
 
 ## Frontend
 
@@ -19,29 +22,32 @@ Open **`exploration-report.html`** and click a path in the sidebar to highlight 
 2. `app/layout.tsx` + `app/globals.css`
 3. `components/layout/app-shell.tsx` — authenticated layout
 4. `components/journey/journey-node-card.tsx` — node presentation
-5. `components/onboarding/onboarding-wizard.tsx` — 2-step form
+5. `components/roadmap/goal-creator.tsx` — roadmap goal and skill bubbles
 6. `components/journey/choice-panel.tsx` — branching UI
-7. `components/journey/journey-map.tsx` — progress visualization
+7. `components/playground/playground-shell.tsx` — workspace/scrim composition
+8. `components/journey/journey-map.tsx` — progress visualization
 
 ## Backend / Server
 
-1. `lib/actions/auth.ts`
-2. `lib/actions/onboarding.ts`
-3. `lib/actions/journey.ts`
-4. `app/api/ai/next-node/route.ts`
-5. `lib/schemas/ai.ts`
-6. `lib/ai/fallback.ts` (today) → `lib/ai/generate-node.ts` (target)
+1. `docs/tasks/02-runtime-intelligence.md`
+2. `app/api/ai/next-node/route.ts`
+3. `lib/ai/create-next-node.ts`
+4. `lib/ai/generate-node.ts`
+5. `lib/daytona/client.ts`
+6. `app/api/runner/exec/route.ts`
+7. `lib/schemas/ai.ts` + `lib/schemas/scrim.ts`
 
 ## Database
 
-1. `supabase/migrations/001_initial.sql`
-2. `supabase/seed.sql`
-3. `types/database.ts`
-4. `lib/schemas/journey.ts`
+1. `docs/tasks/03-platform-data.md`
+2. `supabase/migrations/001_initial.sql` through `004_scrim_sessions.sql`
+3. `supabase/seed.sql`
+4. `types/database.ts` — currently incomplete relative to later migrations
+5. `lib/schemas/journey.ts`
 
 ## Authentication
 
-1. `middleware.ts`
+1. `proxy.ts`
 2. `lib/supabase/middleware.ts`
 3. `lib/actions/auth.ts`
 4. `app/auth/callback/route.ts`

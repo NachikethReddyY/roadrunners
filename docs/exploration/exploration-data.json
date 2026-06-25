@@ -19,7 +19,7 @@
       ],
       "connected": 3,
       "dependents": [],
-      "purpose": "POST endpoint: validates request, returns fallback AI node (LLM TODO)."
+      "purpose": "Authenticated endpoint: validates, rate-limits, generates, and persists the next node."
     },
     {
       "id": "app/api/health/route.ts",
@@ -2009,7 +2009,7 @@
         "lib/actions/onboarding.ts",
         "lib/actions/roadmap.ts"
       ],
-      "purpose": "Server-side logic: create-next-node.ts"
+      "purpose": "Loads journey context, generates or falls back, then persists through Supabase RPC."
     },
     {
       "id": "lib/ai/fallback.ts",
@@ -2057,7 +2057,7 @@
       "dependents": [
         "lib/ai/create-next-node.ts"
       ],
-      "purpose": "Stub for future OpenAI streaming node generation."
+      "purpose": "OpenAI/Gemini structured next-node generation with Zod validation."
     },
     {
       "id": "lib/auth/oauth-next.ts",
@@ -2967,7 +2967,7 @@
       "dependents": [
         "proxy.ts"
       ],
-      "purpose": "Session refresh + redirect logic invoked from root middleware."
+      "purpose": "Session refresh + redirect logic invoked from the root proxy."
     },
     {
       "id": "lib/supabase/route-handler.ts",
@@ -3086,7 +3086,7 @@
     {
       "id": "proxy.ts",
       "label": "proxy.ts",
-      "type": "util",
+      "type": "config",
       "path": "proxy.ts",
       "imports": [
         "lib/supabase/middleware.ts"
@@ -3100,7 +3100,7 @@
       ],
       "connected": 1,
       "dependents": [],
-      "purpose": "Shared utilities/schemas: proxy.ts"
+      "purpose": "Next.js proxy entry: delegates session refresh and private-route redirects."
     },
     {
       "id": "types/database.ts",
@@ -4669,13 +4669,18 @@
       "type": "import"
     },
     {
+      "source": "app/page.tsx",
+      "target": "proxy.ts",
+      "type": "proxy"
+    },
+    {
       "source": "app/login/page.tsx",
       "target": "components/auth/login-form.tsx",
       "type": "renders"
     },
     {
-      "source": "app/onboarding/page.tsx",
-      "target": "lib/actions/onboarding.ts",
+      "source": "app/roadmap/new/page.tsx",
+      "target": "lib/actions/roadmap.ts",
       "type": "uses"
     },
     {
@@ -4685,8 +4690,13 @@
     },
     {
       "source": "app/api/ai/next-node/route.ts",
-      "target": "lib/ai/fallback.ts",
+      "target": "lib/ai/create-next-node.ts",
       "type": "uses"
+    },
+    {
+      "source": "proxy.ts",
+      "target": "lib/supabase/middleware.ts",
+      "type": "delegates"
     },
     {
       "source": "lib/actions/journey.ts",
@@ -4845,18 +4855,19 @@
         "lib/actions/auth.ts",
         "app/auth/callback/route.ts",
         "lib/supabase/server.ts",
-        "middleware.ts",
+        "proxy.ts",
         "lib/supabase/middleware.ts"
       ]
     },
     {
-      "name": "Onboarding → First Journey",
+      "name": "Roadmap Creation → First Node",
       "path": [
-        "app/onboarding/page.tsx",
-        "components/onboarding/onboarding-wizard.tsx",
-        "lib/actions/onboarding.ts",
-        "lib/schemas/onboarding.ts",
+        "app/roadmap/new/page.tsx",
+        "components/roadmap/goal-creator.tsx",
+        "lib/actions/roadmap.ts",
+        "lib/schemas/roadmap.ts",
         "lib/supabase/server.ts",
+        "lib/ai/create-next-node.ts",
         "supabase/migrations/001_initial.sql#profiles",
         "supabase/migrations/001_initial.sql#journeys"
       ]
@@ -4873,10 +4884,12 @@
       ]
     },
     {
-      "name": "AI Next Node (MVP fallback)",
+      "name": "AI Next Node",
       "path": [
         "app/api/ai/next-node/route.ts",
         "lib/schemas/ai.ts",
+        "lib/ai/create-next-node.ts",
+        "lib/ai/generate-node.ts",
         "lib/ai/fallback.ts",
         "lib/supabase/server.ts"
       ]
@@ -4884,37 +4897,44 @@
   ],
   "onboardingPaths": {
     "New Engineer": [
-      "docs/PRDfinal.md",
+      "docs/tasks/01-product-journey.md",
+      "docs/tasks/02-runtime-intelligence.md",
+      "docs/tasks/03-platform-data.md",
       "app/layout.tsx",
-      "middleware.ts",
+      "proxy.ts",
       "lib/constants/routes.ts",
       "lib/supabase/server.ts",
-      "app/onboarding/page.tsx",
+      "app/roadmap/new/page.tsx",
       "lib/actions/journey.ts",
       "supabase/migrations/001_initial.sql"
     ],
     "Frontend": [
+      "docs/tasks/01-product-journey.md",
       "app/layout.tsx",
       "components/layout/app-shell.tsx",
       "components/journey/journey-node-card.tsx",
-      "components/onboarding/onboarding-wizard.tsx",
+      "components/roadmap/goal-creator.tsx",
+      "components/playground/playground-shell.tsx",
       "docs/design/DESIGN.md"
     ],
-    "Backend": [
-      "lib/actions/journey.ts",
-      "lib/actions/onboarding.ts",
-      "lib/actions/auth.ts",
+    "Runtime": [
+      "docs/tasks/02-runtime-intelligence.md",
       "app/api/ai/next-node/route.ts",
-      "lib/supabase/server.ts"
+      "lib/ai/create-next-node.ts",
+      "lib/ai/generate-node.ts",
+      "lib/daytona/client.ts",
+      "app/api/runner/exec/route.ts"
     ],
-    "Database": [
+    "Platform": [
+      "docs/tasks/03-platform-data.md",
       "supabase/migrations/001_initial.sql",
+      "supabase/migrations/004_scrim_sessions.sql",
       "supabase/seed.sql",
       "types/database.ts",
       "lib/schemas/journey.ts"
     ],
     "Authentication": [
-      "middleware.ts",
+      "proxy.ts",
       "lib/supabase/middleware.ts",
       "lib/actions/auth.ts",
       "app/auth/callback/route.ts",
@@ -4944,7 +4964,6 @@
     "lib/schemas/skill.ts",
     "lib/supabase/client.ts",
     "next.config.ts",
-    "proxy.ts",
     "types/database.ts"
   ],
   "circularDeps": [],
