@@ -5,7 +5,7 @@ import type { ScrimDemoData } from "@/components/playground/scrim-demo";
 const demoData = scrimData as ScrimDemoData;
 
 export const metadata = {
-  title: "Python scrim demo · RoadRunners",
+  title: "Python CodeCast demo · RoadRunners",
 };
 
 export default function TestScrimPage() {

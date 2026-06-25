@@ -42,7 +42,7 @@ export function SlidePane({
         ))}
       </div>
       {activeSlide && (
-        <div className="mt-2 rounded-lg border border-[var(--hairline-warm)] bg-[var(--surface-dark-elevated)] p-3">
+        <div className="mt-2 rounded-lg border border-[var(--editor-border)] bg-[var(--surface-dark-elevated)] p-3">
           <p className="mb-2 text-sm font-semibold text-[var(--on-dark)]">
             {activeSlide.title}
           </p>
@@ -55,7 +55,7 @@ export function SlidePane({
             />
           )}
           {activeSlide.markdown && (
-            <div className="prose prose-invert prose-sm max-w-none text-[var(--on-dark-mute)]">
+            <div className="prose prose-sm max-w-none text-[var(--on-dark-mute)] dark:prose-invert">
               <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
                 {activeSlide.markdown}
               </ReactMarkdown>

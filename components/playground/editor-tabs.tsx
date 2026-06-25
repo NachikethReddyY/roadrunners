@@ -21,7 +21,7 @@ export function EditorTabs({
   return (
     <div
       className={cn(
-        "flex h-9 items-stretch overflow-x-auto bg-[#14130f]",
+        "flex h-9 items-stretch overflow-x-auto bg-[var(--surface-dark)]",
         className
       )}
       role="tablist"
@@ -33,10 +33,10 @@ export function EditorTabs({
             key={path}
             role="presentation"
             className={cn(
-              "group flex max-w-[12rem] shrink-0 items-center border-r border-[var(--hairline-warm)]/50",
+              "group flex max-w-[12rem] shrink-0 items-center border-r border-[var(--editor-border)]/70",
               active
-                ? "bg-[#1a1916] text-[var(--on-dark)]"
-                : "text-[var(--on-dark-mute)] hover:bg-[#1a1916]/60"
+                ? "bg-[var(--editor-surface)] text-[var(--editor-text)]"
+                : "text-[var(--editor-text-muted)] hover:bg-[var(--editor-surface)]/60"
             )}
           >
             <button

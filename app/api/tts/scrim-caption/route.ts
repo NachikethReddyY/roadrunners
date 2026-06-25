@@ -41,7 +41,8 @@ export async function POST(request: Request) {
   try {
     const { audioUrl, cached } = await getOrCreateCaptionAudio(
       parsed.data.text,
-      parsed.data.voiceId
+      parsed.data.voiceId,
+      parsed.data.speech
     );
     return NextResponse.json({ audioUrl, cached });
   } catch (error) {

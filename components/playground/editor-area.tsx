@@ -12,7 +12,12 @@ const MonacoEditorPane = dynamic(
     import("@/components/playground/monaco-editor-pane").then(
       (m) => m.MonacoEditorPane
     ),
-  { ssr: false, loading: () => <div className="h-full animate-pulse bg-[#1a1916]" /> }
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full animate-pulse bg-[var(--editor-surface)]" />
+    ),
+  }
 );
 
 type EditorAreaProps = {
@@ -80,7 +85,12 @@ export function EditorArea({
   const showSplit = splitEnabled && secondaryFile && secondaryFile !== activeFile;
 
   return (
-    <div className={cn("flex h-full min-h-0 flex-col bg-[#1a1916]", className)}>
+    <div
+      className={cn(
+        "flex h-full min-h-0 flex-col bg-[var(--editor-surface)]",
+        className
+      )}
+    >
       <EditorTabs
         openTabs={openTabs}
         activeFile={activeFile}

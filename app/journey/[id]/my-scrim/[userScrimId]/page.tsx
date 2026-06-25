@@ -72,14 +72,14 @@ export default async function UserScrimPage({ params }: PageProps) {
           <div>
             <p className="text-xs text-muted-foreground">{journey.title}</p>
             <h1 className="font-heading text-lg font-semibold">{userScrim.title}</h1>
-            <p className="text-xs text-muted-foreground">Your saved scrim</p>
+            <p className="text-xs text-muted-foreground">Your saved CodeCast</p>
           </div>
           <div className="flex gap-2">
             <Link
               href={ROUTES.journeyScrims(journeyId)}
               className={buttonVariants({ variant: "ghost", className: "rounded-full" })}
             >
-              Your scrims
+              CodeCasts
             </Link>
             <Link
               href={ROUTES.journeyDetail(journeyId)}

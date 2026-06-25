@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * One-shot dependency extractor for RoadRunners codebase.
  * Writes exploration-data.json to the same directory.

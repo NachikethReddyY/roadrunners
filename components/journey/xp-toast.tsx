@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type XpToastProps = {
@@ -5,7 +6,19 @@ type XpToastProps = {
 };
 
 export function XpToast({ xpGain }: XpToastProps) {
-  if (!xpGain || xpGain <= 0) return null;
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!xpGain || xpGain <= 0) return;
+    const showTimer = window.setTimeout(() => setVisible(true), 0);
+    const timer = window.setTimeout(() => setVisible(false), 2800);
+    return () => {
+      window.clearTimeout(showTimer);
+      window.clearTimeout(timer);
+    };
+  }, [xpGain]);
+
+  if (!visible || !xpGain) return null;
 
   return (
     <div

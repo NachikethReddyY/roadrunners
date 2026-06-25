@@ -36,12 +36,16 @@ type VfsFileExplorerProps = {
 
 function FileIcon({ path }: { path: string }) {
   const ext = path.split(".").pop()?.toLowerCase();
-  if (ext === "py") return <FileCode2 className="size-3.5 shrink-0 text-[#ffd43b]" />;
-  if (ext === "js" || ext === "ts" || ext === "tsx" || ext === "jsx") {
-    return <FileCode2 className="size-3.5 shrink-0 text-[#9fc9a2]" />;
+  if (ext === "py") {
+    return <FileCode2 className="size-3.5 shrink-0 text-[var(--primary-active)]" />;
   }
-  if (ext === "json") return <FileJson2 className="size-3.5 shrink-0 text-[#c0a8dd]" />;
-  return <FileText className="size-3.5 shrink-0 text-[var(--on-dark-mute)]" />;
+  if (ext === "js" || ext === "ts" || ext === "tsx" || ext === "jsx") {
+    return <FileCode2 className="size-3.5 shrink-0 text-[var(--link)]" />;
+  }
+  if (ext === "json") {
+    return <FileJson2 className="size-3.5 shrink-0 text-[var(--skill-data)]" />;
+  }
+  return <FileText className="size-3.5 shrink-0 text-[var(--editor-text-muted)]" />;
 }
 
 export function VfsFileExplorer({
@@ -270,7 +274,7 @@ export function VfsFileExplorer({
                 }
               }}
               placeholder="filename"
-              className="mx-1 mb-1 rounded bg-[var(--canvas-dark)] px-2 py-1 font-mono text-xs outline-none ring-1 ring-[var(--primary)]"
+              className="mx-1 mb-1 rounded bg-[var(--surface-dark)] px-2 py-1 font-mono text-xs text-[var(--editor-text)] outline-none ring-1 ring-[var(--primary)]"
               style={{ marginLeft: depth * 10 + 20 }}
             />
           )}
@@ -296,7 +300,7 @@ export function VfsFileExplorer({
               if (e.key === "Enter") commitRename();
               if (e.key === "Escape") setRenaming(null);
             }}
-            className="w-full rounded bg-[var(--canvas-dark)] px-2 py-1 font-mono text-xs outline-none ring-1 ring-[var(--primary)]"
+            className="w-full rounded bg-[var(--surface-dark)] px-2 py-1 font-mono text-xs text-[var(--editor-text)] outline-none ring-1 ring-[var(--primary)]"
             style={{ marginLeft: depth * 10 }}
           />
         ) : (
@@ -320,7 +324,7 @@ export function VfsFileExplorer({
               onClick={() => onSelect(path)}
               className={cn(
                 "flex min-w-0 flex-1 items-center gap-1.5 text-left text-xs",
-                activeFile === path ? "text-[var(--on-dark)]" : "text-[var(--on-dark-mute)]"
+                activeFile === path ? "text-[var(--editor-text)]" : "text-[var(--editor-text-muted)]"
               )}
             >
               <FileIcon path={path} />
@@ -362,7 +366,7 @@ export function VfsFileExplorer({
               setFolderValue("");
             }}
             aria-label="New folder"
-            className="rounded-md p-1 text-[var(--on-dark-mute)] hover:bg-[var(--surface-dark-soft)] hover:text-[var(--on-dark)]"
+            className="rounded-md p-1 text-[var(--editor-text-muted)] hover:bg-[var(--surface-dark-soft)] hover:text-[var(--editor-text)]"
           >
             <FolderPlus className="size-3.5" />
           </button>
@@ -373,7 +377,7 @@ export function VfsFileExplorer({
               setFileValue("");
             }}
             aria-label="New file"
-            className="rounded-md p-1 text-[var(--on-dark-mute)] hover:bg-[var(--surface-dark-soft)] hover:text-[var(--on-dark)]"
+            className="rounded-md p-1 text-[var(--editor-text-muted)] hover:bg-[var(--surface-dark-soft)] hover:text-[var(--editor-text)]"
           >
             <Plus className="size-3.5" />
           </button>
@@ -394,7 +398,7 @@ export function VfsFileExplorer({
             }
           }}
           placeholder="folder name"
-          className="mx-1 rounded bg-[var(--canvas-dark)] px-2 py-1 font-mono text-xs text-[var(--on-dark)] outline-none ring-1 ring-[var(--primary)]"
+          className="mx-1 rounded bg-[var(--surface-dark)] px-2 py-1 font-mono text-xs text-[var(--editor-text)] outline-none ring-1 ring-[var(--primary)]"
         />
       )}
 
@@ -412,7 +416,7 @@ export function VfsFileExplorer({
             }
           }}
           placeholder="filename"
-          className="mx-1 rounded bg-[var(--canvas-dark)] px-2 py-1 font-mono text-xs text-[var(--on-dark)] outline-none ring-1 ring-[var(--primary)]"
+          className="mx-1 rounded bg-[var(--surface-dark)] px-2 py-1 font-mono text-xs text-[var(--editor-text)] outline-none ring-1 ring-[var(--primary)]"
         />
       )}
 

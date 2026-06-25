@@ -74,9 +74,9 @@ export default async function JourneyScrimsPage({ params }: PageProps) {
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {journey.title}
             </p>
-            <h1 className="font-heading text-2xl font-semibold">Your scrims</h1>
+            <h1 className="font-heading text-2xl font-semibold">CodeCasts</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Saved lessons and checkpoints — pick up exactly where you left off.
+              Narrated coding lessons, saved runs, and checkpoints - pick up exactly where you left off.
             </p>
           </div>
           <Link
@@ -88,10 +88,10 @@ export default async function JourneyScrimsPage({ params }: PageProps) {
         </div>
 
         <section className="space-y-3">
-          <h2 className="font-heading text-lg font-semibold">Saved scrims</h2>
+          <h2 className="font-heading text-lg font-semibold">Saved CodeCasts</h2>
           {userScrims.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No saved scrims yet. Pause a lesson and use &quot;Save as scrim&quot;.
+              No saved CodeCasts yet. Pause a lesson and use &quot;Save CodeCast&quot;.
             </p>
           ) : (
             <ul className="divide-y divide-border rounded-xl border border-border">
@@ -122,7 +122,7 @@ export default async function JourneyScrimsPage({ params }: PageProps) {
           <h2 className="font-heading text-lg font-semibold">Recent checkpoints</h2>
           {checkpoints.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Checkpoints appear when you pause or save progress during a scrim.
+              Checkpoints appear when you pause or save progress during a CodeCast.
             </p>
           ) : (
             <ul className="divide-y divide-border rounded-xl border border-border">

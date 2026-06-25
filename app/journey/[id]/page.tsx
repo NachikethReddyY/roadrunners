@@ -171,7 +171,7 @@ export default async function JourneyDetailPage({ params }: PageProps) {
                 className: "min-h-11 rounded-full",
               })}
             >
-              Optional scrim: {relevantScrim.title}
+              CodeCast: {relevantScrim.title}
             </Link>
           )}
         </div>

@@ -4,16 +4,22 @@ import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
+function preferredDarkTheme() {
+  if (typeof window === "undefined") return false;
+  const stored = localStorage.getItem("rr-theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  return stored === "dark" || (!stored && prefersDark);
+}
+
 export function ThemeToggle() {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    const root = document.documentElement;
-    const stored = localStorage.getItem("rr-theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const isDark = stored === "dark" || (!stored && prefersDark);
-    root.classList.toggle("dark", isDark);
-    const frame = window.requestAnimationFrame(() => setDark(isDark));
+    const isDark = preferredDarkTheme();
+    const frame = window.requestAnimationFrame(() => {
+      setDark(isDark);
+      document.documentElement.classList.toggle("dark", isDark);
+    });
     return () => window.cancelAnimationFrame(frame);
   }, []);
 

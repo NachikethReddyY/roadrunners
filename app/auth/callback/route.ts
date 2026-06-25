@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     return loginErrorRedirect(origin);
   }
 
-  const supabase = await createRouteHandlerClientWithCookies(request);
+  const supabase = await createRouteHandlerClientWithCookies();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {

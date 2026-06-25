@@ -70,7 +70,7 @@ export function ConsolePane({
   return (
     <div
       className={cn(
-        "flex h-full min-h-0 flex-col overflow-hidden bg-[#0d0c0a]",
+        "flex h-full min-h-0 flex-col overflow-hidden bg-[var(--canvas-dark)]",
         isRunning && "ring-1 ring-inset ring-[var(--primary)]/50",
         className
       )}
@@ -79,7 +79,7 @@ export function ConsolePane({
         <div className="h-0.5 shrink-0 animate-pulse bg-gradient-to-r from-transparent via-[var(--primary)] to-transparent" />
       )}
 
-      <div className="flex h-9 shrink-0 items-center justify-between border-b border-[var(--hairline-warm)] bg-[#12110e] px-3">
+      <div className="flex h-9 shrink-0 items-center justify-between border-b border-[var(--editor-border)] bg-[var(--surface-dark)] px-3">
         <button
           type="button"
           onClick={(e) => {
@@ -144,7 +144,7 @@ export function ConsolePane({
         ref={scrollRef}
         className={cn(
           "min-h-0 flex-1 overflow-auto px-3 py-2.5 font-mono text-[13px] leading-relaxed sm:text-sm",
-          isRunning ? "text-[var(--primary-soft)]" : "text-[#d4d1c8]"
+          isRunning ? "text-[var(--primary-active)]" : "text-[var(--on-dark)]"
         )}
       >
         {!collapsed && (
@@ -164,7 +164,7 @@ export function ConsolePane({
         )}
 
         {previewUrl && !collapsed && (
-          <div className="my-2 border-t border-[var(--hairline-warm)] pt-2">
+          <div className="my-2 border-t border-[var(--editor-border)] pt-2">
             <p className="mb-1 text-[10px] uppercase tracking-widest text-[var(--on-dark-mute)]">
               HTML preview
             </p>
@@ -172,14 +172,14 @@ export function ConsolePane({
               title="HTML preview"
               src={previewUrl}
               sandbox="allow-scripts"
-              className="h-28 w-full rounded border border-[var(--hairline-warm)] bg-white"
+              className="h-28 w-full rounded border border-[var(--editor-border)] bg-white"
             />
           </div>
         )}
 
         {onSubmitLine && (
           <div
-            className="flex min-w-0 cursor-text items-baseline gap-0 pt-0.5"
+            className="flex min-w-0 cursor-text items-baseline gap-1.5 pt-0.5"
             onClick={focusInput}
           >
             <span className="shrink-0 select-none text-[var(--primary)]">{prompt}</span>

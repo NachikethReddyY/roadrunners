@@ -34,9 +34,7 @@ export function createRouteHandlerClient(
   );
 }
 
-export async function createRouteHandlerClientWithCookies(
-  request: NextRequest
-) {
+export async function createRouteHandlerClientWithCookies() {
   const cookieStore = await cookies();
 
   return createServerClient(
