@@ -7,6 +7,7 @@ type AppShellProps = {
   xp?: number;
   streakDays?: number;
   showProgress?: boolean;
+  showNavDock?: boolean;
   /** Full viewport width — no max-width column (roadmap creator) */
   fullBleed?: boolean;
 };
@@ -17,6 +18,7 @@ export function AppShell({
   xp = 0,
   streakDays = 0,
   showProgress = true,
+  showNavDock = true,
   fullBleed = false,
 }: AppShellProps) {
   return (
@@ -33,7 +35,9 @@ export function AppShell({
       >
         {children}
       </main>
-      <NavDock authenticated level={level} streakDays={streakDays} />
+      {showNavDock && (
+        <NavDock authenticated level={level} streakDays={streakDays} />
+      )}
     </div>
   );
 }

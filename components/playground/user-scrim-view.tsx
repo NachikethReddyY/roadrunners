@@ -38,6 +38,7 @@ export function UserScrimView({
         durationMs: scrim.timeline.durationMs,
         events: scrim.timeline.events,
         slides: scrim.slides,
+        narration: scrim.narration,
         initialFiles: scrim.initial_files,
         initialTimelineMs: scrim.resume_timeline_ms ?? 0,
       }}

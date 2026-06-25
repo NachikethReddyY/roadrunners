@@ -72,6 +72,7 @@ export function ScrimLessonView({
         durationMs: scrim.timeline.durationMs,
         events: scrim.timeline.events,
         slides: scrim.slides,
+        narration: scrim.narration,
         initialFiles: scrim.initial_files,
         initialTimelineMs,
       }}

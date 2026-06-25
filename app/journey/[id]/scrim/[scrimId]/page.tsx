@@ -68,10 +68,12 @@ export default async function ScrimLessonPage({ params }: PageProps) {
   return (
     <AppShell
       fullBleed
+      showProgress={false}
+      showNavDock={false}
       level={profile?.level ?? 1}
       streakDays={profile?.streak_days ?? 0}
     >
-      <div className="flex h-[calc(100dvh-4rem)] flex-col overflow-hidden px-0 py-0">
+      <div className="flex h-screen flex-col overflow-hidden px-0 py-0">
         <div className="flex items-center justify-between gap-4 border-b border-border bg-background/92 px-4 py-3 backdrop-blur sm:px-5">
           <div>
             <p className="text-xs text-muted-foreground">{journey.title}</p>

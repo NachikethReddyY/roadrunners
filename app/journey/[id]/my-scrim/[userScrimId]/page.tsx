@@ -64,11 +64,13 @@ export default async function UserScrimPage({ params }: PageProps) {
   return (
     <AppShell
       fullBleed
+      showProgress={false}
+      showNavDock={false}
       level={profile?.level ?? 1}
       streakDays={profile?.streak_days ?? 0}
     >
-      <div className="flex h-[calc(100vh-4rem)] flex-col px-2 py-2 sm:px-4">
-        <div className="mb-2 flex items-center justify-between gap-4 px-2">
+      <div className="flex h-screen flex-col overflow-hidden px-0 py-0">
+        <div className="flex items-center justify-between gap-4 border-b border-border bg-background/92 px-4 py-3 backdrop-blur sm:px-5">
           <div>
             <p className="text-xs text-muted-foreground">{journey.title}</p>
             <h1 className="font-heading text-lg font-semibold">{userScrim.title}</h1>
