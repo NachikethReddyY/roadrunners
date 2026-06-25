@@ -7,9 +7,7 @@ Read this file first when working in this repository. It orients you to product 
 | Resource | Purpose |
 |----------|---------|
 | **`docs/exploration/exploration-report.html`** | Interactive dependency graph — open in a browser. Best 5-minute architecture overview. |
-| **`docs/handoff-roadrunner-hackathon.md`** | MVP spec, security checklist, data model, acceptance criteria |
-| **`docs/product-roadmap.md`** | Product roadmap — bubble creator, dashboard, build phases |
-| **`docs/preflight-plan.md`** | Locked foundation decisions (stack, folders, AI contract) |
+| **`docs/PRDfinal.md`** | Authoritative product spec, contracts, data model, phases, and acceptance criteria |
 | **`docs/design/DESIGN.md`** | Design system — colors, typography, components |
 | **`README.md`** | Setup, env vars, folder map |
 
@@ -148,7 +146,7 @@ Next.js 16 requires explicit return types on exported server actions that return
 - Browser Supabase client (`lib/supabase/client.ts`) unused so far
 - Tests (manual RLS smoke test recommended)
 
-When implementing AI flow, read the **Persistence contract** section in `docs/handoff-roadrunner-hackathon.md`.
+When implementing AI flow, read the AI, persistence, verification, and security sections in `docs/PRDfinal.md`.
 
 ## Critical user flows
 
@@ -218,7 +216,7 @@ Supabase: run `supabase/migrations/001_initial.sql` then `seed.sql` in your proj
 
 | Role | Start with |
 |------|------------|
-| New engineer | `docs/handoff-roadrunner-hackathon.md` → `proxy.ts` → `lib/actions/journey.ts` → migration SQL |
+| New engineer | `docs/PRDfinal.md` → `proxy.ts` → `lib/actions/journey.ts` → migration SQL |
 | Frontend | `docs/design/DESIGN.md` → `app/layout.tsx` → `components/journey/*` |
 | Backend / API | `lib/actions/*` → `app/api/ai/next-node/route.ts` → `lib/schemas/ai.ts` |
 | Database | `supabase/migrations/001_initial.sql` → `lib/schemas/journey.ts` |

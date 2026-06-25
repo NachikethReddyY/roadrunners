@@ -118,7 +118,7 @@ function purpose(rel, type) {
     "app/api/ai/next-node/route.ts": "POST endpoint: validates request, returns fallback AI node (LLM TODO).",
     "supabase/migrations/001_initial.sql": "PostgreSQL schema: profiles, journeys, nodes, choices, RLS policies.",
     "docs/design/DESIGN.md": "RoadRunners design system: colors, typography, components.",
-    "docs/handoff-roadrunner-hackathon.md": "MVP spec, constraints, and preflight revision checklist.",
+    "docs/PRDfinal.md": "Authoritative RoadRunners product spec, contracts, phases, and acceptance criteria.",
   };
   if (map[rel]) return map[rel];
   if (type === "route") return `Next.js App Router page or API handler at ${rel.replace(/^app\//, "/").replace(/\/page\.tsx$/, "").replace(/\/route\.ts$/, "")}`;
@@ -317,7 +317,7 @@ const criticalPaths = [
 
 const onboardingPaths = {
   "New Engineer": [
-    "docs/handoff-roadrunner-hackathon.md",
+    "docs/PRDfinal.md",
     "app/layout.tsx",
     "middleware.ts",
     "lib/constants/routes.ts",

@@ -4,7 +4,7 @@ Open **`exploration-report.html`** and click a path in the sidebar to highlight 
 
 ## New Engineer
 
-1. `docs/handoff-roadrunner-hackathon.md` — product + MVP scope
+1. `docs/PRDfinal.md` — authoritative product scope and target architecture
 2. `app/layout.tsx` — fonts, metadata, global CSS
 3. `middleware.ts` + `lib/supabase/middleware.ts` — auth gate
 4. `lib/constants/routes.ts` — route constants

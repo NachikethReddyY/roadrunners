@@ -7,7 +7,7 @@
       "type": "route",
       "path": "app/api/ai/next-node/route.ts",
       "imports": [
-        "lib/ai/fallback.ts",
+        "lib/ai/create-next-node.ts",
         "lib/schemas/ai.ts",
         "lib/supabase/server.ts"
       ],
@@ -38,13 +38,77 @@
       "purpose": "Next.js App Router page or API handler at /api/health"
     },
     {
+      "id": "app/api/runner/exec/route.ts",
+      "label": "route.ts",
+      "type": "route",
+      "path": "app/api/runner/exec/route.ts",
+      "imports": [
+        "lib/daytona/client.ts",
+        "lib/config/scrim.ts",
+        "lib/schemas/scrim.ts",
+        "lib/supabase/server.ts"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "keyFunctions": [
+        "POST()"
+      ],
+      "connected": 4,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /api/runner/exec"
+    },
+    {
+      "id": "app/api/tts/scrim-caption/route.ts",
+      "label": "route.ts",
+      "type": "route",
+      "path": "app/api/tts/scrim-caption/route.ts",
+      "imports": [
+        "lib/config/scrim.ts",
+        "lib/schemas/scrim.ts",
+        "lib/supabase/server.ts",
+        "lib/tts/elevenlabs.ts"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "keyFunctions": [
+        "POST()"
+      ],
+      "connected": 4,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /api/tts/scrim-caption"
+    },
+    {
       "id": "app/auth/callback/route.ts",
       "label": "route.ts",
       "type": "route",
       "path": "app/auth/callback/route.ts",
       "imports": [
+        "lib/auth/oauth-next.ts",
         "lib/constants/routes.ts",
-        "lib/supabase/server.ts"
+        "lib/supabase/route-handler.ts"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "keyFunctions": [
+        "loginErrorRedirect()",
+        "oauthErrorMessage()",
+        "GET()"
+      ],
+      "connected": 3,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /auth/callback"
+    },
+    {
+      "id": "app/auth/confirm/route.ts",
+      "label": "route.ts",
+      "type": "route",
+      "path": "app/auth/confirm/route.ts",
+      "imports": [
+        "lib/constants/routes.ts",
+        "lib/supabase/route-handler.ts"
       ],
       "exports": [
         "GET"
@@ -54,7 +118,53 @@
       ],
       "connected": 2,
       "dependents": [],
-      "purpose": "Next.js App Router page or API handler at /auth/callback"
+      "purpose": "Next.js App Router page or API handler at /auth/confirm"
+    },
+    {
+      "id": "app/auth/oauth/[provider]/route.ts",
+      "label": "route.ts",
+      "type": "route",
+      "path": "app/auth/oauth/[provider]/route.ts",
+      "imports": [
+        "lib/auth/oauth-next.ts",
+        "lib/auth/oauth.ts",
+        "lib/constants/routes.ts",
+        "lib/supabase/route-handler.ts"
+      ],
+      "exports": [
+        "GET"
+      ],
+      "keyFunctions": [
+        "authCallbackUrl()",
+        "loginErrorRedirect()",
+        "GET()"
+      ],
+      "connected": 4,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /auth/oauth/[provider]"
+    },
+    {
+      "id": "app/auth/verify/route.ts",
+      "label": "route.ts",
+      "type": "route",
+      "path": "app/auth/verify/route.ts",
+      "imports": [
+        "lib/auth/otp.ts",
+        "lib/constants/routes.ts",
+        "lib/schemas/auth.ts",
+        "lib/supabase/route-handler.ts"
+      ],
+      "exports": [
+        "POST"
+      ],
+      "keyFunctions": [
+        "loginErrorRedirect()",
+        "readOtpCookieFromRequest()",
+        "POST()"
+      ],
+      "connected": 4,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /auth/verify"
     },
     {
       "id": "app/journey/[id]/map/page.tsx",
@@ -77,6 +187,31 @@
       "connected": 5,
       "dependents": [],
       "purpose": "Next.js App Router page or API handler at /journey/[id]/map"
+    },
+    {
+      "id": "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
+      "label": "page.tsx",
+      "type": "route",
+      "path": "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
+      "imports": [
+        "components/playground/user-scrim-view.tsx",
+        "components/layout/app-shell.tsx",
+        "lib/actions/scrim.ts",
+        "lib/config/scrim.ts",
+        "lib/constants/routes.ts",
+        "lib/schemas/playground.ts",
+        "lib/supabase/server.ts",
+        "components/ui/button.tsx"
+      ],
+      "exports": [
+        "default"
+      ],
+      "keyFunctions": [
+        "UserScrimPage()"
+      ],
+      "connected": 8,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /journey/[id]/my-scrim/[userScrimId]"
     },
     {
       "id": "app/journey/[id]/not-found.tsx",
@@ -102,10 +237,15 @@
       "type": "route",
       "path": "app/journey/[id]/page.tsx",
       "imports": [
+        "components/playground/interactive-node-view.tsx",
         "components/layout/app-shell.tsx",
         "components/journey/choice-panel.tsx",
+        "components/journey/continue-form.tsx",
         "components/journey/journey-node-card.tsx",
+        "components/journey/retry-node-form.tsx",
         "lib/constants/routes.ts",
+        "lib/schemas/playground.ts",
+        "lib/actions/workspace.ts",
         "lib/supabase/server.ts",
         "components/ui/button.tsx"
       ],
@@ -115,9 +255,58 @@
       "keyFunctions": [
         "JourneyDetailPage()"
       ],
-      "connected": 6,
+      "connected": 11,
       "dependents": [],
       "purpose": "Next.js App Router page or API handler at /journey/[id]"
+    },
+    {
+      "id": "app/journey/[id]/scrim/[scrimId]/page.tsx",
+      "label": "page.tsx",
+      "type": "route",
+      "path": "app/journey/[id]/scrim/[scrimId]/page.tsx",
+      "imports": [
+        "components/playground/scrim-lesson-view.tsx",
+        "components/layout/app-shell.tsx",
+        "lib/actions/scrim.ts",
+        "lib/config/scrim.ts",
+        "lib/constants/routes.ts",
+        "lib/scrims/load-scrim.ts",
+        "lib/supabase/server.ts",
+        "components/ui/button.tsx"
+      ],
+      "exports": [
+        "default"
+      ],
+      "keyFunctions": [
+        "ScrimLessonPage()"
+      ],
+      "connected": 8,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /journey/[id]/scrim/[scrimId]"
+    },
+    {
+      "id": "app/journey/[id]/scrims/page.tsx",
+      "label": "page.tsx",
+      "type": "route",
+      "path": "app/journey/[id]/scrims/page.tsx",
+      "imports": [
+        "lib/actions/scrim.ts",
+        "components/layout/app-shell.tsx",
+        "lib/constants/routes.ts",
+        "lib/supabase/server.ts",
+        "components/ui/button.tsx"
+      ],
+      "exports": [
+        "default"
+      ],
+      "keyFunctions": [
+        "formatWhen()",
+        "formatTimeline()",
+        "JourneyScrimsPage()"
+      ],
+      "connected": 5,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /journey/[id]/scrims"
     },
     {
       "id": "app/journey/page.tsx",
@@ -126,18 +315,20 @@
       "path": "app/journey/page.tsx",
       "imports": [
         "components/layout/app-shell.tsx",
-        "components/journey/journey-node-card.tsx",
+        "components/journey/dashboard-retry-form.tsx",
         "components/ui/button.tsx",
         "lib/constants/routes.ts",
+        "lib/journey/progress.ts",
         "lib/supabase/server.ts"
       ],
       "exports": [
         "default"
       ],
       "keyFunctions": [
-        "JourneyIndexPage()"
+        "JourneyIndexPage()",
+        "JourneyCardContent()"
       ],
-      "connected": 5,
+      "connected": 6,
       "dependents": [],
       "purpose": "Next.js App Router page or API handler at /journey"
     },
@@ -146,7 +337,9 @@
       "label": "layout.tsx",
       "type": "util",
       "path": "app/layout.tsx",
-      "imports": [],
+      "imports": [
+        "components/layout/theme-script.tsx"
+      ],
       "exports": [
         "metadata",
         "default"
@@ -154,7 +347,7 @@
       "keyFunctions": [
         "RootLayout()"
       ],
-      "connected": 0,
+      "connected": 1,
       "dependents": [],
       "purpose": "Shared utilities/schemas: layout.tsx"
     },
@@ -165,7 +358,9 @@
       "path": "app/login/page.tsx",
       "imports": [
         "components/auth/login-form.tsx",
-        "components/layout/top-nav.tsx"
+        "components/layout/nav-dock.tsx",
+        "lib/auth/oauth.ts",
+        "lib/constants/routes.ts"
       ],
       "exports": [
         "default"
@@ -173,7 +368,7 @@
       "keyFunctions": [
         "LoginPage()"
       ],
-      "connected": 2,
+      "connected": 4,
       "dependents": [],
       "purpose": "Next.js App Router page or API handler at /login"
     },
@@ -183,10 +378,7 @@
       "type": "route",
       "path": "app/onboarding/page.tsx",
       "imports": [
-        "components/layout/app-shell.tsx",
-        "components/onboarding/onboarding-wizard.tsx",
-        "lib/constants/routes.ts",
-        "lib/supabase/server.ts"
+        "lib/constants/routes.ts"
       ],
       "exports": [
         "default"
@@ -194,7 +386,7 @@
       "keyFunctions": [
         "OnboardingPage()"
       ],
-      "connected": 4,
+      "connected": 1,
       "dependents": [],
       "purpose": "Next.js App Router page or API handler at /onboarding"
     },
@@ -205,7 +397,7 @@
       "path": "app/page.tsx",
       "imports": [
         "components/brand/logo.tsx",
-        "components/layout/top-nav.tsx",
+        "components/layout/nav-dock.tsx",
         "components/ui/button.tsx",
         "lib/constants/routes.ts"
       ],
@@ -220,28 +412,98 @@
       "purpose": "Next.js App Router page or API handler at "
     },
     {
+      "id": "app/roadmap/new/page.tsx",
+      "label": "page.tsx",
+      "type": "route",
+      "path": "app/roadmap/new/page.tsx",
+      "imports": [
+        "components/roadmap/goal-creator.tsx",
+        "components/layout/app-shell.tsx",
+        "lib/constants/routes.ts",
+        "lib/supabase/server.ts"
+      ],
+      "exports": [
+        "default"
+      ],
+      "keyFunctions": [
+        "NewRoadmapPage()"
+      ],
+      "connected": 4,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /roadmap/new"
+    },
+    {
+      "id": "app/test/page.tsx",
+      "label": "page.tsx",
+      "type": "route",
+      "path": "app/test/page.tsx",
+      "imports": [
+        "components/playground/scrim-demo.tsx",
+        "content/scrims/hello-python.json"
+      ],
+      "exports": [
+        "metadata",
+        "default"
+      ],
+      "keyFunctions": [
+        "TestScrimPage()"
+      ],
+      "connected": 2,
+      "dependents": [],
+      "purpose": "Next.js App Router page or API handler at /test"
+    },
+    {
       "id": "components/auth/login-form.tsx",
       "label": "login-form.tsx",
       "type": "component",
       "path": "components/auth/login-form.tsx",
       "imports": [
+        "components/auth/oauth-button.tsx",
+        "components/brand/logo.tsx",
         "components/ui/button.tsx",
-        "components/ui/card.tsx",
         "components/ui/input.tsx",
         "components/ui/label.tsx",
-        "lib/actions/auth.ts"
+        "lib/constants/routes.ts",
+        "lib/actions/auth.ts",
+        "lib/auth/oauth.ts"
       ],
       "exports": [
         "LoginForm"
       ],
       "keyFunctions": [
-        "LoginForm()"
+        "errorMessage()",
+        "LoginForm()",
+        "sendCode()"
       ],
-      "connected": 6,
+      "connected": 9,
       "dependents": [
         "app/login/page.tsx"
       ],
       "purpose": "React UI component: login-form.tsx"
+    },
+    {
+      "id": "components/auth/oauth-button.tsx",
+      "label": "oauth-button.tsx",
+      "type": "component",
+      "path": "components/auth/oauth-button.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "OAuthButton",
+        "GoogleIcon",
+        "oauthHref"
+      ],
+      "keyFunctions": [
+        "OAuthButton()",
+        "GoogleIcon()",
+        "oauthHref()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "components/auth/login-form.tsx"
+      ],
+      "purpose": "React UI component: oauth-button.tsx"
     },
     {
       "id": "components/brand/logo.tsx",
@@ -257,9 +519,10 @@
       "keyFunctions": [
         "Logo()"
       ],
-      "connected": 4,
+      "connected": 5,
       "dependents": [
         "app/page.tsx",
+        "components/auth/login-form.tsx",
         "components/journey/journey-node-card.tsx",
         "components/layout/top-nav.tsx"
       ],
@@ -272,6 +535,8 @@
       "path": "components/journey/choice-panel.tsx",
       "imports": [
         "lib/actions/journey.ts",
+        "components/journey/retry-next-node-form.tsx",
+        "components/journey/xp-toast.tsx",
         "lib/utils.ts"
       ],
       "exports": [
@@ -279,13 +544,64 @@
         "ChoicePanel"
       ],
       "keyFunctions": [
-        "ChoicePanel()"
+        "ChoiceSubmitButton()",
+        "ChoicePanel()",
+        "PivotButton()"
       ],
-      "connected": 3,
+      "connected": 6,
       "dependents": [
-        "app/journey/[id]/page.tsx"
+        "app/journey/[id]/page.tsx",
+        "components/playground/interactive-node-view.tsx"
       ],
       "purpose": "React UI component: choice-panel.tsx"
+    },
+    {
+      "id": "components/journey/continue-form.tsx",
+      "label": "continue-form.tsx",
+      "type": "component",
+      "path": "components/journey/continue-form.tsx",
+      "imports": [
+        "lib/actions/journey.ts",
+        "components/journey/xp-toast.tsx",
+        "components/ui/button.tsx",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "ContinueForm"
+      ],
+      "keyFunctions": [
+        "ContinueButton()",
+        "ContinueForm()"
+      ],
+      "connected": 6,
+      "dependents": [
+        "app/journey/[id]/page.tsx",
+        "components/playground/interactive-node-view.tsx"
+      ],
+      "purpose": "React UI component: continue-form.tsx"
+    },
+    {
+      "id": "components/journey/dashboard-retry-form.tsx",
+      "label": "dashboard-retry-form.tsx",
+      "type": "component",
+      "path": "components/journey/dashboard-retry-form.tsx",
+      "imports": [
+        "lib/actions/roadmap.ts",
+        "components/ui/button.tsx",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "DashboardRetryForm"
+      ],
+      "keyFunctions": [
+        "RetryButton()",
+        "DashboardRetryForm()"
+      ],
+      "connected": 4,
+      "dependents": [
+        "app/journey/page.tsx"
+      ],
+      "purpose": "React UI component: dashboard-retry-form.tsx"
     },
     {
       "id": "components/journey/journey-map.tsx",
@@ -331,13 +647,79 @@
         "JourneyNodeSkeleton()",
         "EmptyJourneyCard()"
       ],
-      "connected": 9,
+      "connected": 8,
       "dependents": [
         "app/journey/[id]/not-found.tsx",
-        "app/journey/[id]/page.tsx",
-        "app/journey/page.tsx"
+        "app/journey/[id]/page.tsx"
       ],
       "purpose": "React UI component: journey-node-card.tsx"
+    },
+    {
+      "id": "components/journey/retry-next-node-form.tsx",
+      "label": "retry-next-node-form.tsx",
+      "type": "component",
+      "path": "components/journey/retry-next-node-form.tsx",
+      "imports": [
+        "lib/actions/journey.ts",
+        "components/ui/button.tsx",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "RetryNextNodeForm"
+      ],
+      "keyFunctions": [
+        "RetryButton()",
+        "RetryNextNodeForm()"
+      ],
+      "connected": 4,
+      "dependents": [
+        "components/journey/choice-panel.tsx"
+      ],
+      "purpose": "React UI component: retry-next-node-form.tsx"
+    },
+    {
+      "id": "components/journey/retry-node-form.tsx",
+      "label": "retry-node-form.tsx",
+      "type": "component",
+      "path": "components/journey/retry-node-form.tsx",
+      "imports": [
+        "lib/actions/roadmap.ts",
+        "components/ui/button.tsx",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "RetryNodeForm"
+      ],
+      "keyFunctions": [
+        "RetryButton()",
+        "RetryNodeForm()"
+      ],
+      "connected": 4,
+      "dependents": [
+        "app/journey/[id]/page.tsx"
+      ],
+      "purpose": "React UI component: retry-node-form.tsx"
+    },
+    {
+      "id": "components/journey/xp-toast.tsx",
+      "label": "xp-toast.tsx",
+      "type": "component",
+      "path": "components/journey/xp-toast.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "XpToast"
+      ],
+      "keyFunctions": [
+        "XpToast()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "components/journey/choice-panel.tsx",
+        "components/journey/continue-form.tsx"
+      ],
+      "purpose": "React UI component: xp-toast.tsx"
     },
     {
       "id": "components/layout/app-shell.tsx",
@@ -345,8 +727,7 @@
       "type": "component",
       "path": "components/layout/app-shell.tsx",
       "imports": [
-        "components/layout/sticky-progress-bar.tsx",
-        "components/layout/top-nav.tsx"
+        "components/layout/nav-dock.tsx"
       ],
       "exports": [
         "AppShell"
@@ -354,14 +735,71 @@
       "keyFunctions": [
         "AppShell()"
       ],
-      "connected": 6,
+      "connected": 8,
       "dependents": [
         "app/journey/[id]/map/page.tsx",
+        "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
         "app/journey/[id]/page.tsx",
+        "app/journey/[id]/scrim/[scrimId]/page.tsx",
+        "app/journey/[id]/scrims/page.tsx",
         "app/journey/page.tsx",
-        "app/onboarding/page.tsx"
+        "app/roadmap/new/page.tsx"
       ],
       "purpose": "React UI component: app-shell.tsx"
+    },
+    {
+      "id": "components/layout/nav-dock.tsx",
+      "label": "nav-dock.tsx",
+      "type": "component",
+      "path": "components/layout/nav-dock.tsx",
+      "imports": [
+        "components/ui/animated-theme-toggler.tsx",
+        "components/ui/dock.tsx",
+        "components/layout/sign-out-button.tsx",
+        "lib/constants/routes.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "NavDock"
+      ],
+      "keyFunctions": [
+        "dockItemClass()",
+        "ActiveBubble()",
+        "DockNavLink()",
+        "ThemeDockIcon()",
+        "NavDock()"
+      ],
+      "connected": 8,
+      "dependents": [
+        "app/login/page.tsx",
+        "app/page.tsx",
+        "components/layout/app-shell.tsx"
+      ],
+      "purpose": "React UI component: nav-dock.tsx"
+    },
+    {
+      "id": "components/layout/sign-out-button.tsx",
+      "label": "sign-out-button.tsx",
+      "type": "component",
+      "path": "components/layout/sign-out-button.tsx",
+      "imports": [
+        "lib/actions/auth.ts",
+        "components/ui/button.tsx",
+        "components/ui/dialog.tsx"
+      ],
+      "exports": [
+        "SignOutButton"
+      ],
+      "keyFunctions": [
+        "SignOutButton()",
+        "handleConfirm()"
+      ],
+      "connected": 5,
+      "dependents": [
+        "components/layout/nav-dock.tsx",
+        "components/layout/top-nav.tsx"
+      ],
+      "purpose": "React UI component: sign-out-button.tsx"
     },
     {
       "id": "components/layout/sticky-progress-bar.tsx",
@@ -380,11 +818,27 @@
       "keyFunctions": [
         "StickyProgressBar()"
       ],
-      "connected": 5,
-      "dependents": [
-        "components/layout/app-shell.tsx"
-      ],
+      "connected": 4,
+      "dependents": [],
       "purpose": "React UI component: sticky-progress-bar.tsx"
+    },
+    {
+      "id": "components/layout/theme-script.tsx",
+      "label": "theme-script.tsx",
+      "type": "component",
+      "path": "components/layout/theme-script.tsx",
+      "imports": [],
+      "exports": [
+        "ThemeScript"
+      ],
+      "keyFunctions": [
+        "ThemeScript()"
+      ],
+      "connected": 1,
+      "dependents": [
+        "app/layout.tsx"
+      ],
+      "purpose": "React UI component: theme-script.tsx"
     },
     {
       "id": "components/layout/theme-toggle.tsx",
@@ -415,9 +869,9 @@
       "imports": [
         "components/brand/logo.tsx",
         "components/layout/theme-toggle.tsx",
+        "components/layout/sign-out-button.tsx",
         "components/ui/button.tsx",
         "lib/constants/routes.ts",
-        "lib/actions/auth.ts",
         "lib/utils.ts"
       ],
       "exports": [
@@ -426,12 +880,8 @@
       "keyFunctions": [
         "TopNav()"
       ],
-      "connected": 9,
-      "dependents": [
-        "app/login/page.tsx",
-        "app/page.tsx",
-        "components/layout/app-shell.tsx"
-      ],
+      "connected": 6,
+      "dependents": [],
       "purpose": "React UI component: top-nav.tsx"
     },
     {
@@ -455,11 +905,563 @@
         "OnboardingWizard()",
         "toggleInterest()"
       ],
+      "connected": 7,
+      "dependents": [],
+      "purpose": "React UI component: onboarding-wizard.tsx"
+    },
+    {
+      "id": "components/playground/code-workspace.tsx",
+      "label": "code-workspace.tsx",
+      "type": "component",
+      "path": "components/playground/code-workspace.tsx",
+      "imports": [
+        "components/playground/console-pane.tsx",
+        "components/playground/editor-area.tsx",
+        "components/playground/file-sidebar.tsx",
+        "components/playground/resize-separator.tsx",
+        "components/playground/workspace-toolbar.tsx",
+        "lib/schemas/playground.ts",
+        "lib/playground/execute.ts",
+        "lib/playground/daytona-run.ts",
+        "lib/playground/vfs.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "CodeWorkspace"
+      ],
+      "keyFunctions": [
+        "CodeWorkspace()"
+      ],
+      "connected": 10,
+      "dependents": [],
+      "purpose": "React UI component: code-workspace.tsx"
+    },
+    {
+      "id": "components/playground/console-pane.tsx",
+      "label": "console-pane.tsx",
+      "type": "component",
+      "path": "components/playground/console-pane.tsx",
+      "imports": [
+        "lib/utils.ts",
+        "lib/playground/execute.ts"
+      ],
+      "exports": [
+        "ConsolePane"
+      ],
+      "keyFunctions": [
+        "ConsolePane()",
+        "StatusBadge()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "components/playground/code-workspace.tsx"
+      ],
+      "purpose": "React UI component: console-pane.tsx"
+    },
+    {
+      "id": "components/playground/editor-area.tsx",
+      "label": "editor-area.tsx",
+      "type": "component",
+      "path": "components/playground/editor-area.tsx",
+      "imports": [
+        "components/playground/editor-tabs.tsx",
+        "components/playground/resize-separator.tsx",
+        "lib/playground/vfs.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "EditorArea"
+      ],
+      "keyFunctions": [
+        "EditorPane()",
+        "EditorArea()"
+      ],
+      "connected": 5,
+      "dependents": [
+        "components/playground/code-workspace.tsx"
+      ],
+      "purpose": "React UI component: editor-area.tsx"
+    },
+    {
+      "id": "components/playground/editor-tabs.tsx",
+      "label": "editor-tabs.tsx",
+      "type": "component",
+      "path": "components/playground/editor-tabs.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "EditorTabs"
+      ],
+      "keyFunctions": [
+        "EditorTabs()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "components/playground/editor-area.tsx"
+      ],
+      "purpose": "React UI component: editor-tabs.tsx"
+    },
+    {
+      "id": "components/playground/file-sidebar.tsx",
+      "label": "file-sidebar.tsx",
+      "type": "component",
+      "path": "components/playground/file-sidebar.tsx",
+      "imports": [
+        "components/playground/vfs-file-explorer.tsx",
+        "components/playground/slide-pane.tsx",
+        "lib/schemas/playground.ts",
+        "lib/playground/vfs.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "FileSidebar"
+      ],
+      "keyFunctions": [
+        "FileSidebar()"
+      ],
+      "connected": 6,
+      "dependents": [
+        "components/playground/code-workspace.tsx"
+      ],
+      "purpose": "React UI component: file-sidebar.tsx"
+    },
+    {
+      "id": "components/playground/interactive-node-view.tsx",
+      "label": "interactive-node-view.tsx",
+      "type": "component",
+      "path": "components/playground/interactive-node-view.tsx",
+      "imports": [
+        "components/journey/choice-panel.tsx",
+        "components/journey/continue-form.tsx",
+        "components/playground/playground-shell.tsx",
+        "components/ui/badge.tsx",
+        "lib/actions/workspace.ts",
+        "lib/schemas/playground.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "InteractiveNodeView"
+      ],
+      "keyFunctions": [
+        "InteractiveNodeView()"
+      ],
       "connected": 8,
       "dependents": [
-        "app/onboarding/page.tsx"
+        "app/journey/[id]/page.tsx"
       ],
-      "purpose": "React UI component: onboarding-wizard.tsx"
+      "purpose": "React UI component: interactive-node-view.tsx"
+    },
+    {
+      "id": "components/playground/monaco-editor-pane.tsx",
+      "label": "monaco-editor-pane.tsx",
+      "type": "component",
+      "path": "components/playground/monaco-editor-pane.tsx",
+      "imports": [
+        "lib/playground/monaco-intellisense.ts",
+        "lib/playground/monaco-language.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "MonacoEditorPane"
+      ],
+      "keyFunctions": [
+        "MonacoEditorPane()"
+      ],
+      "connected": 3,
+      "dependents": [],
+      "purpose": "React UI component: monaco-editor-pane.tsx"
+    },
+    {
+      "id": "components/playground/playground-shell.tsx",
+      "label": "playground-shell.tsx",
+      "type": "component",
+      "path": "components/playground/playground-shell.tsx",
+      "imports": [
+        "components/playground/save-scrim-dialog.tsx",
+        "lib/schemas/playground.ts",
+        "components/playground/scrim-player.tsx",
+        "lib/actions/scrim.ts",
+        "lib/playground/vfs.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "WORKSPACE_BOTTOM_CHROME_PX",
+        "PlaygroundShell",
+        "isCompletionMet"
+      ],
+      "keyFunctions": [
+        "WorkspaceSkeleton()",
+        "PlaygroundShell()",
+        "isCompletionMet()"
+      ],
+      "connected": 10,
+      "dependents": [
+        "components/playground/interactive-node-view.tsx",
+        "components/playground/scrim-demo.tsx",
+        "components/playground/scrim-lesson-view.tsx",
+        "components/playground/user-scrim-view.tsx"
+      ],
+      "purpose": "React UI component: playground-shell.tsx"
+    },
+    {
+      "id": "components/playground/python-workspace.tsx",
+      "label": "python-workspace.tsx",
+      "type": "component",
+      "path": "components/playground/python-workspace.tsx",
+      "imports": [
+        "lib/schemas/playground.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "PythonWorkspace"
+      ],
+      "keyFunctions": [
+        "PythonWorkspace()",
+        "loadPyodide()"
+      ],
+      "connected": 2,
+      "dependents": [],
+      "purpose": "React UI component: python-workspace.tsx"
+    },
+    {
+      "id": "components/playground/resize-separator.tsx",
+      "label": "resize-separator.tsx",
+      "type": "component",
+      "path": "components/playground/resize-separator.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "ResizeSeparator"
+      ],
+      "keyFunctions": [
+        "ResizeSeparator()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "components/playground/code-workspace.tsx",
+        "components/playground/editor-area.tsx"
+      ],
+      "purpose": "React UI component: resize-separator.tsx"
+    },
+    {
+      "id": "components/playground/sandpack-workspace.tsx",
+      "label": "sandpack-workspace.tsx",
+      "type": "component",
+      "path": "components/playground/sandpack-workspace.tsx",
+      "imports": [],
+      "exports": [
+        "SandpackWorkspace"
+      ],
+      "keyFunctions": [
+        "toSandpackFiles()",
+        "SandpackWorkspace()",
+        "SandpackFilesSync()"
+      ],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "React UI component: sandpack-workspace.tsx"
+    },
+    {
+      "id": "components/playground/save-scrim-dialog.tsx",
+      "label": "save-scrim-dialog.tsx",
+      "type": "component",
+      "path": "components/playground/save-scrim-dialog.tsx",
+      "imports": [
+        "lib/actions/scrim.ts",
+        "lib/schemas/playground.ts",
+        "components/ui/button.tsx",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "SaveScrimDialog"
+      ],
+      "keyFunctions": [
+        "SaveScrimDialog()"
+      ],
+      "connected": 5,
+      "dependents": [
+        "components/playground/playground-shell.tsx"
+      ],
+      "purpose": "React UI component: save-scrim-dialog.tsx"
+    },
+    {
+      "id": "components/playground/scrim-demo.tsx",
+      "label": "scrim-demo.tsx",
+      "type": "component",
+      "path": "components/playground/scrim-demo.tsx",
+      "imports": [
+        "components/playground/playground-shell.tsx",
+        "lib/schemas/playground.ts"
+      ],
+      "exports": [
+        "ScrimDemoData",
+        "ScrimDemo"
+      ],
+      "keyFunctions": [
+        "ScrimDemo()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "app/test/page.tsx"
+      ],
+      "purpose": "React UI component: scrim-demo.tsx"
+    },
+    {
+      "id": "components/playground/scrim-lesson-view.tsx",
+      "label": "scrim-lesson-view.tsx",
+      "type": "component",
+      "path": "components/playground/scrim-lesson-view.tsx",
+      "imports": [
+        "components/playground/playground-shell.tsx",
+        "lib/schemas/playground.ts",
+        "lib/actions/workspace.ts"
+      ],
+      "exports": [
+        "ScrimLessonView"
+      ],
+      "keyFunctions": [
+        "ScrimLessonView()"
+      ],
+      "connected": 4,
+      "dependents": [
+        "app/journey/[id]/scrim/[scrimId]/page.tsx"
+      ],
+      "purpose": "React UI component: scrim-lesson-view.tsx"
+    },
+    {
+      "id": "components/playground/scrim-player.tsx",
+      "label": "scrim-player.tsx",
+      "type": "component",
+      "path": "components/playground/scrim-player.tsx",
+      "imports": [
+        "components/playground/use-scrim-narration.ts",
+        "lib/schemas/playground.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "ScrimPlayer"
+      ],
+      "keyFunctions": [
+        "formatTime()",
+        "stateFingerprint()",
+        "ScrimPlayer()"
+      ],
+      "connected": 4,
+      "dependents": [
+        "components/playground/playground-shell.tsx"
+      ],
+      "purpose": "React UI component: scrim-player.tsx"
+    },
+    {
+      "id": "components/playground/slide-pane.tsx",
+      "label": "slide-pane.tsx",
+      "type": "component",
+      "path": "components/playground/slide-pane.tsx",
+      "imports": [
+        "lib/schemas/playground.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "SlidePane"
+      ],
+      "keyFunctions": [
+        "SlidePane()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "components/playground/file-sidebar.tsx"
+      ],
+      "purpose": "React UI component: slide-pane.tsx"
+    },
+    {
+      "id": "components/playground/use-scrim-narration.ts",
+      "label": "use-scrim-narration.ts",
+      "type": "component",
+      "path": "components/playground/use-scrim-narration.ts",
+      "imports": [
+        "lib/constants/routes.ts"
+      ],
+      "exports": [
+        "useScrimNarration"
+      ],
+      "keyFunctions": [
+        "useScrimNarration()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "components/playground/scrim-player.tsx"
+      ],
+      "purpose": "React UI component: use-scrim-narration.ts"
+    },
+    {
+      "id": "components/playground/user-scrim-view.tsx",
+      "label": "user-scrim-view.tsx",
+      "type": "component",
+      "path": "components/playground/user-scrim-view.tsx",
+      "imports": [
+        "components/playground/playground-shell.tsx",
+        "lib/schemas/playground.ts"
+      ],
+      "exports": [
+        "UserScrimView"
+      ],
+      "keyFunctions": [
+        "UserScrimView()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "app/journey/[id]/my-scrim/[userScrimId]/page.tsx"
+      ],
+      "purpose": "React UI component: user-scrim-view.tsx"
+    },
+    {
+      "id": "components/playground/vfs-file-explorer.tsx",
+      "label": "vfs-file-explorer.tsx",
+      "type": "component",
+      "path": "components/playground/vfs-file-explorer.tsx",
+      "imports": [
+        "lib/playground/vfs.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "VfsFileExplorer"
+      ],
+      "keyFunctions": [
+        "FileIcon()",
+        "VfsFileExplorer()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "components/playground/file-sidebar.tsx"
+      ],
+      "purpose": "React UI component: vfs-file-explorer.tsx"
+    },
+    {
+      "id": "components/playground/workspace-toolbar.tsx",
+      "label": "workspace-toolbar.tsx",
+      "type": "component",
+      "path": "components/playground/workspace-toolbar.tsx",
+      "imports": [
+        "lib/utils.ts",
+        "lib/playground/execute.ts"
+      ],
+      "exports": [
+        "WorkspaceToolbar"
+      ],
+      "keyFunctions": [
+        "WorkspaceToolbar()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "components/playground/code-workspace.tsx"
+      ],
+      "purpose": "React UI component: workspace-toolbar.tsx"
+    },
+    {
+      "id": "components/roadmap/goal-creator.tsx",
+      "label": "goal-creator.tsx",
+      "type": "component",
+      "path": "components/roadmap/goal-creator.tsx",
+      "imports": [
+        "lib/actions/roadmap.ts",
+        "lib/roadmap/filter-skills.ts",
+        "lib/schemas/roadmap.ts",
+        "components/roadmap/goal-input.tsx",
+        "components/roadmap/skill-bubble-field.tsx",
+        "components/ui/progressive-blur.tsx",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "GoalCreator"
+      ],
+      "keyFunctions": [
+        "useDebouncedValue()",
+        "GoalCreator()",
+        "handleModeChange()",
+        "handleSubjectChange()",
+        "handleBubblePick()",
+        "LoadingOverlay()"
+      ],
+      "connected": 8,
+      "dependents": [
+        "app/roadmap/new/page.tsx"
+      ],
+      "purpose": "React UI component: goal-creator.tsx"
+    },
+    {
+      "id": "components/roadmap/goal-input.tsx",
+      "label": "goal-input.tsx",
+      "type": "component",
+      "path": "components/roadmap/goal-input.tsx",
+      "imports": [
+        "components/ui/morphing-text.tsx",
+        "lib/roadmap/goal-placeholders.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "GoalInput"
+      ],
+      "keyFunctions": [
+        "SubmitArrowStatic()",
+        "SubmitArrowPending()",
+        "SubmitArrow()",
+        "GoalInput()"
+      ],
+      "connected": 4,
+      "dependents": [
+        "components/roadmap/goal-creator.tsx"
+      ],
+      "purpose": "React UI component: goal-input.tsx"
+    },
+    {
+      "id": "components/roadmap/skill-bubble-field.tsx",
+      "label": "skill-bubble-field.tsx",
+      "type": "component",
+      "path": "components/roadmap/skill-bubble-field.tsx",
+      "imports": [
+        "lib/roadmap/bubble-layout.ts",
+        "lib/roadmap/skill-bubble-styles.ts",
+        "lib/schemas/roadmap.ts",
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "SkillBubbleField"
+      ],
+      "keyFunctions": [
+        "SkillBubbleField()",
+        "spawnBurst()",
+        "handleClick()"
+      ],
+      "connected": 5,
+      "dependents": [
+        "components/roadmap/goal-creator.tsx"
+      ],
+      "purpose": "React UI component: skill-bubble-field.tsx"
+    },
+    {
+      "id": "components/ui/animated-theme-toggler.tsx",
+      "label": "animated-theme-toggler.tsx",
+      "type": "component",
+      "path": "components/ui/animated-theme-toggler.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "TransitionVariant",
+        "AnimatedThemeToggler"
+      ],
+      "keyFunctions": [
+        "polygonCollapsed()",
+        "getThemeTransitionClipPaths()",
+        "AnimatedThemeToggler()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "components/layout/nav-dock.tsx"
+      ],
+      "purpose": "React UI component: animated-theme-toggler.tsx"
     },
     {
       "id": "components/ui/badge.tsx",
@@ -476,10 +1478,11 @@
       "keyFunctions": [
         "Badge()"
       ],
-      "connected": 3,
+      "connected": 4,
       "dependents": [
         "components/journey/journey-node-card.tsx",
-        "components/layout/sticky-progress-bar.tsx"
+        "components/layout/sticky-progress-bar.tsx",
+        "components/playground/interactive-node-view.tsx"
       ],
       "purpose": "React UI component: badge.tsx"
     },
@@ -498,16 +1501,16 @@
       "keyFunctions": [
         "Button()"
       ],
-      "connected": 11,
+      "connected": 20,
       "dependents": [
         "app/journey/[id]/map/page.tsx",
+        "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
         "app/journey/[id]/page.tsx",
+        "app/journey/[id]/scrim/[scrimId]/page.tsx",
+        "app/journey/[id]/scrims/page.tsx",
         "app/journey/page.tsx",
         "app/page.tsx",
-        "components/auth/login-form.tsx",
-        "components/journey/journey-node-card.tsx",
-        "components/layout/theme-toggle.tsx",
-        "components/layout/top-nav.tsx"
+        "components/auth/login-form.tsx"
       ],
       "purpose": "React UI component: button.tsx"
     },
@@ -537,9 +1540,8 @@
         "CardContent()",
         "CardFooter()"
       ],
-      "connected": 4,
+      "connected": 3,
       "dependents": [
-        "components/auth/login-form.tsx",
         "components/journey/journey-node-card.tsx",
         "components/onboarding/onboarding-wizard.tsx"
       ],
@@ -576,9 +1578,33 @@
         "DialogHeader()",
         "DialogFooter()"
       ],
-      "connected": 2,
-      "dependents": [],
+      "connected": 3,
+      "dependents": [
+        "components/layout/sign-out-button.tsx"
+      ],
       "purpose": "React UI component: dialog.tsx"
+    },
+    {
+      "id": "components/ui/dock.tsx",
+      "label": "dock.tsx",
+      "type": "component",
+      "path": "components/ui/dock.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "DockProps",
+        "DockIconProps",
+        "Dock",
+        "DockIcon",
+        "dockVariants"
+      ],
+      "keyFunctions": [],
+      "connected": 2,
+      "dependents": [
+        "components/layout/nav-dock.tsx"
+      ],
+      "purpose": "React UI component: dock.tsx"
     },
     {
       "id": "components/ui/input.tsx",
@@ -623,6 +1649,29 @@
       "purpose": "React UI component: label.tsx"
     },
     {
+      "id": "components/ui/morphing-text.tsx",
+      "label": "morphing-text.tsx",
+      "type": "component",
+      "path": "components/ui/morphing-text.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "MorphingText"
+      ],
+      "keyFunctions": [
+        "useMorphingText()",
+        "MorphingTextLayers()",
+        "MorphingTextFilters()",
+        "MorphingText()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "components/roadmap/goal-input.tsx"
+      ],
+      "purpose": "React UI component: morphing-text.tsx"
+    },
+    {
       "id": "components/ui/progress.tsx",
       "label": "progress.tsx",
       "type": "component",
@@ -651,6 +1700,27 @@
       "purpose": "React UI component: progress.tsx"
     },
     {
+      "id": "components/ui/progressive-blur.tsx",
+      "label": "progressive-blur.tsx",
+      "type": "component",
+      "path": "components/ui/progressive-blur.tsx",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "ProgressiveBlurProps",
+        "ProgressiveBlur"
+      ],
+      "keyFunctions": [
+        "ProgressiveBlur()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "components/roadmap/goal-creator.tsx"
+      ],
+      "purpose": "React UI component: progressive-blur.tsx"
+    },
+    {
       "id": "components/ui/skeleton.tsx",
       "label": "skeleton.tsx",
       "type": "component",
@@ -669,28 +1739,54 @@
       "purpose": "React UI component: skeleton.tsx"
     },
     {
+      "id": "components/ui/smooth-cursor.tsx",
+      "label": "smooth-cursor.tsx",
+      "type": "component",
+      "path": "components/ui/smooth-cursor.tsx",
+      "imports": [],
+      "exports": [
+        "SmoothCursorProps",
+        "SmoothCursor"
+      ],
+      "keyFunctions": [
+        "isTrackablePointer()",
+        "SmoothCursor()"
+      ],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "React UI component: smooth-cursor.tsx"
+    },
+    {
       "id": "lib/actions/auth.ts",
       "label": "auth.ts",
       "type": "service",
       "path": "lib/actions/auth.ts",
       "imports": [
+        "lib/email/send-auth-code.ts",
+        "lib/auth/oauth.ts",
+        "lib/auth/otp.ts",
         "lib/constants/routes.ts",
+        "lib/schemas/auth.ts",
+        "lib/supabase/admin.ts",
         "lib/supabase/server.ts"
       ],
       "exports": [
         "signOut",
         "signInWithGoogle",
-        "signInWithMagicLink"
+        "sendEmailCode"
       ],
       "keyFunctions": [
+        "authCallbackUrl()",
+        "authErrorMessage()",
+        "signInWithOAuth()",
         "signOut()",
         "signInWithGoogle()",
-        "signInWithMagicLink()"
+        "sendEmailCode()"
       ],
-      "connected": 4,
+      "connected": 9,
       "dependents": [
         "components/auth/login-form.tsx",
-        "components/layout/top-nav.tsx"
+        "components/layout/sign-out-button.tsx"
       ],
       "purpose": "Server actions: Google OAuth, magic link, sign out."
     },
@@ -700,27 +1796,41 @@
       "type": "service",
       "path": "lib/actions/journey.ts",
       "imports": [
+        "lib/ai/create-next-node.ts",
         "lib/constants/routes.ts",
         "lib/gamification/streak.ts",
         "lib/gamification/xp.ts",
         "lib/supabase/server.ts"
       ],
       "exports": [
+        "JourneyActionState",
         "submitChoice",
         "acknowledgeNode",
         "pivotTrack",
-        "submitChoiceAction"
+        "retryNextNode",
+        "submitChoiceFormAction",
+        "acknowledgeNodeFormAction",
+        "pivotTrackFormAction",
+        "retryNextNodeFormAction",
+        "submitChoiceAction",
+        "acknowledgeNodeAction",
+        "pivotTrackAction"
       ],
       "keyFunctions": [
         "submitChoice()",
         "acknowledgeNode()",
         "pivotTrack()",
-        "submitChoiceAction()",
-        "awardXp()"
+        "retryNextNode()",
+        "submitChoiceFormAction()",
+        "acknowledgeNodeFormAction()",
+        "pivotTrackFormAction()",
+        "retryNextNodeFormAction()"
       ],
-      "connected": 5,
+      "connected": 8,
       "dependents": [
-        "components/journey/choice-panel.tsx"
+        "components/journey/choice-panel.tsx",
+        "components/journey/continue-form.tsx",
+        "components/journey/retry-next-node-form.tsx"
       ],
       "purpose": "Choice submit, acknowledge, pivot, XP/streak updates via Supabase."
     },
@@ -731,6 +1841,7 @@
       "path": "lib/actions/onboarding.ts",
       "imports": [
         "lib/constants/routes.ts",
+        "lib/ai/create-next-node.ts",
         "lib/schemas/onboarding.ts",
         "lib/supabase/server.ts"
       ],
@@ -740,11 +1851,165 @@
       "keyFunctions": [
         "completeOnboarding()"
       ],
-      "connected": 4,
+      "connected": 5,
       "dependents": [
         "components/onboarding/onboarding-wizard.tsx"
       ],
       "purpose": "Creates profile + first journey after 2-step onboarding wizard."
+    },
+    {
+      "id": "lib/actions/roadmap.ts",
+      "label": "roadmap.ts",
+      "type": "service",
+      "path": "lib/actions/roadmap.ts",
+      "imports": [
+        "lib/ai/create-next-node.ts",
+        "lib/constants/routes.ts",
+        "lib/roadmap/infer-interests.ts",
+        "lib/roadmap/generate-title.ts",
+        "lib/schemas/roadmap.ts",
+        "lib/supabase/server.ts"
+      ],
+      "exports": [
+        "CreateRoadmapResult",
+        "CreateRoadmapFormState",
+        "createRoadmap",
+        "createRoadmapFormAction",
+        "createRoadmapAction",
+        "retryFirstNode",
+        "retryFirstNodeFormAction",
+        "retryFirstNodeAction"
+      ],
+      "keyFunctions": [
+        "createRoadmap()",
+        "createRoadmapFormAction()",
+        "createRoadmapAction()",
+        "retryFirstNode()",
+        "retryFirstNodeFormAction()",
+        "retryFirstNodeAction()"
+      ],
+      "connected": 9,
+      "dependents": [
+        "components/journey/dashboard-retry-form.tsx",
+        "components/journey/retry-node-form.tsx",
+        "components/roadmap/goal-creator.tsx"
+      ],
+      "purpose": "Server-side logic: roadmap.ts"
+    },
+    {
+      "id": "lib/actions/scrim.ts",
+      "label": "scrim.ts",
+      "type": "service",
+      "path": "lib/actions/scrim.ts",
+      "imports": [
+        "lib/config/scrim.ts",
+        "lib/constants/routes.ts",
+        "lib/schemas/scrim.ts",
+        "lib/supabase/server.ts"
+      ],
+      "exports": [
+        "CheckpointRow",
+        "UserScrimRow",
+        "saveCheckpoint",
+        "loadLatestCheckpoint",
+        "listCheckpoints",
+        "saveUserScrim",
+        "listUserScrims",
+        "loadUserScrim"
+      ],
+      "keyFunctions": [
+        "pruneCheckpoints()",
+        "saveCheckpoint()",
+        "loadLatestCheckpoint()",
+        "listCheckpoints()",
+        "saveUserScrim()",
+        "listUserScrims()",
+        "loadUserScrim()"
+      ],
+      "connected": 9,
+      "dependents": [
+        "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
+        "app/journey/[id]/scrim/[scrimId]/page.tsx",
+        "app/journey/[id]/scrims/page.tsx",
+        "components/playground/playground-shell.tsx",
+        "components/playground/save-scrim-dialog.tsx"
+      ],
+      "purpose": "Server-side logic: scrim.ts"
+    },
+    {
+      "id": "lib/actions/workspace.ts",
+      "label": "workspace.ts",
+      "type": "service",
+      "path": "lib/actions/workspace.ts",
+      "imports": [
+        "lib/constants/routes.ts",
+        "lib/supabase/server.ts"
+      ],
+      "exports": [
+        "saveWorkspaceSnapshot",
+        "loadWorkspaceSnapshot"
+      ],
+      "keyFunctions": [
+        "saveWorkspaceSnapshot()",
+        "loadWorkspaceSnapshot()"
+      ],
+      "connected": 5,
+      "dependents": [
+        "app/journey/[id]/page.tsx",
+        "components/playground/interactive-node-view.tsx",
+        "components/playground/scrim-lesson-view.tsx"
+      ],
+      "purpose": "Server-side logic: workspace.ts"
+    },
+    {
+      "id": "lib/ai/config.ts",
+      "label": "config.ts",
+      "type": "service",
+      "path": "lib/ai/config.ts",
+      "imports": [],
+      "exports": [
+        "AiProvider",
+        "AiConfig",
+        "getAiConfig",
+        "isAiConfigured"
+      ],
+      "keyFunctions": [
+        "resolveProvider()",
+        "defaultModel()",
+        "getAiConfig()",
+        "isAiConfigured()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "lib/ai/generate-node.ts",
+        "lib/roadmap/generate-title.ts"
+      ],
+      "purpose": "Server-side logic: config.ts"
+    },
+    {
+      "id": "lib/ai/create-next-node.ts",
+      "label": "create-next-node.ts",
+      "type": "service",
+      "path": "lib/ai/create-next-node.ts",
+      "imports": [
+        "lib/ai/fallback.ts",
+        "lib/ai/generate-node.ts",
+        "lib/schemas/ai.ts"
+      ],
+      "exports": [
+        "createAndPersistNextNode"
+      ],
+      "keyFunctions": [
+        "createAndPersistNextNode()"
+      ],
+      "connected": 7,
+      "dependents": [
+        "app/api/ai/next-node/route.ts",
+        "lib/actions/journey.ts",
+        "lib/actions/onboarding.ts",
+        "lib/actions/roadmap.ts"
+      ],
+      "purpose": "Server-side logic: create-next-node.ts"
     },
     {
       "id": "lib/ai/fallback.ts",
@@ -755,14 +2020,16 @@
         "lib/schemas/ai.ts"
       ],
       "exports": [
-        "getFallbackNode"
+        "getFallbackNode",
+        "default"
       ],
       "keyFunctions": [
+        "App()",
         "getFallbackNode()"
       ],
       "connected": 2,
       "dependents": [
-        "app/api/ai/next-node/route.ts"
+        "lib/ai/create-next-node.ts"
       ],
       "purpose": "Deterministic AI node template when LLM unavailable or invalid."
     },
@@ -772,18 +2039,136 @@
       "type": "service",
       "path": "lib/ai/generate-node.ts",
       "imports": [
+        "lib/ai/config.ts",
         "lib/schemas/ai.ts"
       ],
       "exports": [
         "GenerateNodeContext",
+        "isAiConfigured",
         "generateNextNode"
       ],
       "keyFunctions": [
+        "buildUserPrompt()",
+        "generateWithGemini()",
+        "generateWithOpenAI()",
         "generateNextNode()"
       ],
-      "connected": 1,
-      "dependents": [],
+      "connected": 3,
+      "dependents": [
+        "lib/ai/create-next-node.ts"
+      ],
       "purpose": "Stub for future OpenAI streaming node generation."
+    },
+    {
+      "id": "lib/auth/oauth-next.ts",
+      "label": "oauth-next.ts",
+      "type": "util",
+      "path": "lib/auth/oauth-next.ts",
+      "imports": [],
+      "exports": [
+        "OAUTH_NEXT_COOKIE",
+        "setOAuthNextOnResponse",
+        "readOAuthNextFromRequest",
+        "clearOAuthNextOnResponse"
+      ],
+      "keyFunctions": [
+        "setOAuthNextOnResponse()",
+        "readOAuthNextFromRequest()",
+        "clearOAuthNextOnResponse()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "app/auth/callback/route.ts",
+        "app/auth/oauth/[provider]/route.ts"
+      ],
+      "purpose": "Shared utilities/schemas: oauth-next.ts"
+    },
+    {
+      "id": "lib/auth/oauth.ts",
+      "label": "oauth.ts",
+      "type": "util",
+      "path": "lib/auth/oauth.ts",
+      "imports": [],
+      "exports": [
+        "OAuthProviders",
+        "getOAuthProviders",
+        "isOAuthProviderEnabled",
+        "hasAnyOAuthProvider"
+      ],
+      "keyFunctions": [
+        "getOAuthProviders()",
+        "isOAuthProviderEnabled()",
+        "hasAnyOAuthProvider()"
+      ],
+      "connected": 4,
+      "dependents": [
+        "app/auth/oauth/[provider]/route.ts",
+        "app/login/page.tsx",
+        "components/auth/login-form.tsx",
+        "lib/actions/auth.ts"
+      ],
+      "purpose": "Shared utilities/schemas: oauth.ts"
+    },
+    {
+      "id": "lib/auth/otp.ts",
+      "label": "otp.ts",
+      "type": "util",
+      "path": "lib/auth/otp.ts",
+      "imports": [],
+      "exports": [
+        "AUTH_OTP_COOKIE",
+        "AUTH_OTP_TTL_SECONDS",
+        "AUTH_OTP_TTL_MINUTES",
+        "StoredOtpMeta",
+        "setOtpCookie",
+        "readOtpCookie",
+        "clearOtpCookie",
+        "clearOtpCookieOnResponse"
+      ],
+      "keyFunctions": [
+        "setOtpCookie()",
+        "readOtpCookie()",
+        "clearOtpCookie()",
+        "clearOtpCookieOnResponse()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "app/auth/verify/route.ts",
+        "lib/actions/auth.ts",
+        "lib/email/send-auth-code.ts"
+      ],
+      "purpose": "Shared utilities/schemas: otp.ts"
+    },
+    {
+      "id": "lib/config/scrim.ts",
+      "label": "scrim.ts",
+      "type": "util",
+      "path": "lib/config/scrim.ts",
+      "imports": [],
+      "exports": [
+        "ScrimRunner",
+        "scrimConfig",
+        "shouldUseDaytona",
+        "isDaytonaConfigured",
+        "isTtsConfigured"
+      ],
+      "keyFunctions": [
+        "parseRunner()",
+        "shouldUseDaytona()",
+        "isDaytonaConfigured()",
+        "isTtsConfigured()"
+      ],
+      "connected": 7,
+      "dependents": [
+        "app/api/runner/exec/route.ts",
+        "app/api/tts/scrim-caption/route.ts",
+        "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
+        "app/journey/[id]/scrim/[scrimId]/page.tsx",
+        "lib/actions/scrim.ts",
+        "lib/daytona/client.ts",
+        "lib/tts/elevenlabs.ts"
+      ],
+      "purpose": "Shared utilities/schemas: scrim.ts"
     },
     {
       "id": "lib/constants/routes.ts",
@@ -797,18 +2182,89 @@
         "AUTH_ROUTES"
       ],
       "keyFunctions": [],
-      "connected": 12,
+      "connected": 27,
       "dependents": [
         "app/auth/callback/route.ts",
+        "app/auth/confirm/route.ts",
+        "app/auth/oauth/[provider]/route.ts",
+        "app/auth/verify/route.ts",
         "app/journey/[id]/map/page.tsx",
+        "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
         "app/journey/[id]/page.tsx",
-        "app/journey/page.tsx",
-        "app/onboarding/page.tsx",
-        "app/page.tsx",
-        "components/journey/journey-node-card.tsx",
-        "components/layout/top-nav.tsx"
+        "app/journey/[id]/scrim/[scrimId]/page.tsx"
       ],
       "purpose": "Single source of truth for route paths and public/auth route lists."
+    },
+    {
+      "id": "lib/daytona/client.ts",
+      "label": "client.ts",
+      "type": "util",
+      "path": "lib/daytona/client.ts",
+      "imports": [
+        "lib/config/scrim.ts",
+        "lib/schemas/playground.ts",
+        "lib/supabase/admin.ts",
+        "lib/supabase/server.ts"
+      ],
+      "exports": [
+        "DaytonaExecResult",
+        "execInDaytona",
+        "pruneExpiredSandboxSessions"
+      ],
+      "keyFunctions": [
+        "getDaytona()",
+        "languageForTemplate()",
+        "pickEntryFile()",
+        "execInDaytona()",
+        "pruneExpiredSandboxSessions()"
+      ],
+      "connected": 5,
+      "dependents": [
+        "app/api/runner/exec/route.ts"
+      ],
+      "purpose": "Shared utilities/schemas: client.ts"
+    },
+    {
+      "id": "lib/email/send-auth-code.ts",
+      "label": "send-auth-code.ts",
+      "type": "util",
+      "path": "lib/email/send-auth-code.ts",
+      "imports": [
+        "lib/email/smtp.ts",
+        "lib/auth/otp.ts"
+      ],
+      "exports": [
+        "sendAuthCodeEmail"
+      ],
+      "keyFunctions": [
+        "sendAuthCodeEmail()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "lib/actions/auth.ts"
+      ],
+      "purpose": "Shared utilities/schemas: send-auth-code.ts"
+    },
+    {
+      "id": "lib/email/smtp.ts",
+      "label": "smtp.ts",
+      "type": "util",
+      "path": "lib/email/smtp.ts",
+      "imports": [],
+      "exports": [
+        "SmtpConfig",
+        "getSmtpConfig",
+        "createMailTransport"
+      ],
+      "keyFunctions": [
+        "getSmtpConfig()",
+        "createMailTransport()"
+      ],
+      "connected": 1,
+      "dependents": [
+        "lib/email/send-auth-code.ts"
+      ],
+      "purpose": "Shared utilities/schemas: smtp.ts"
     },
     {
       "id": "lib/gamification/streak.ts",
@@ -855,11 +2311,358 @@
       "purpose": "Shared utilities/schemas: xp.ts"
     },
     {
+      "id": "lib/journey/progress.ts",
+      "label": "progress.ts",
+      "type": "util",
+      "path": "lib/journey/progress.ts",
+      "imports": [],
+      "exports": [
+        "JourneyProgress",
+        "computeJourneyProgress"
+      ],
+      "keyFunctions": [
+        "computeJourneyProgress()"
+      ],
+      "connected": 1,
+      "dependents": [
+        "app/journey/page.tsx"
+      ],
+      "purpose": "Shared utilities/schemas: progress.ts"
+    },
+    {
+      "id": "lib/playground/daytona-run.ts",
+      "label": "daytona-run.ts",
+      "type": "util",
+      "path": "lib/playground/daytona-run.ts",
+      "imports": [
+        "lib/constants/routes.ts",
+        "lib/playground/execute.ts"
+      ],
+      "exports": [
+        "DaytonaRunContext",
+        "runViaDaytona"
+      ],
+      "keyFunctions": [
+        "runViaDaytona()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "components/playground/code-workspace.tsx"
+      ],
+      "purpose": "Shared utilities/schemas: daytona-run.ts"
+    },
+    {
+      "id": "lib/playground/execute.ts",
+      "label": "execute.ts",
+      "type": "util",
+      "path": "lib/playground/execute.ts",
+      "imports": [
+        "lib/playground/format-error.ts",
+        "lib/playground/vfs.ts"
+      ],
+      "exports": [
+        "RuntimeStatus",
+        "RunResult",
+        "getPythonRuntimeStatus",
+        "ensurePyodide",
+        "runActiveFile",
+        "ShellContext",
+        "runTerminalLine"
+      ],
+      "keyFunctions": [
+        "loadPyodideScript()",
+        "getPythonRuntimeStatus()",
+        "ensurePyodide()",
+        "runJavaScriptInWorker()",
+        "joinStdout()",
+        "runPython()",
+        "runHtmlPreview()",
+        "runJavaScript()"
+      ],
+      "connected": 6,
+      "dependents": [
+        "components/playground/code-workspace.tsx",
+        "components/playground/console-pane.tsx",
+        "components/playground/workspace-toolbar.tsx",
+        "lib/playground/daytona-run.ts"
+      ],
+      "purpose": "Shared utilities/schemas: execute.ts"
+    },
+    {
+      "id": "lib/playground/format-error.ts",
+      "label": "format-error.ts",
+      "type": "util",
+      "path": "lib/playground/format-error.ts",
+      "imports": [],
+      "exports": [
+        "formatRuntimeError"
+      ],
+      "keyFunctions": [
+        "formatRuntimeError()"
+      ],
+      "connected": 1,
+      "dependents": [
+        "lib/playground/execute.ts"
+      ],
+      "purpose": "Shared utilities/schemas: format-error.ts"
+    },
+    {
+      "id": "lib/playground/monaco-intellisense.ts",
+      "label": "monaco-intellisense.ts",
+      "type": "util",
+      "path": "lib/playground/monaco-intellisense.ts",
+      "imports": [],
+      "exports": [
+        "ReactNode",
+        "FC",
+        "useState",
+        "useEffect",
+        "useRef",
+        "useMemo",
+        "useCallback",
+        "jsx",
+        "jsxs",
+        "Fragment",
+        "setupMonacoIntelliSense",
+        "monacoEditorOptions"
+      ],
+      "keyFunctions": [
+        "useState()",
+        "useEffect()",
+        "useRef()",
+        "useMemo()",
+        "useCallback()",
+        "registerPythonCompletions()",
+        "registerTailwindCompletions()",
+        "setupTypeScriptReact()"
+      ],
+      "connected": 1,
+      "dependents": [
+        "components/playground/monaco-editor-pane.tsx"
+      ],
+      "purpose": "Shared utilities/schemas: monaco-intellisense.ts"
+    },
+    {
+      "id": "lib/playground/monaco-language.ts",
+      "label": "monaco-language.ts",
+      "type": "util",
+      "path": "lib/playground/monaco-language.ts",
+      "imports": [],
+      "exports": [
+        "monacoLanguageFromPath",
+        "monacoPathForLanguage"
+      ],
+      "keyFunctions": [
+        "monacoLanguageFromPath()",
+        "monacoPathForLanguage()"
+      ],
+      "connected": 1,
+      "dependents": [
+        "components/playground/monaco-editor-pane.tsx"
+      ],
+      "purpose": "Shared utilities/schemas: monaco-language.ts"
+    },
+    {
+      "id": "lib/playground/vfs.ts",
+      "label": "vfs.ts",
+      "type": "util",
+      "path": "lib/playground/vfs.ts",
+      "imports": [],
+      "exports": [
+        "VfsFile",
+        "VfsState",
+        "languageFromPath",
+        "vfsFromRecord",
+        "vfsToRecord",
+        "fileRecordKey",
+        "fileRecordsEqual",
+        "defaultFilename",
+        "uniquePath",
+        "folderKey",
+        "uniqueFolderKey",
+        "isRunnable"
+      ],
+      "keyFunctions": [
+        "languageFromPath()",
+        "vfsFromRecord()",
+        "vfsToRecord()",
+        "fileRecordKey()",
+        "fileRecordsEqual()",
+        "defaultFilename()",
+        "uniquePath()",
+        "folderKey()"
+      ],
+      "connected": 6,
+      "dependents": [
+        "components/playground/code-workspace.tsx",
+        "components/playground/editor-area.tsx",
+        "components/playground/file-sidebar.tsx",
+        "components/playground/playground-shell.tsx",
+        "components/playground/vfs-file-explorer.tsx",
+        "lib/playground/execute.ts"
+      ],
+      "purpose": "Shared utilities/schemas: vfs.ts"
+    },
+    {
+      "id": "lib/roadmap/bubble-layout.ts",
+      "label": "bubble-layout.ts",
+      "type": "util",
+      "path": "lib/roadmap/bubble-layout.ts",
+      "imports": [
+        "lib/roadmap/filter-skills.ts"
+      ],
+      "exports": [
+        "BubbleSize",
+        "PlacedBubble",
+        "layoutSkillBubbles",
+        "estimateBubbleSize",
+        "isCoreSkill"
+      ],
+      "keyFunctions": [
+        "hash()",
+        "rectsOverlap()",
+        "clampBubble()",
+        "estimateBubbleSize()",
+        "layoutSkillBubbles()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "components/roadmap/skill-bubble-field.tsx"
+      ],
+      "purpose": "Shared utilities/schemas: bubble-layout.ts"
+    },
+    {
+      "id": "lib/roadmap/filter-skills.ts",
+      "label": "filter-skills.ts",
+      "type": "util",
+      "path": "lib/roadmap/filter-skills.ts",
+      "imports": [
+        "lib/schemas/roadmap.ts",
+        "lib/roadmap/goal-placeholders.ts"
+      ],
+      "exports": [
+        "filterSkillsForGoal",
+        "filterKeyForGoal",
+        "isCoreSkill",
+        "BubbleVisualMeta",
+        "bubbleVisualMeta"
+      ],
+      "keyFunctions": [
+        "pickBySlugs()",
+        "expandSkillSet()",
+        "matchBecomeProfile()",
+        "matchLearnKeywords()",
+        "filterSkillsForGoal()",
+        "filterKeyForGoal()",
+        "isCoreSkill()",
+        "bubbleVisualMeta()"
+      ],
+      "connected": 4,
+      "dependents": [
+        "components/roadmap/goal-creator.tsx",
+        "lib/roadmap/bubble-layout.ts"
+      ],
+      "purpose": "Shared utilities/schemas: filter-skills.ts"
+    },
+    {
+      "id": "lib/roadmap/generate-title.ts",
+      "label": "generate-title.ts",
+      "type": "util",
+      "path": "lib/roadmap/generate-title.ts",
+      "imports": [
+        "lib/ai/config.ts"
+      ],
+      "exports": [
+        "fallbackRoadmapTitle",
+        "generateRoadmapTitle"
+      ],
+      "keyFunctions": [
+        "titleCase()",
+        "fallbackRoadmapTitle()",
+        "generateRoadmapTitle()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "lib/actions/roadmap.ts"
+      ],
+      "purpose": "Shared utilities/schemas: generate-title.ts"
+    },
+    {
+      "id": "lib/roadmap/goal-placeholders.ts",
+      "label": "goal-placeholders.ts",
+      "type": "util",
+      "path": "lib/roadmap/goal-placeholders.ts",
+      "imports": [],
+      "exports": [
+        "LEARN_PLACEHOLDERS",
+        "BECOME_PLACEHOLDERS",
+        "GoalMode",
+        "placeholdersForMode",
+        "defaultSubjectForMode"
+      ],
+      "keyFunctions": [
+        "placeholdersForMode()",
+        "defaultSubjectForMode()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "components/roadmap/goal-input.tsx",
+        "lib/roadmap/filter-skills.ts"
+      ],
+      "purpose": "Shared utilities/schemas: goal-placeholders.ts"
+    },
+    {
+      "id": "lib/roadmap/infer-interests.ts",
+      "label": "infer-interests.ts",
+      "type": "util",
+      "path": "lib/roadmap/infer-interests.ts",
+      "imports": [
+        "lib/schemas/onboarding.ts"
+      ],
+      "exports": [
+        "inferInterestsFromText",
+        "buildGoalText"
+      ],
+      "keyFunctions": [
+        "inferInterestsFromText()",
+        "buildGoalText()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "lib/actions/roadmap.ts"
+      ],
+      "purpose": "Shared utilities/schemas: infer-interests.ts"
+    },
+    {
+      "id": "lib/roadmap/skill-bubble-styles.ts",
+      "label": "skill-bubble-styles.ts",
+      "type": "util",
+      "path": "lib/roadmap/skill-bubble-styles.ts",
+      "imports": [
+        "lib/utils.ts"
+      ],
+      "exports": [
+        "skillBubbleCategoryClass",
+        "skillBubbleClasses"
+      ],
+      "keyFunctions": [
+        "skillBubbleCategoryClass()",
+        "skillBubbleClasses()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "components/roadmap/skill-bubble-field.tsx"
+      ],
+      "purpose": "Shared utilities/schemas: skill-bubble-styles.ts"
+    },
+    {
       "id": "lib/schemas/ai.ts",
       "label": "ai.ts",
       "type": "util",
       "path": "lib/schemas/ai.ts",
-      "imports": [],
+      "imports": [
+        "lib/schemas/playground.ts"
+      ],
       "exports": [
         "aiChoiceSchema",
         "aiNodeOutputSchema",
@@ -868,13 +2671,35 @@
         "AiNextNodeRequest"
       ],
       "keyFunctions": [],
-      "connected": 3,
+      "connected": 5,
       "dependents": [
         "app/api/ai/next-node/route.ts",
+        "lib/ai/create-next-node.ts",
         "lib/ai/fallback.ts",
         "lib/ai/generate-node.ts"
       ],
       "purpose": "Shared utilities/schemas: ai.ts"
+    },
+    {
+      "id": "lib/schemas/auth.ts",
+      "label": "auth.ts",
+      "type": "util",
+      "path": "lib/schemas/auth.ts",
+      "imports": [],
+      "exports": [
+        "emailSchema",
+        "normalizeOtpCode",
+        "otpCodeSchema"
+      ],
+      "keyFunctions": [
+        "normalizeOtpCode()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "app/auth/verify/route.ts",
+        "lib/actions/auth.ts"
+      ],
+      "purpose": "Shared utilities/schemas: auth.ts"
     },
     {
       "id": "lib/schemas/index.ts",
@@ -895,7 +2720,9 @@
       "label": "journey.ts",
       "type": "util",
       "path": "lib/schemas/journey.ts",
-      "imports": [],
+      "imports": [
+        "lib/schemas/playground.ts"
+      ],
       "exports": [
         "journeyStatusSchema",
         "nodeTypeSchema",
@@ -909,7 +2736,7 @@
         "Decision"
       ],
       "keyFunctions": [],
-      "connected": 0,
+      "connected": 1,
       "dependents": [],
       "purpose": "Shared utilities/schemas: journey.ts"
     },
@@ -925,12 +2752,50 @@
         "INTEREST_OPTIONS"
       ],
       "keyFunctions": [],
-      "connected": 2,
+      "connected": 3,
       "dependents": [
         "components/onboarding/onboarding-wizard.tsx",
-        "lib/actions/onboarding.ts"
+        "lib/actions/onboarding.ts",
+        "lib/roadmap/infer-interests.ts"
       ],
       "purpose": "Shared utilities/schemas: onboarding.ts"
+    },
+    {
+      "id": "lib/schemas/playground.ts",
+      "label": "playground.ts",
+      "type": "util",
+      "path": "lib/schemas/playground.ts",
+      "imports": [],
+      "exports": [
+        "playgroundTemplateSchema",
+        "playgroundCompletionSchema",
+        "playgroundConfigSchema",
+        "scrimSlideSchema",
+        "scrimEventSchema",
+        "scrimTimelineSchema",
+        "lessonScrimSchema",
+        "PlaygroundConfig",
+        "PlaygroundTemplate",
+        "ScrimTimeline",
+        "ScrimEvent",
+        "ScrimSlide"
+      ],
+      "keyFunctions": [
+        "applyTimelineAt()",
+        "captionEventAt()"
+      ],
+      "connected": 18,
+      "dependents": [
+        "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
+        "app/journey/[id]/page.tsx",
+        "components/playground/code-workspace.tsx",
+        "components/playground/file-sidebar.tsx",
+        "components/playground/interactive-node-view.tsx",
+        "components/playground/playground-shell.tsx",
+        "components/playground/python-workspace.tsx",
+        "components/playground/save-scrim-dialog.tsx"
+      ],
+      "purpose": "Shared utilities/schemas: playground.ts"
     },
     {
       "id": "lib/schemas/profile.ts",
@@ -949,6 +2814,67 @@
       "purpose": "Shared utilities/schemas: profile.ts"
     },
     {
+      "id": "lib/schemas/roadmap.ts",
+      "label": "roadmap.ts",
+      "type": "util",
+      "path": "lib/schemas/roadmap.ts",
+      "imports": [],
+      "exports": [
+        "createRoadmapSchema",
+        "CreateRoadmapInput",
+        "SkillBubble"
+      ],
+      "keyFunctions": [],
+      "connected": 4,
+      "dependents": [
+        "components/roadmap/goal-creator.tsx",
+        "components/roadmap/skill-bubble-field.tsx",
+        "lib/actions/roadmap.ts",
+        "lib/roadmap/filter-skills.ts"
+      ],
+      "purpose": "Shared utilities/schemas: roadmap.ts"
+    },
+    {
+      "id": "lib/schemas/runner.ts",
+      "label": "runner.ts",
+      "type": "util",
+      "path": "lib/schemas/runner.ts",
+      "imports": [],
+      "exports": [
+        "runnerExecRequestSchema",
+        "RunnerExecRequest"
+      ],
+      "keyFunctions": [],
+      "connected": 0,
+      "dependents": [],
+      "purpose": "Shared utilities/schemas: runner.ts"
+    },
+    {
+      "id": "lib/schemas/scrim.ts",
+      "label": "scrim.ts",
+      "type": "util",
+      "path": "lib/schemas/scrim.ts",
+      "imports": [
+        "lib/schemas/playground.ts"
+      ],
+      "exports": [
+        "saveCheckpointSchema",
+        "saveUserScrimSchema",
+        "ttsCaptionRequestSchema",
+        "runnerExecRequestSchema",
+        "SaveCheckpointInput",
+        "SaveUserScrimInput"
+      ],
+      "keyFunctions": [],
+      "connected": 4,
+      "dependents": [
+        "app/api/runner/exec/route.ts",
+        "app/api/tts/scrim-caption/route.ts",
+        "lib/actions/scrim.ts"
+      ],
+      "purpose": "Shared utilities/schemas: scrim.ts"
+    },
+    {
       "id": "lib/schemas/skill.ts",
       "label": "skill.ts",
       "type": "util",
@@ -964,6 +2890,48 @@
       "connected": 0,
       "dependents": [],
       "purpose": "Shared utilities/schemas: skill.ts"
+    },
+    {
+      "id": "lib/scrims/load-scrim.ts",
+      "label": "load-scrim.ts",
+      "type": "util",
+      "path": "lib/scrims/load-scrim.ts",
+      "imports": [
+        "lib/schemas/playground.ts"
+      ],
+      "exports": [
+        "loadScrimFromFile",
+        "parseLessonScrim"
+      ],
+      "keyFunctions": [
+        "loadScrimFromFile()",
+        "parseLessonScrim()"
+      ],
+      "connected": 2,
+      "dependents": [
+        "app/journey/[id]/scrim/[scrimId]/page.tsx"
+      ],
+      "purpose": "Shared utilities/schemas: load-scrim.ts"
+    },
+    {
+      "id": "lib/supabase/admin.ts",
+      "label": "admin.ts",
+      "type": "service",
+      "path": "lib/supabase/admin.ts",
+      "imports": [],
+      "exports": [
+        "createAdminClient"
+      ],
+      "keyFunctions": [
+        "createAdminClient()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "lib/actions/auth.ts",
+        "lib/daytona/client.ts",
+        "lib/tts/elevenlabs.ts"
+      ],
+      "purpose": "Server-side logic: admin.ts"
     },
     {
       "id": "lib/supabase/client.ts",
@@ -997,9 +2965,34 @@
       ],
       "connected": 2,
       "dependents": [
-        "middleware.ts"
+        "proxy.ts"
       ],
       "purpose": "Session refresh + redirect logic invoked from root middleware."
+    },
+    {
+      "id": "lib/supabase/route-handler.ts",
+      "label": "route-handler.ts",
+      "type": "service",
+      "path": "lib/supabase/route-handler.ts",
+      "imports": [],
+      "exports": [
+        "appendResponseCookies",
+        "createRouteHandlerClient",
+        "createRouteHandlerClientWithCookies"
+      ],
+      "keyFunctions": [
+        "appendResponseCookies()",
+        "createRouteHandlerClient()",
+        "createRouteHandlerClientWithCookies()"
+      ],
+      "connected": 4,
+      "dependents": [
+        "app/auth/callback/route.ts",
+        "app/auth/confirm/route.ts",
+        "app/auth/oauth/[provider]/route.ts",
+        "app/auth/verify/route.ts"
+      ],
+      "purpose": "Server-side logic: route-handler.ts"
     },
     {
       "id": "lib/supabase/server.ts",
@@ -1013,18 +3006,43 @@
       "keyFunctions": [
         "createClient()"
       ],
-      "connected": 9,
+      "connected": 17,
       "dependents": [
         "app/api/ai/next-node/route.ts",
-        "app/auth/callback/route.ts",
+        "app/api/runner/exec/route.ts",
+        "app/api/tts/scrim-caption/route.ts",
         "app/journey/[id]/map/page.tsx",
+        "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
         "app/journey/[id]/page.tsx",
-        "app/journey/page.tsx",
-        "app/onboarding/page.tsx",
-        "lib/actions/auth.ts",
-        "lib/actions/journey.ts"
+        "app/journey/[id]/scrim/[scrimId]/page.tsx",
+        "app/journey/[id]/scrims/page.tsx"
       ],
       "purpose": "Server-side Supabase client (cookies). Used by pages, actions, API routes."
+    },
+    {
+      "id": "lib/tts/elevenlabs.ts",
+      "label": "elevenlabs.ts",
+      "type": "util",
+      "path": "lib/tts/elevenlabs.ts",
+      "imports": [
+        "lib/config/scrim.ts",
+        "lib/supabase/admin.ts"
+      ],
+      "exports": [
+        "ttsCacheKey",
+        "synthesizeCaption",
+        "getOrCreateCaptionAudio"
+      ],
+      "keyFunctions": [
+        "ttsCacheKey()",
+        "synthesizeCaption()",
+        "getOrCreateCaptionAudio()"
+      ],
+      "connected": 3,
+      "dependents": [
+        "app/api/tts/scrim-caption/route.ts"
+      ],
+      "purpose": "Shared utilities/schemas: elevenlabs.ts"
     },
     {
       "id": "lib/utils.ts",
@@ -1038,37 +3056,18 @@
       "keyFunctions": [
         "cn()"
       ],
-      "connected": 15,
+      "connected": 45,
       "dependents": [
+        "components/auth/oauth-button.tsx",
         "components/brand/logo.tsx",
         "components/journey/choice-panel.tsx",
+        "components/journey/continue-form.tsx",
+        "components/journey/dashboard-retry-form.tsx",
         "components/journey/journey-map.tsx",
         "components/journey/journey-node-card.tsx",
-        "components/layout/sticky-progress-bar.tsx",
-        "components/layout/top-nav.tsx",
-        "components/onboarding/onboarding-wizard.tsx",
-        "components/ui/badge.tsx"
+        "components/journey/retry-next-node-form.tsx"
       ],
       "purpose": "Shared utilities/schemas: utils.ts"
-    },
-    {
-      "id": "middleware.ts",
-      "label": "middleware.ts",
-      "type": "config",
-      "path": "middleware.ts",
-      "imports": [
-        "lib/supabase/middleware.ts"
-      ],
-      "exports": [
-        "middleware",
-        "config"
-      ],
-      "keyFunctions": [
-        "middleware()"
-      ],
-      "connected": 1,
-      "dependents": [],
-      "purpose": "Auth gate: refreshes Supabase session, redirects unauthenticated users from private routes."
     },
     {
       "id": "next.config.ts",
@@ -1085,6 +3084,25 @@
       "purpose": "Configuration: next.config.ts"
     },
     {
+      "id": "proxy.ts",
+      "label": "proxy.ts",
+      "type": "util",
+      "path": "proxy.ts",
+      "imports": [
+        "lib/supabase/middleware.ts"
+      ],
+      "exports": [
+        "proxy",
+        "config"
+      ],
+      "keyFunctions": [
+        "proxy()"
+      ],
+      "connected": 1,
+      "dependents": [],
+      "purpose": "Shared utilities/schemas: proxy.ts"
+    },
+    {
       "id": "types/database.ts",
       "label": "database.ts",
       "type": "util",
@@ -1098,6 +3116,20 @@
       "connected": 0,
       "dependents": [],
       "purpose": "Shared utilities/schemas: database.ts"
+    },
+    {
+      "id": "content/scrims/hello-python.json",
+      "label": "hello-python.json",
+      "type": "util",
+      "path": "content/scrims/hello-python.json",
+      "imports": [],
+      "exports": [],
+      "keyFunctions": [],
+      "connected": 1,
+      "dependents": [
+        "app/test/page.tsx"
+      ],
+      "purpose": "Shared utilities/schemas: hello-python.json"
     },
     {
       "id": "supabase/migrations/001_initial.sql#profiles",
@@ -1173,7 +3205,7 @@
   "edges": [
     {
       "source": "app/api/ai/next-node/route.ts",
-      "target": "lib/ai/fallback.ts",
+      "target": "lib/ai/create-next-node.ts",
       "type": "import"
     },
     {
@@ -1187,13 +3219,108 @@
       "type": "import"
     },
     {
+      "source": "app/api/runner/exec/route.ts",
+      "target": "lib/daytona/client.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/api/runner/exec/route.ts",
+      "target": "lib/config/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/api/runner/exec/route.ts",
+      "target": "lib/schemas/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/api/runner/exec/route.ts",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/api/tts/scrim-caption/route.ts",
+      "target": "lib/config/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/api/tts/scrim-caption/route.ts",
+      "target": "lib/schemas/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/api/tts/scrim-caption/route.ts",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/api/tts/scrim-caption/route.ts",
+      "target": "lib/tts/elevenlabs.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/auth/callback/route.ts",
+      "target": "lib/auth/oauth-next.ts",
+      "type": "import"
+    },
+    {
       "source": "app/auth/callback/route.ts",
       "target": "lib/constants/routes.ts",
       "type": "import"
     },
     {
       "source": "app/auth/callback/route.ts",
-      "target": "lib/supabase/server.ts",
+      "target": "lib/supabase/route-handler.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/auth/confirm/route.ts",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/auth/confirm/route.ts",
+      "target": "lib/supabase/route-handler.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/auth/oauth/[provider]/route.ts",
+      "target": "lib/auth/oauth-next.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/auth/oauth/[provider]/route.ts",
+      "target": "lib/auth/oauth.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/auth/oauth/[provider]/route.ts",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/auth/oauth/[provider]/route.ts",
+      "target": "lib/supabase/route-handler.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/auth/verify/route.ts",
+      "target": "lib/auth/otp.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/auth/verify/route.ts",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/auth/verify/route.ts",
+      "target": "lib/schemas/auth.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/auth/verify/route.ts",
+      "target": "lib/supabase/route-handler.ts",
       "type": "import"
     },
     {
@@ -1222,8 +3349,53 @@
       "type": "import"
     },
     {
+      "source": "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
+      "target": "components/playground/user-scrim-view.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
+      "target": "components/layout/app-shell.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
+      "target": "lib/actions/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
+      "target": "lib/config/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
       "source": "app/journey/[id]/not-found.tsx",
       "target": "components/journey/journey-node-card.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
+      "target": "components/playground/interactive-node-view.tsx",
       "type": "import"
     },
     {
@@ -1238,7 +3410,17 @@
     },
     {
       "source": "app/journey/[id]/page.tsx",
+      "target": "components/journey/continue-form.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
       "target": "components/journey/journey-node-card.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
+      "target": "components/journey/retry-node-form.tsx",
       "type": "import"
     },
     {
@@ -1248,11 +3430,86 @@
     },
     {
       "source": "app/journey/[id]/page.tsx",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
+      "target": "lib/actions/workspace.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/page.tsx",
       "target": "lib/supabase/server.ts",
       "type": "import"
     },
     {
       "source": "app/journey/[id]/page.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/scrim/[scrimId]/page.tsx",
+      "target": "components/playground/scrim-lesson-view.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/scrim/[scrimId]/page.tsx",
+      "target": "components/layout/app-shell.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/scrim/[scrimId]/page.tsx",
+      "target": "lib/actions/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/scrim/[scrimId]/page.tsx",
+      "target": "lib/config/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/scrim/[scrimId]/page.tsx",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/scrim/[scrimId]/page.tsx",
+      "target": "lib/scrims/load-scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/scrim/[scrimId]/page.tsx",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/scrim/[scrimId]/page.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/scrims/page.tsx",
+      "target": "lib/actions/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/scrims/page.tsx",
+      "target": "components/layout/app-shell.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/scrims/page.tsx",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/scrims/page.tsx",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/[id]/scrims/page.tsx",
       "target": "components/ui/button.tsx",
       "type": "import"
     },
@@ -1263,7 +3520,7 @@
     },
     {
       "source": "app/journey/page.tsx",
-      "target": "components/journey/journey-node-card.tsx",
+      "target": "components/journey/dashboard-retry-form.tsx",
       "type": "import"
     },
     {
@@ -1278,7 +3535,17 @@
     },
     {
       "source": "app/journey/page.tsx",
+      "target": "lib/journey/progress.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/journey/page.tsx",
       "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/layout.tsx",
+      "target": "components/layout/theme-script.tsx",
       "type": "import"
     },
     {
@@ -1288,27 +3555,22 @@
     },
     {
       "source": "app/login/page.tsx",
-      "target": "components/layout/top-nav.tsx",
+      "target": "components/layout/nav-dock.tsx",
       "type": "import"
     },
     {
-      "source": "app/onboarding/page.tsx",
-      "target": "components/layout/app-shell.tsx",
+      "source": "app/login/page.tsx",
+      "target": "lib/auth/oauth.ts",
       "type": "import"
     },
     {
-      "source": "app/onboarding/page.tsx",
-      "target": "components/onboarding/onboarding-wizard.tsx",
-      "type": "import"
-    },
-    {
-      "source": "app/onboarding/page.tsx",
+      "source": "app/login/page.tsx",
       "target": "lib/constants/routes.ts",
       "type": "import"
     },
     {
       "source": "app/onboarding/page.tsx",
-      "target": "lib/supabase/server.ts",
+      "target": "lib/constants/routes.ts",
       "type": "import"
     },
     {
@@ -1318,7 +3580,7 @@
     },
     {
       "source": "app/page.tsx",
-      "target": "components/layout/top-nav.tsx",
+      "target": "components/layout/nav-dock.tsx",
       "type": "import"
     },
     {
@@ -1332,13 +3594,48 @@
       "type": "import"
     },
     {
-      "source": "components/auth/login-form.tsx",
-      "target": "components/ui/button.tsx",
+      "source": "app/roadmap/new/page.tsx",
+      "target": "components/roadmap/goal-creator.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/roadmap/new/page.tsx",
+      "target": "components/layout/app-shell.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/roadmap/new/page.tsx",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/roadmap/new/page.tsx",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "app/test/page.tsx",
+      "target": "components/playground/scrim-demo.tsx",
+      "type": "import"
+    },
+    {
+      "source": "app/test/page.tsx",
+      "target": "content/scrims/hello-python.json",
       "type": "import"
     },
     {
       "source": "components/auth/login-form.tsx",
-      "target": "components/ui/card.tsx",
+      "target": "components/auth/oauth-button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/auth/login-form.tsx",
+      "target": "components/brand/logo.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/auth/login-form.tsx",
+      "target": "components/ui/button.tsx",
       "type": "import"
     },
     {
@@ -1353,7 +3650,22 @@
     },
     {
       "source": "components/auth/login-form.tsx",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/auth/login-form.tsx",
       "target": "lib/actions/auth.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/auth/login-form.tsx",
+      "target": "lib/auth/oauth.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/auth/oauth-button.tsx",
+      "target": "lib/utils.ts",
       "type": "import"
     },
     {
@@ -1368,6 +3680,51 @@
     },
     {
       "source": "components/journey/choice-panel.tsx",
+      "target": "components/journey/retry-next-node-form.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/choice-panel.tsx",
+      "target": "components/journey/xp-toast.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/choice-panel.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/continue-form.tsx",
+      "target": "lib/actions/journey.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/continue-form.tsx",
+      "target": "components/journey/xp-toast.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/continue-form.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/continue-form.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/dashboard-retry-form.tsx",
+      "target": "lib/actions/roadmap.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/dashboard-retry-form.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/dashboard-retry-form.tsx",
       "target": "lib/utils.ts",
       "type": "import"
     },
@@ -1407,13 +3764,83 @@
       "type": "import"
     },
     {
-      "source": "components/layout/app-shell.tsx",
-      "target": "components/layout/sticky-progress-bar.tsx",
+      "source": "components/journey/retry-next-node-form.tsx",
+      "target": "lib/actions/journey.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/retry-next-node-form.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/retry-next-node-form.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/retry-node-form.tsx",
+      "target": "lib/actions/roadmap.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/retry-node-form.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/retry-node-form.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/journey/xp-toast.tsx",
+      "target": "lib/utils.ts",
       "type": "import"
     },
     {
       "source": "components/layout/app-shell.tsx",
-      "target": "components/layout/top-nav.tsx",
+      "target": "components/layout/nav-dock.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/nav-dock.tsx",
+      "target": "components/ui/animated-theme-toggler.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/nav-dock.tsx",
+      "target": "components/ui/dock.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/nav-dock.tsx",
+      "target": "components/layout/sign-out-button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/nav-dock.tsx",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/nav-dock.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/sign-out-button.tsx",
+      "target": "lib/actions/auth.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/sign-out-button.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/sign-out-button.tsx",
+      "target": "components/ui/dialog.tsx",
       "type": "import"
     },
     {
@@ -1453,17 +3880,17 @@
     },
     {
       "source": "components/layout/top-nav.tsx",
+      "target": "components/layout/sign-out-button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/layout/top-nav.tsx",
       "target": "components/ui/button.tsx",
       "type": "import"
     },
     {
       "source": "components/layout/top-nav.tsx",
       "target": "lib/constants/routes.ts",
-      "type": "import"
-    },
-    {
-      "source": "components/layout/top-nav.tsx",
-      "target": "lib/actions/auth.ts",
       "type": "import"
     },
     {
@@ -1507,6 +3934,391 @@
       "type": "import"
     },
     {
+      "source": "components/playground/code-workspace.tsx",
+      "target": "components/playground/console-pane.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/code-workspace.tsx",
+      "target": "components/playground/editor-area.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/code-workspace.tsx",
+      "target": "components/playground/file-sidebar.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/code-workspace.tsx",
+      "target": "components/playground/resize-separator.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/code-workspace.tsx",
+      "target": "components/playground/workspace-toolbar.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/code-workspace.tsx",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/code-workspace.tsx",
+      "target": "lib/playground/execute.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/code-workspace.tsx",
+      "target": "lib/playground/daytona-run.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/code-workspace.tsx",
+      "target": "lib/playground/vfs.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/code-workspace.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/console-pane.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/console-pane.tsx",
+      "target": "lib/playground/execute.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/editor-area.tsx",
+      "target": "components/playground/editor-tabs.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/editor-area.tsx",
+      "target": "components/playground/resize-separator.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/editor-area.tsx",
+      "target": "lib/playground/vfs.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/editor-area.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/editor-tabs.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/file-sidebar.tsx",
+      "target": "components/playground/vfs-file-explorer.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/file-sidebar.tsx",
+      "target": "components/playground/slide-pane.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/file-sidebar.tsx",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/file-sidebar.tsx",
+      "target": "lib/playground/vfs.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/file-sidebar.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/interactive-node-view.tsx",
+      "target": "components/journey/choice-panel.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/interactive-node-view.tsx",
+      "target": "components/journey/continue-form.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/interactive-node-view.tsx",
+      "target": "components/playground/playground-shell.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/interactive-node-view.tsx",
+      "target": "components/ui/badge.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/interactive-node-view.tsx",
+      "target": "lib/actions/workspace.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/interactive-node-view.tsx",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/interactive-node-view.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/monaco-editor-pane.tsx",
+      "target": "lib/playground/monaco-intellisense.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/monaco-editor-pane.tsx",
+      "target": "lib/playground/monaco-language.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/monaco-editor-pane.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/playground-shell.tsx",
+      "target": "components/playground/save-scrim-dialog.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/playground-shell.tsx",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/playground-shell.tsx",
+      "target": "components/playground/scrim-player.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/playground-shell.tsx",
+      "target": "lib/actions/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/playground-shell.tsx",
+      "target": "lib/playground/vfs.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/playground-shell.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/python-workspace.tsx",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/python-workspace.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/resize-separator.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/save-scrim-dialog.tsx",
+      "target": "lib/actions/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/save-scrim-dialog.tsx",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/save-scrim-dialog.tsx",
+      "target": "components/ui/button.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/save-scrim-dialog.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/scrim-demo.tsx",
+      "target": "components/playground/playground-shell.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/scrim-demo.tsx",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/scrim-lesson-view.tsx",
+      "target": "components/playground/playground-shell.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/scrim-lesson-view.tsx",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/scrim-lesson-view.tsx",
+      "target": "lib/actions/workspace.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/scrim-player.tsx",
+      "target": "components/playground/use-scrim-narration.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/scrim-player.tsx",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/scrim-player.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/slide-pane.tsx",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/slide-pane.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/use-scrim-narration.ts",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/user-scrim-view.tsx",
+      "target": "components/playground/playground-shell.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/user-scrim-view.tsx",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/vfs-file-explorer.tsx",
+      "target": "lib/playground/vfs.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/vfs-file-explorer.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/workspace-toolbar.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/playground/workspace-toolbar.tsx",
+      "target": "lib/playground/execute.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/goal-creator.tsx",
+      "target": "lib/actions/roadmap.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/goal-creator.tsx",
+      "target": "lib/roadmap/filter-skills.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/goal-creator.tsx",
+      "target": "lib/schemas/roadmap.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/goal-creator.tsx",
+      "target": "components/roadmap/goal-input.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/goal-creator.tsx",
+      "target": "components/roadmap/skill-bubble-field.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/goal-creator.tsx",
+      "target": "components/ui/progressive-blur.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/goal-creator.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/goal-input.tsx",
+      "target": "components/ui/morphing-text.tsx",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/goal-input.tsx",
+      "target": "lib/roadmap/goal-placeholders.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/goal-input.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/skill-bubble-field.tsx",
+      "target": "lib/roadmap/bubble-layout.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/skill-bubble-field.tsx",
+      "target": "lib/roadmap/skill-bubble-styles.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/skill-bubble-field.tsx",
+      "target": "lib/schemas/roadmap.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/roadmap/skill-bubble-field.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/ui/animated-theme-toggler.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
       "source": "components/ui/badge.tsx",
       "target": "lib/utils.ts",
       "type": "import"
@@ -1532,6 +4344,11 @@
       "type": "import"
     },
     {
+      "source": "components/ui/dock.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
       "source": "components/ui/input.tsx",
       "target": "lib/utils.ts",
       "type": "import"
@@ -1542,7 +4359,17 @@
       "type": "import"
     },
     {
+      "source": "components/ui/morphing-text.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
       "source": "components/ui/progress.tsx",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "components/ui/progressive-blur.tsx",
       "target": "lib/utils.ts",
       "type": "import"
     },
@@ -1553,12 +4380,42 @@
     },
     {
       "source": "lib/actions/auth.ts",
+      "target": "lib/email/send-auth-code.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/auth.ts",
+      "target": "lib/auth/oauth.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/auth.ts",
+      "target": "lib/auth/otp.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/auth.ts",
       "target": "lib/constants/routes.ts",
       "type": "import"
     },
     {
       "source": "lib/actions/auth.ts",
+      "target": "lib/schemas/auth.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/auth.ts",
+      "target": "lib/supabase/admin.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/auth.ts",
       "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/journey.ts",
+      "target": "lib/ai/create-next-node.ts",
       "type": "import"
     },
     {
@@ -1588,6 +4445,11 @@
     },
     {
       "source": "lib/actions/onboarding.ts",
+      "target": "lib/ai/create-next-node.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/onboarding.ts",
       "target": "lib/schemas/onboarding.ts",
       "type": "import"
     },
@@ -1597,8 +4459,88 @@
       "type": "import"
     },
     {
+      "source": "lib/actions/roadmap.ts",
+      "target": "lib/ai/create-next-node.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/roadmap.ts",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/roadmap.ts",
+      "target": "lib/roadmap/infer-interests.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/roadmap.ts",
+      "target": "lib/roadmap/generate-title.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/roadmap.ts",
+      "target": "lib/schemas/roadmap.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/roadmap.ts",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/scrim.ts",
+      "target": "lib/config/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/scrim.ts",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/scrim.ts",
+      "target": "lib/schemas/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/scrim.ts",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/workspace.ts",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/actions/workspace.ts",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/ai/create-next-node.ts",
+      "target": "lib/ai/fallback.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/ai/create-next-node.ts",
+      "target": "lib/ai/generate-node.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/ai/create-next-node.ts",
+      "target": "lib/schemas/ai.ts",
+      "type": "import"
+    },
+    {
       "source": "lib/ai/fallback.ts",
       "target": "lib/schemas/ai.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/ai/generate-node.ts",
+      "target": "lib/ai/config.ts",
       "type": "import"
     },
     {
@@ -1607,19 +4549,124 @@
       "type": "import"
     },
     {
+      "source": "lib/daytona/client.ts",
+      "target": "lib/config/scrim.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/daytona/client.ts",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/daytona/client.ts",
+      "target": "lib/supabase/admin.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/daytona/client.ts",
+      "target": "lib/supabase/server.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/email/send-auth-code.ts",
+      "target": "lib/email/smtp.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/email/send-auth-code.ts",
+      "target": "lib/auth/otp.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/playground/daytona-run.ts",
+      "target": "lib/constants/routes.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/playground/daytona-run.ts",
+      "target": "lib/playground/execute.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/playground/execute.ts",
+      "target": "lib/playground/format-error.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/playground/execute.ts",
+      "target": "lib/playground/vfs.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/roadmap/bubble-layout.ts",
+      "target": "lib/roadmap/filter-skills.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/roadmap/filter-skills.ts",
+      "target": "lib/schemas/roadmap.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/roadmap/filter-skills.ts",
+      "target": "lib/roadmap/goal-placeholders.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/roadmap/generate-title.ts",
+      "target": "lib/ai/config.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/roadmap/infer-interests.ts",
+      "target": "lib/schemas/onboarding.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/roadmap/skill-bubble-styles.ts",
+      "target": "lib/utils.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/schemas/ai.ts",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/schemas/journey.ts",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/schemas/scrim.ts",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
+      "source": "lib/scrims/load-scrim.ts",
+      "target": "lib/schemas/playground.ts",
+      "type": "import"
+    },
+    {
       "source": "lib/supabase/middleware.ts",
       "target": "lib/constants/routes.ts",
       "type": "import"
     },
     {
-      "source": "middleware.ts",
-      "target": "lib/supabase/middleware.ts",
+      "source": "lib/tts/elevenlabs.ts",
+      "target": "lib/config/scrim.ts",
       "type": "import"
     },
     {
-      "source": "app/page.tsx",
-      "target": "middleware.ts",
-      "type": "middleware"
+      "source": "lib/tts/elevenlabs.ts",
+      "target": "lib/supabase/admin.ts",
+      "type": "import"
+    },
+    {
+      "source": "proxy.ts",
+      "target": "lib/supabase/middleware.ts",
+      "type": "import"
     },
     {
       "source": "app/login/page.tsx",
@@ -1640,11 +4687,6 @@
       "source": "app/api/ai/next-node/route.ts",
       "target": "lib/ai/fallback.ts",
       "type": "uses"
-    },
-    {
-      "source": "middleware.ts",
-      "target": "lib/supabase/middleware.ts",
-      "type": "delegates"
     },
     {
       "source": "lib/actions/journey.ts",
@@ -1705,93 +4747,93 @@
   "hotspots": [
     {
       "file": "lib/utils.ts",
-      "inbound": 15,
+      "inbound": 45,
       "outbound": 0,
-      "total": 15
+      "total": 45
     },
     {
       "file": "lib/constants/routes.ts",
-      "inbound": 12,
+      "inbound": 27,
       "outbound": 0,
-      "total": 12
+      "total": 27
     },
     {
       "file": "components/ui/button.tsx",
-      "inbound": 10,
+      "inbound": 19,
       "outbound": 1,
-      "total": 11
+      "total": 20
     },
     {
-      "file": "components/journey/journey-node-card.tsx",
-      "inbound": 3,
-      "outbound": 6,
-      "total": 9
-    },
-    {
-      "file": "components/layout/top-nav.tsx",
-      "inbound": 3,
-      "outbound": 6,
-      "total": 9
+      "file": "lib/schemas/playground.ts",
+      "inbound": 18,
+      "outbound": 0,
+      "total": 18
     },
     {
       "file": "lib/supabase/server.ts",
-      "inbound": 9,
+      "inbound": 17,
       "outbound": 0,
-      "total": 9
-    },
-    {
-      "file": "components/onboarding/onboarding-wizard.tsx",
-      "inbound": 1,
-      "outbound": 7,
-      "total": 8
+      "total": 17
     },
     {
       "file": "app/journey/[id]/page.tsx",
       "inbound": 0,
+      "outbound": 11,
+      "total": 11
+    },
+    {
+      "file": "components/playground/code-workspace.tsx",
+      "inbound": 0,
+      "outbound": 10,
+      "total": 10
+    },
+    {
+      "file": "components/playground/playground-shell.tsx",
+      "inbound": 4,
       "outbound": 6,
-      "total": 6
+      "total": 10
     },
     {
       "file": "components/auth/login-form.tsx",
       "inbound": 1,
-      "outbound": 5,
-      "total": 6
+      "outbound": 8,
+      "total": 9
     },
     {
-      "file": "components/layout/app-shell.tsx",
-      "inbound": 4,
-      "outbound": 2,
-      "total": 6
+      "file": "lib/actions/auth.ts",
+      "inbound": 2,
+      "outbound": 7,
+      "total": 9
     },
     {
-      "file": "app/journey/[id]/map/page.tsx",
-      "inbound": 0,
-      "outbound": 5,
-      "total": 5
+      "file": "lib/actions/roadmap.ts",
+      "inbound": 3,
+      "outbound": 6,
+      "total": 9
     },
     {
-      "file": "app/journey/page.tsx",
-      "inbound": 0,
-      "outbound": 5,
-      "total": 5
-    },
-    {
-      "file": "components/layout/sticky-progress-bar.tsx",
-      "inbound": 1,
+      "file": "lib/actions/scrim.ts",
+      "inbound": 5,
       "outbound": 4,
-      "total": 5
+      "total": 9
     },
     {
-      "file": "lib/actions/journey.ts",
-      "inbound": 1,
-      "outbound": 4,
-      "total": 5
-    },
-    {
-      "file": "app/onboarding/page.tsx",
+      "file": "app/journey/[id]/my-scrim/[userScrimId]/page.tsx",
       "inbound": 0,
-      "outbound": 4,
-      "total": 4
+      "outbound": 8,
+      "total": 8
+    },
+    {
+      "file": "app/journey/[id]/scrim/[scrimId]/page.tsx",
+      "inbound": 0,
+      "outbound": 8,
+      "total": 8
+    },
+    {
+      "file": "components/journey/journey-node-card.tsx",
+      "inbound": 2,
+      "outbound": 6,
+      "total": 8
     }
   ],
   "criticalPaths": [
@@ -1842,7 +4884,7 @@
   ],
   "onboardingPaths": {
     "New Engineer": [
-      "docs/handoff-roadrunner-hackathon.md",
+      "docs/PRDfinal.md",
       "app/layout.tsx",
       "middleware.ts",
       "lib/constants/routes.ts",
@@ -1886,15 +4928,23 @@
     ]
   },
   "deadAreas": [
-    "components/ui/dialog.tsx",
+    "components/layout/sticky-progress-bar.tsx",
+    "components/layout/top-nav.tsx",
+    "components/onboarding/onboarding-wizard.tsx",
+    "components/playground/code-workspace.tsx",
+    "components/playground/monaco-editor-pane.tsx",
+    "components/playground/python-workspace.tsx",
+    "components/playground/sandpack-workspace.tsx",
     "components/ui/skeleton.tsx",
-    "lib/ai/generate-node.ts",
+    "components/ui/smooth-cursor.tsx",
     "lib/schemas/index.ts",
     "lib/schemas/journey.ts",
     "lib/schemas/profile.ts",
+    "lib/schemas/runner.ts",
     "lib/schemas/skill.ts",
     "lib/supabase/client.ts",
     "next.config.ts",
+    "proxy.ts",
     "types/database.ts"
   ],
   "circularDeps": [],

@@ -72,4 +72,4 @@ proxy.ts
 | `/api/health` | public |
 | `/api/ai/next-node` | private |
 
-Design system: `docs/design/DESIGN.md` · Product roadmap: `docs/product-roadmap.md` · Preview: `docs/design/preview.html`
+Product specification: `docs/PRDfinal.md` · Design system: `docs/design/DESIGN.md` · Preview: `docs/design/preview.html`
