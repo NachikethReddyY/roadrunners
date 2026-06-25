@@ -30,6 +30,7 @@ Rules:
 - Build around the learner's current checkpoint, not generic curriculum.
 - Return title, skill_tag, template, initial_files, slides, timeline, narration, duration_ms.
 - slides should be short teaching cards with clear titles and concise markdown.
+- Every slide MUST include a unique string id (e.g. intro, variables, run).
 - timeline.events may use only: files, focus, caption, slide, run, challenge.
 - files events must show code progressively evolving toward the intended result.
 - include at least 2 caption events and at least 1 run event.
@@ -149,8 +150,83 @@ function buildCodecastPrompt(context: GenerateCodecastContext): string {
     .join("\n\n");
 }
 
+function slugifyId(text: string): string {
+  return (
+    text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 40) || "slide"
+  );
+}
+
+/** ponytail: naive repair for common LLM omissions — upgrade path is stricter schema + retry */
+function normalizeGeneratedScrim(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object") return raw;
+  const scrim = { ...(raw as Record<string, unknown>) };
+
+  if (!scrim.initial_files || typeof scrim.initial_files !== "object") {
+    scrim.initial_files = {};
+  }
+
+  if (Array.isArray(scrim.slides)) {
+    const usedIds = new Set<string>();
+    scrim.slides = scrim.slides.map((slide, index) => {
+      if (!slide || typeof slide !== "object") return slide;
+      const entry = { ...(slide as Record<string, unknown>) };
+      let id =
+        typeof entry.id === "string" && entry.id.trim() ? entry.id.trim() : "";
+      if (!id && typeof entry.title === "string") {
+        id = slugifyId(entry.title);
+      }
+      if (!id) id = `slide-${index + 1}`;
+      while (usedIds.has(id)) id = `${id}-${index + 1}`;
+      usedIds.add(id);
+      return { ...entry, id };
+    });
+  }
+
+  const timeline =
+    scrim.timeline && typeof scrim.timeline === "object"
+      ? { ...(scrim.timeline as Record<string, unknown>) }
+      : null;
+
+  if (timeline) {
+    if (
+      (scrim.duration_ms === undefined || scrim.duration_ms === null) &&
+      typeof timeline.durationMs === "number"
+    ) {
+      scrim.duration_ms = timeline.durationMs;
+    }
+
+    if (Array.isArray(timeline.events)) {
+      const slides = Array.isArray(scrim.slides)
+        ? (scrim.slides as Array<{ id: string }>)
+        : [];
+      let slideEventIndex = 0;
+      timeline.events = timeline.events.map((event, index) => {
+        if (!event || typeof event !== "object") return event;
+        const entry = { ...(event as Record<string, unknown>) };
+        if (entry.type === "slide" && typeof entry.slideId !== "string") {
+          entry.slideId =
+            slides[slideEventIndex]?.id ?? slides[0]?.id ?? "slide-1";
+          slideEventIndex += 1;
+        }
+        if (entry.type === "challenge" && typeof entry.id !== "string") {
+          entry.id = `challenge-${index + 1}`;
+        }
+        return entry;
+      });
+    }
+
+    scrim.timeline = timeline;
+  }
+
+  return scrim;
+}
+
 function parseGeneratedScrim(raw: unknown): GeneratedScrim {
-  const result = generatedScrimSchema.safeParse(raw);
+  const result = generatedScrimSchema.safeParse(normalizeGeneratedScrim(raw));
   if (!result.success) {
     const issue = result.error.issues[0];
     const path = issue?.path.join(".") || "root";
