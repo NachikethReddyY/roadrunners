@@ -89,6 +89,7 @@ export const scrimNarrationSchema = z.object({
   audio_url: z.union([z.string().url(), z.string().startsWith("/")]),
   script: z.string(),
   cues: z.array(scrimNarrationCueSchema).default([]),
+  next_session_topic: z.string().min(1).optional(),
 });
 
 export const lessonScrimSchema = z.object({

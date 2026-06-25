@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /**
  * Bake one continuous ElevenLabs MP3 for a CodeCast narration script.
+ * Appends a "next session" teaser when available and adds 5s of trailing
+ * silence per challenge so exercise pauses are reflected in the final audio.
  *
  * Usage: npm run bake:scrim-narration -- hello-python
  */
