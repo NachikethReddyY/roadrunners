@@ -10,6 +10,7 @@ import {
   PlaygroundShell,
 } from "@/components/playground/playground-shell";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { saveWorkspaceSnapshot } from "@/lib/actions/workspace";
 import type { PlaygroundConfig } from "@/lib/schemas/playground";
 import { cn } from "@/lib/utils";
@@ -80,44 +81,66 @@ export function InteractiveNodeView(props: InteractiveNodeViewProps) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-3">
-        <div className="flex items-start gap-3">
-          <Badge
-            className={cn(
-              "rounded-full uppercase tracking-wider",
-              skillBadgeClass[props.skillCategory] ?? skillBadgeClass.explore
-            )}
-          >
-            {props.skillTag}
-          </Badge>
-          {props.fallback && (
+      <Card className="border border-border/80 bg-card shadow-[0_10px_30px_rgba(29,29,31,0.05)]">
+        <CardHeader className="space-y-3">
+          <div className="flex items-start gap-3">
             <Badge
-              variant="outline"
-              className="rounded-full uppercase tracking-wider text-[var(--semantic-warning)]"
+              className={cn(
+                "rounded-full uppercase tracking-wider",
+                skillBadgeClass[props.skillCategory] ?? skillBadgeClass.explore
+              )}
             >
-              Suggested path
+              {props.skillTag}
             </Badge>
-          )}
-        </div>
-        <h1 className="font-heading text-2xl font-semibold tracking-tight">
-          {props.title}
-        </h1>
-        <div className="prose prose-neutral max-w-none text-[17px] leading-[1.47] dark:prose-invert">
-          <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
-            {props.contentMd}
-          </ReactMarkdown>
-        </div>
-      </div>
+            {props.fallback && (
+              <Badge
+                variant="outline"
+                className="rounded-full uppercase tracking-wider text-[var(--semantic-warning)]"
+              >
+                Suggested path
+              </Badge>
+            )}
+          </div>
+          <CardTitle className="text-2xl font-semibold tracking-tight">
+            {props.title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="prose prose-neutral max-w-none text-[17px] leading-[1.47] dark:prose-invert">
+            <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
+              {props.contentMd}
+            </ReactMarkdown>
+          </div>
+        </CardContent>
+      </Card>
 
-      <PlaygroundShell
-        config={playgroundConfig}
-        title={props.title}
-        journeyId={props.journeyId}
-        nodeId={props.nodeId}
-        skillTag={props.skillTag}
-        onOutput={setOutput}
-        onFilesChange={debouncedSave}
-      />
+      <section className="space-y-3" aria-label="Practice workspace">
+        <div className="flex items-end justify-between gap-4 px-1">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              Practice Workspace
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              The editor and exercise live here as a separate hands-on step from the reading above.
+            </p>
+          </div>
+          <Badge variant="outline" className="rounded-full px-3 py-1 text-xs">
+            Exercise
+          </Badge>
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border border-[var(--editor-border)] bg-[var(--surface-dark)] shadow-[0_18px_48px_rgba(29,29,31,0.08)]">
+          <PlaygroundShell
+            config={playgroundConfig}
+            title={props.title}
+            journeyId={props.journeyId}
+            nodeId={props.nodeId}
+            skillTag={props.skillTag}
+            onOutput={setOutput}
+            onFilesChange={debouncedSave}
+          />
+        </div>
+      </section>
 
       <div className="space-y-3 border-t border-border pt-6">
         {props.choices.length > 0 ? (
