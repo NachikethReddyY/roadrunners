@@ -12,13 +12,42 @@ import { createClient } from "@/lib/supabase/server";
 
 type OAuthProvider = "google";
 
+function firstValidUrlOrigin(...values: Array<string | null | undefined>) {
+  for (const value of values) {
+    if (!value || value === "null") continue;
+    try {
+      return new URL(value).origin;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+function firstDefined(...values: Array<string | null | undefined>) {
+  for (const value of values) {
+    if (value) return value;
+  }
+  return null;
+}
+
 async function authCallbackUrl(next?: string) {
   const headerStore = await headers();
+  const headerOrigin = firstValidUrlOrigin(
+    headerStore.get("origin"),
+    headerStore.get("referer")
+  );
   const forwardedProto = headerStore.get("x-forwarded-proto");
   const forwardedHost = headerStore.get("x-forwarded-host");
-  const host = forwardedHost ?? headerStore.get("host") ?? process.env.NEXT_PUBLIC_APP_URL;
+  const host = firstDefined(
+    forwardedHost,
+    headerStore.get("host"),
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL,
+    process.env.NEXT_PUBLIC_APP_URL
+  );
   const protocol = forwardedProto ?? (host?.includes("localhost") ? "http" : "https");
-  const base = host?.startsWith("http") ? host : `${protocol}://${host}`;
+  const base = headerOrigin ?? (host?.startsWith("http") ? host : `${protocol}://${host}`);
   const url = new URL("/auth/callback", base);
   if (next?.startsWith("/")) {
     url.searchParams.set("next", next);
