@@ -31,9 +31,19 @@ export function GenerateCodecastButton({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ journeyId, nodeId }),
       });
-      const data = (await res.json()) as { error?: string; route?: string };
+      const raw = await res.text();
+      let data: { error?: string; route?: string } = {};
+      if (raw) {
+        try {
+          data = JSON.parse(raw) as { error?: string; route?: string };
+        } catch {
+          throw new Error(
+            res.ok ? "Invalid server response" : `Server error (${res.status})`
+          );
+        }
+      }
       if (!res.ok || !data.route) {
-        throw new Error(data.error ?? "Could not generate CodeCast");
+        throw new Error(data.error ?? `Could not generate CodeCast (${res.status})`);
       }
       router.push(data.route);
       router.refresh();

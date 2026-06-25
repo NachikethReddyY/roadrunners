@@ -5,6 +5,7 @@ import {
   type ResponseSchema,
 } from "@google/generative-ai";
 import { getAiConfig, type AiConfig } from "@/lib/ai/config";
+import { parseModelJson } from "@/lib/ai/parse-model-json";
 import { generatedScrimSchema, type GeneratedScrim } from "@/lib/schemas/playground";
 
 export type GenerateCodecastContext = {
@@ -36,7 +37,8 @@ Rules:
 - narration.script should sound like a teacher reading the walkthrough naturally.
 - narration.cues should align to timeline times.
 - duration_ms should match the timeline length and remain under 120000.
-- Keep the lesson achievable and concrete.`;
+- Keep the lesson achievable and concrete.
+- Stay compact: at most 4 slides, at most 6 files timeline events, short code snippets.`;
 
 const generatedScrimResponseSchema: ResponseSchema = {
   type: SchemaType.OBJECT,
@@ -147,6 +149,27 @@ function buildCodecastPrompt(context: GenerateCodecastContext): string {
     .join("\n\n");
 }
 
+function parseGeneratedScrim(raw: unknown): GeneratedScrim {
+  const result = generatedScrimSchema.safeParse(raw);
+  if (!result.success) {
+    const issue = result.error.issues[0];
+    const path = issue?.path.join(".") || "root";
+    throw new Error(`CodeCast validation failed at ${path}: ${issue?.message ?? "invalid shape"}`);
+  }
+  return result.data;
+}
+
+function parseCodecastResponse(text: string): GeneratedScrim {
+  try {
+    return parseGeneratedScrim(parseModelJson(text));
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      throw new Error("AI returned truncated or invalid JSON — try again");
+    }
+    throw err;
+  }
+}
+
 async function generateWithGemini(
   config: AiConfig,
   context: GenerateCodecastContext
@@ -159,14 +182,18 @@ async function generateWithGemini(
       responseMimeType: "application/json",
       responseSchema: generatedScrimResponseSchema,
       temperature: 0.7,
-      maxOutputTokens: 4096,
+      maxOutputTokens: 8192,
     },
   });
 
   const result = await model.generateContent(buildCodecastPrompt(context));
+  const candidate = result.response.candidates?.[0];
+  if (candidate?.finishReason === "MAX_TOKENS") {
+    throw new Error("AI response truncated — try again");
+  }
   const text = result.response.text();
   if (!text) throw new Error("AI returned an empty CodeCast response");
-  return generatedScrimSchema.parse(JSON.parse(text));
+  return parseCodecastResponse(text);
 }
 
 async function generateWithOpenAI(
@@ -183,6 +210,7 @@ async function generateWithOpenAI(
     const response = await client.chat.completions.create({
       model: config.model,
       messages,
+      max_tokens: 8192,
       response_format: {
         type: "json_schema",
         json_schema: {
@@ -262,9 +290,13 @@ async function generateWithOpenAI(
       },
     });
 
-    const content = response.choices[0]?.message.content;
+    const choice = response.choices[0];
+    if (choice?.finish_reason === "length") {
+      throw new Error("AI response truncated — try again");
+    }
+    const content = choice?.message.content;
     if (!content) throw new Error("AI returned an empty CodeCast response");
-    return generatedScrimSchema.parse(JSON.parse(content));
+    return parseCodecastResponse(content);
   } catch (structuredError) {
     const retry = await client.chat.completions.create({
       model: config.model,
@@ -273,15 +305,24 @@ async function generateWithOpenAI(
         {
           role: "user",
           content:
-            "Return valid JSON only for the same CodeCast request. Keep the same shape and do not add commentary.",
+            "Return valid JSON only for the same CodeCast request. Use at most 4 slides and 6 files events. Do not add commentary.",
         },
       ],
+      max_tokens: 8192,
       response_format: { type: "json_object" },
     });
 
-    const content = retry.choices[0]?.message.content;
-    if (!content) throw structuredError;
-    return generatedScrimSchema.parse(JSON.parse(content));
+    const retryChoice = retry.choices[0];
+    if (retryChoice?.finish_reason === "length") {
+      throw new Error("AI response truncated — try again");
+    }
+    const content = retryChoice?.message.content;
+    if (!content) {
+      throw structuredError instanceof Error
+        ? structuredError
+        : new Error("Could not generate CodeCast");
+    }
+    return parseCodecastResponse(content);
   }
 }
 
