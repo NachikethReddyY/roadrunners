@@ -6,7 +6,7 @@ import {
   type CoverageItem,
   type CoverageState,
   type DerivedFrontier,
-} from "@/lib/journey/presentation";
+} from "./presentation.ts";
 
 export type FrontierNodeInput = {
   id: string;
