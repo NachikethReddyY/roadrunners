@@ -1295,3 +1295,62 @@ TTS remains optional for the learning flow. The default bucket name is `tts-cach
 ---
 
 *RoadRunners Unified PRD v1.1 — roadmap choice, timeline learning, cloud building, verification, and descriptive coverage in one product.*
+
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://rlrnzopqpacnwrmvanif.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJscm56b3BxcGFjbndybXZhbmlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5Mjg1MzUsImV4cCI6MjA5NzUwNDUzNX0.S_ouZ8HsiLncZNkwfZhVdKUouNM_5mmXnlUON2n8yps
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJscm56b3BxcGFjbndybXZhbmlmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTkyODUzNSwiZXhwIjoyMDk3NTA0NTM1fQ.A6Uu5C5BhTeueSHZaue_IkB7smvEZ1VJY3r9TqmDmoo
+
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# OAuth — show buttons in the login UI (credentials live in Supabase, not here)
+NEXT_PUBLIC_AUTH_GOOGLE_ENABLED=true
+
+# Google OAuth setup (credentials go in Supabase, not .env):
+# Google Cloud → Credentials → OAuth 2.0 Client ID → type MUST be "Web application"
+#   Authorized JavaScript origins: http://localhost:3000
+#   Authorized redirect URI (only this one): https://rlrnzopqpacnwrmvanif.supabase.co/auth/v1/callback
+# Supabase → Auth → Providers → Google:
+#   Client IDs: paste ONLY the Web client ID (not Android/iOS IDs)
+#   Client Secret: paste the matching Web client secret (no spaces)
+# Supabase → Auth → URL Configuration → Redirect URLs:
+#   http://localhost:3000/auth/callback
+
+# Chikky AI (server-only — never NEXT_PUBLIC_)
+CHIKKY_AI_API_KEY=AQ.Ab8RN6L4xIVvdWKjEQnYUlJx6wwPu-L1ePu9DKiGPRd1wAPsnw
+CHIKKY_AI_MODEL=gemini-2.5-flash
+CHIKKY_AI_PROVIDER=gemini
+
+# SMTP (server-only — email sign-in codes via nodemailer)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=ynrdevs@gmail.com
+SMTP_PASS=zxidhcyulrcfvhga
+SMTP_FROM=RoadRunners <ynrdevs@gmail.com>
+
+DAYTONA_API_KEY=dtn_36b7dacae72f59d4d1360b5136dab16efc6d24c2c7b6b001635b8f178d68e3ba
+DATONA_URL=https://app.daytona.io/api
+DAYTONA_TARGET=us
+DAYTONA_DEFAULT_LANGUAGE=python
+DAYTONA_SANDBOX_TTL_MINUTES=30
+
+# ── Scrim runtime ─────────────────────────────────────────────
+# browser = Sandpack/Pyodide only (default, no credits)
+# daytona = server sandboxes for python (+ future go/shell)
+# auto    = browser for react/vanilla, daytona for python
+SCRIM_RUNNER=auto
+SCRIM_TTS_ENABLED=true
+SCRIM_MAX_CHECKPOINTS=5
+SCRIM_MAX_USER_SCRIMS_PER_JOURNEY=20
+
+# ── ElevenLabs (server-only — scrim caption narration) ────────
+# https://elevenlabs.io/app/settings/api-keys
+ELEVENLABS_API_KEY=sk_965ad1d0798f70995ad3d586d84b014beb5094dda3328936
+ELEVENLABS_VOICE_ID=JBFqnCBsd6RMkjVDRZzb
+ELEVENLABS_MODEL_ID=eleven_multilingual_v2
+ELEVENLABS_OUTPUT_FORMAT=mp3_44100_128
+
+# Optional: Supabase Storage bucket for TTS cache (defaults to tts-cache)
+TTS_STORAGE_BUCKET=tts-cache
