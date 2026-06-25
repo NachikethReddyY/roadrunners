@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getAiConfig } from "@/lib/ai/config";
 import { getFallbackNode } from "@/lib/ai/fallback";
 import { generateNextNode } from "@/lib/ai/generate-node";
 import { aiNodeOutputSchema, type AiNodeOutput } from "@/lib/schemas/ai";
@@ -52,7 +53,15 @@ export async function createAndPersistNextNode(
       pivotSkill: input.pivotSkill,
       skillTags,
     });
-  } catch {
+  } catch (error) {
+    const ai = getAiConfig();
+    console.error("RoadRunners AI node generation failed", {
+      provider: ai?.provider ?? "none",
+      model: ai?.model ?? "none",
+      journeyId: input.journeyId,
+      pivotSkill: input.pivotSkill ?? null,
+      error: error instanceof Error ? error.message : String(error),
+    });
     fallback = true;
     node = aiNodeOutputSchema.parse(
       getFallbackNode(input.pivotSkill ?? profile?.interests?.[0] ?? "explore")

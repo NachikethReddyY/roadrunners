@@ -147,81 +147,135 @@ async function generateWithOpenAI(
   context: GenerateNodeContext
 ): Promise<AiNodeOutput> {
   const client = new OpenAI({ apiKey: config.apiKey });
-  const response = await client.chat.completions.create({
-    model: config.model,
-    messages: [
-      {
-        role: "system",
-        content: SYSTEM_PROMPT,
-      },
-      {
-        role: "user",
-        content: buildUserPrompt(context),
-      },
-    ],
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        name: "learning_journey_node",
-        strict: false,
-        schema: {
-          type: "object",
-          additionalProperties: false,
-          required: ["title", "content_md", "skill_tag", "node_type", "choices"],
-          properties: {
-            title: { type: "string" },
-            content_md: { type: "string" },
-            skill_tag: { type: "string" },
-            node_type: {
-              type: "string",
-              enum: ["lesson", "choice", "interactive"],
-            },
-            choices: {
-              type: "array",
-              minItems: 1,
-              maxItems: 3,
-              items: {
-                type: "object",
-                additionalProperties: false,
-                required: ["label", "description", "target_skill_tag"],
-                properties: {
-                  label: { type: "string" },
-                  description: { type: "string" },
-                  target_skill_tag: { type: "string" },
+  const messages = [
+    {
+      role: "system" as const,
+      content: SYSTEM_PROMPT,
+    },
+    {
+      role: "user" as const,
+      content: buildUserPrompt(context),
+    },
+  ];
+
+  try {
+    const response = await client.chat.completions.create({
+      model: config.model,
+      messages,
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "learning_journey_node",
+          strict: false,
+          schema: {
+            type: "object",
+            additionalProperties: false,
+            required: ["title", "content_md", "skill_tag", "node_type", "choices"],
+            properties: {
+              title: { type: "string" },
+              content_md: { type: "string" },
+              skill_tag: { type: "string" },
+              node_type: {
+                type: "string",
+                enum: ["lesson", "choice", "interactive"],
+              },
+              choices: {
+                type: "array",
+                minItems: 1,
+                maxItems: 3,
+                items: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["label", "description", "target_skill_tag"],
+                  properties: {
+                    label: { type: "string" },
+                    description: { type: "string" },
+                    target_skill_tag: { type: "string" },
+                  },
                 },
               },
-            },
-            playground: {
-              type: "object",
-              additionalProperties: false,
-              required: ["template", "files", "completion"],
-              properties: {
-                template: {
-                  type: "string",
-                  enum: ["vanilla", "react-ts", "python"],
+              playground: {
+                type: "object",
+                additionalProperties: false,
+                required: ["template", "files", "completion"],
+                properties: {
+                  template: {
+                    type: "string",
+                    enum: ["vanilla", "react-ts", "python"],
+                  },
+                  files: {
+                    type: "object",
+                    additionalProperties: { type: "string" },
+                  },
+                  activeFile: { type: "string" },
+                  preview: { type: "boolean" },
+                  completion: {
+                    type: "string",
+                    enum: ["manual", "output_contains", "tests"],
+                  },
+                  completionTarget: { type: "string" },
                 },
-                files: {
-                  type: "object",
-                  additionalProperties: { type: "string" },
-                },
-                activeFile: { type: "string" },
-                preview: { type: "boolean" },
-                completion: {
-                  type: "string",
-                  enum: ["manual", "output_contains", "tests"],
-                },
-                completionTarget: { type: "string" },
               },
             },
           },
         },
       },
-    },
-  });
+    });
 
-  const content = response.choices[0]?.message.content;
-  if (!content) throw new Error("AI returned an empty response");
-  return aiNodeOutputSchema.parse(JSON.parse(content));
+    const content = response.choices[0]?.message.content;
+    if (!content) throw new Error("AI returned an empty response");
+    return aiNodeOutputSchema.parse(JSON.parse(content));
+  } catch (structuredError) {
+    const fallbackPrompt = [
+      buildUserPrompt(context),
+      "",
+      "Return valid JSON only.",
+      "The JSON must match this shape exactly:",
+      JSON.stringify(
+        {
+          title: "string",
+          content_md: "string",
+          skill_tag: "string",
+          node_type: "lesson | choice | interactive",
+          choices: [
+            {
+              label: "string",
+              description: "string",
+              target_skill_tag: "string",
+            },
+          ],
+          playground: {
+            template: "vanilla | react-ts | python",
+            files: { "filename.ext": "code" },
+            activeFile: "optional string",
+            preview: true,
+            completion: "manual | output_contains | tests",
+            completionTarget: "optional string",
+          },
+        },
+        null,
+        2
+      ),
+    ].join("\n");
+
+    const retry = await client.chat.completions.create({
+      model: config.model,
+      messages: [
+        ...messages,
+        {
+          role: "user",
+          content: fallbackPrompt,
+        },
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    const content = retry.choices[0]?.message.content;
+    if (!content) {
+      throw structuredError;
+    }
+    return aiNodeOutputSchema.parse(JSON.parse(content));
+  }
 }
 
 export async function generateNextNode(
