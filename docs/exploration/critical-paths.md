@@ -10,7 +10,7 @@ app/login/page.tsx
   → lib/actions/auth.ts (signInWithGoogle, signInWithMagicLink)
   → app/auth/callback/route.ts
   → lib/supabase/server.ts
-  → middleware.ts
+  → proxy.ts
   → lib/supabase/middleware.ts (session refresh + redirect)
 ```
 
@@ -19,16 +19,18 @@ Unauthenticated access to `/onboarding` or `/journey/*` redirects to `/login?nex
 ## Onboarding → First Journey
 
 ```
-app/onboarding/page.tsx
-  → components/onboarding/onboarding-wizard.tsx
-  → lib/actions/onboarding.ts (completeOnboarding)
-  → lib/schemas/onboarding.ts (validation)
+app/roadmap/new/page.tsx
+  → components/roadmap/goal-creator.tsx
+  → lib/actions/roadmap.ts (createRoadmap)
+  → lib/schemas/roadmap.ts (validation)
   → lib/supabase/server.ts
   → profiles (upsert) + journeys (insert)
-  → redirect /journey/[id]
+  → lib/ai/create-next-node.ts
+  → persist_generated_node RPC
+  → redirect /journey
 ```
 
-**Gap:** No first AI node is created yet — journey may have empty node list until LLM flow is wired.
+If first-node generation fails after journey creation, the dashboard exposes a retry flow.
 
 ## Journey Choice + XP
 
@@ -38,27 +40,47 @@ app/journey/[id]/page.tsx
   → lib/actions/journey.ts (submitChoiceAction → submitChoice)
   → supabase: decisions INSERT, profiles UPDATE (xp, level, streak)
   → lib/gamification/xp.ts, streak.ts
+  → lib/ai/create-next-node.ts
+  → persist_generated_node RPC
 ```
 
 Idempotency: duplicate decision on same node returns error code `23505`.
 
-## AI Next Node (MVP — fallback only)
+## AI Next Node
 
 ```
 POST /api/ai/next-node
   → app/api/ai/next-node/route.ts
-  → lib/schemas/ai.ts (request + output validation)
-  → lib/ai/fallback.ts (deterministic node)
-  → lib/supabase/server.ts (auth + journey ownership check)
+  → lib/schemas/ai.ts (request validation)
+  → lib/ai/create-next-node.ts
+  → lib/ai/generate-node.ts (OpenAI or Gemini)
+  → lib/ai/fallback.ts on provider/validation failure
+  → persist_generated_node RPC
 ```
 
-**Target flow (not built):** stream LLM → validate → INSERT node + choices → UPDATE current_node_id → award XP.
+Current rate limiting is process-local. The target work packages add frontier-aware generation, durable offer history, and production-grade limiting.
 
 ## Pivot Track
 
 ```
 lib/actions/journey.ts (pivotTrack)
   → soft-archive journey_nodes (set archived_at)
+  → lib/ai/create-next-node.ts with pivotSkill
+  → persist generated pivot node
   → revalidate journey pages
-  → (should trigger new AI node for pivotSkill — not wired)
 ```
+
+**Product gap:** the current UI can request any catalog skill. The target requires every offered pivot to explain how it contributes to the existing project and to remain optional.
+
+## Interactive Workspace and Scrim
+
+```
+app/journey/[id]/page.tsx or scrim route
+  → components/playground/playground-shell.tsx
+  → components/playground/code-workspace.tsx
+  → browser runner or POST /api/runner/exec
+  → lib/daytona/client.ts when configured
+  → lib/actions/workspace.ts / lib/actions/scrim.ts for recovery
+```
+
+**Target gaps:** Daytona is not yet the complete canonical multi-file runtime, protected preview and structured verification are missing, and recovery is not yet automatically restored into a recreated sandbox.

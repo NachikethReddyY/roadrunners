@@ -48,7 +48,7 @@ function classify(rel) {
   if (rel.startsWith("app/") && rel.includes("/page.")) return "route";
   if (rel.startsWith("app/") && rel.includes("/route.")) return "route";
   if (rel.startsWith("app/api/")) return "route";
-  if (rel === "middleware.ts") return "config";
+  if (rel === "proxy.ts") return "config";
   if (rel.startsWith("lib/actions/")) return "service";
   if (rel.startsWith("lib/supabase/")) return "service";
   if (rel.startsWith("lib/ai/")) return "service";
@@ -106,19 +106,22 @@ function extractImports(content, fromFile) {
 
 function purpose(rel, type) {
   const map = {
-    "middleware.ts": "Auth gate: refreshes Supabase session, redirects unauthenticated users from private routes.",
+    "proxy.ts": "Next.js proxy entry: delegates session refresh and private-route redirects.",
     "lib/constants/routes.ts": "Single source of truth for route paths and public/auth route lists.",
     "lib/supabase/server.ts": "Server-side Supabase client (cookies). Used by pages, actions, API routes.",
-    "lib/supabase/middleware.ts": "Session refresh + redirect logic invoked from root middleware.",
+    "lib/supabase/middleware.ts": "Session refresh + redirect logic invoked from the root proxy.",
     "lib/actions/auth.ts": "Server actions: Google OAuth, magic link, sign out.",
     "lib/actions/onboarding.ts": "Creates profile + first journey after 2-step onboarding wizard.",
     "lib/actions/journey.ts": "Choice submit, acknowledge, pivot, XP/streak updates via Supabase.",
     "lib/ai/fallback.ts": "Deterministic AI node template when LLM unavailable or invalid.",
-    "lib/ai/generate-node.ts": "Stub for future OpenAI streaming node generation.",
-    "app/api/ai/next-node/route.ts": "POST endpoint: validates request, returns fallback AI node (LLM TODO).",
+    "lib/ai/generate-node.ts": "OpenAI/Gemini structured next-node generation with Zod validation.",
+    "lib/ai/create-next-node.ts": "Loads journey context, generates or falls back, then persists through Supabase RPC.",
+    "app/api/ai/next-node/route.ts": "Authenticated endpoint: validates, rate-limits, generates, and persists the next node.",
     "supabase/migrations/001_initial.sql": "PostgreSQL schema: profiles, journeys, nodes, choices, RLS policies.",
     "docs/design/DESIGN.md": "RoadRunners design system: colors, typography, components.",
-    "docs/handoff-roadrunner-hackathon.md": "MVP spec, constraints, and preflight revision checklist.",
+    "docs/tasks/01-product-journey.md": "Work package for roadmap UX, choices, completion presentation, map, coverage, and XP.",
+    "docs/tasks/02-runtime-intelligence.md": "Work package for AI, guides, scrims, Daytona, verification, workspace, and TTS.",
+    "docs/tasks/03-platform-data.md": "Work package for contracts, Supabase, Auth, RLS, persistence, and migrations.",
   };
   if (map[rel]) return map[rel];
   if (type === "route") return `Next.js App Router page or API handler at ${rel.replace(/^app\//, "/").replace(/\/page\.tsx$/, "").replace(/\/route\.ts$/, "")}`;
@@ -163,12 +166,12 @@ for (const [src, data] of Object.entries(fileData)) {
 
 // Route → handler edges (conceptual)
 const routeEdges = [
-  ["app/page.tsx", "middleware.ts", "middleware"],
+  ["app/page.tsx", "proxy.ts", "proxy"],
   ["app/login/page.tsx", "components/auth/login-form.tsx", "renders"],
-  ["app/onboarding/page.tsx", "lib/actions/onboarding.ts", "uses"],
+  ["app/roadmap/new/page.tsx", "lib/actions/roadmap.ts", "uses"],
   ["app/journey/[id]/page.tsx", "lib/actions/journey.ts", "uses"],
-  ["app/api/ai/next-node/route.ts", "lib/ai/fallback.ts", "uses"],
-  ["middleware.ts", "lib/supabase/middleware.ts", "delegates"],
+  ["app/api/ai/next-node/route.ts", "lib/ai/create-next-node.ts", "uses"],
+  ["proxy.ts", "lib/supabase/middleware.ts", "delegates"],
 ];
 for (const [s, t, type] of routeEdges) {
   if (fileData[s] && (fileData[t] || t.startsWith("lib/"))) {
@@ -241,7 +244,7 @@ const deadAreas = nodes
       !n.path.includes("#") &&
       (inbound[n.path] || 0) === 0 &&
       !n.path.startsWith("app/") &&
-      n.path !== "middleware.ts"
+      n.path !== "proxy.ts"
   )
   .map((n) => n.path);
 
@@ -277,18 +280,19 @@ const criticalPaths = [
       "lib/actions/auth.ts",
       "app/auth/callback/route.ts",
       "lib/supabase/server.ts",
-      "middleware.ts",
+      "proxy.ts",
       "lib/supabase/middleware.ts",
     ],
   },
   {
-    name: "Onboarding → First Journey",
+    name: "Roadmap Creation → First Node",
     path: [
-      "app/onboarding/page.tsx",
-      "components/onboarding/onboarding-wizard.tsx",
-      "lib/actions/onboarding.ts",
-      "lib/schemas/onboarding.ts",
+      "app/roadmap/new/page.tsx",
+      "components/roadmap/goal-creator.tsx",
+      "lib/actions/roadmap.ts",
+      "lib/schemas/roadmap.ts",
       "lib/supabase/server.ts",
+      "lib/ai/create-next-node.ts",
       "supabase/migrations/001_initial.sql#profiles",
       "supabase/migrations/001_initial.sql#journeys",
     ],
@@ -305,10 +309,12 @@ const criticalPaths = [
     ],
   },
   {
-    name: "AI Next Node (MVP fallback)",
+    name: "AI Next Node",
     path: [
       "app/api/ai/next-node/route.ts",
       "lib/schemas/ai.ts",
+      "lib/ai/create-next-node.ts",
+      "lib/ai/generate-node.ts",
       "lib/ai/fallback.ts",
       "lib/supabase/server.ts",
     ],
@@ -317,37 +323,44 @@ const criticalPaths = [
 
 const onboardingPaths = {
   "New Engineer": [
-    "docs/handoff-roadrunner-hackathon.md",
+    "docs/tasks/01-product-journey.md",
+    "docs/tasks/02-runtime-intelligence.md",
+    "docs/tasks/03-platform-data.md",
     "app/layout.tsx",
-    "middleware.ts",
+    "proxy.ts",
     "lib/constants/routes.ts",
     "lib/supabase/server.ts",
-    "app/onboarding/page.tsx",
+    "app/roadmap/new/page.tsx",
     "lib/actions/journey.ts",
     "supabase/migrations/001_initial.sql",
   ],
   Frontend: [
+    "docs/tasks/01-product-journey.md",
     "app/layout.tsx",
     "components/layout/app-shell.tsx",
     "components/journey/journey-node-card.tsx",
-    "components/onboarding/onboarding-wizard.tsx",
+    "components/roadmap/goal-creator.tsx",
+    "components/playground/playground-shell.tsx",
     "docs/design/DESIGN.md",
   ],
-  Backend: [
-    "lib/actions/journey.ts",
-    "lib/actions/onboarding.ts",
-    "lib/actions/auth.ts",
+  Runtime: [
+    "docs/tasks/02-runtime-intelligence.md",
     "app/api/ai/next-node/route.ts",
-    "lib/supabase/server.ts",
+    "lib/ai/create-next-node.ts",
+    "lib/ai/generate-node.ts",
+    "lib/daytona/client.ts",
+    "app/api/runner/exec/route.ts",
   ],
-  Database: [
+  Platform: [
+    "docs/tasks/03-platform-data.md",
     "supabase/migrations/001_initial.sql",
+    "supabase/migrations/004_scrim_sessions.sql",
     "supabase/seed.sql",
     "types/database.ts",
     "lib/schemas/journey.ts",
   ],
   Authentication: [
-    "middleware.ts",
+    "proxy.ts",
     "lib/supabase/middleware.ts",
     "lib/actions/auth.ts",
     "app/auth/callback/route.ts",
@@ -383,4 +396,21 @@ const graph = {
 };
 
 fs.writeFileSync(OUT, JSON.stringify(graph, null, 2));
-console.log(`Wrote ${OUT} (${nodes.length} nodes, ${edges.length} edges)`);
+
+const reportPath = path.join(__dirname, "exploration-report.html");
+if (fs.existsSync(reportPath)) {
+  const report = fs.readFileSync(reportPath, "utf8");
+  const start = report.indexOf("const DATA = ");
+  const end = report.indexOf(";", start);
+  if (start >= 0 && end >= 0) {
+    const synchronized =
+      report.slice(0, start) +
+      `const DATA = ${JSON.stringify(graph)}` +
+      report.slice(end);
+    fs.writeFileSync(reportPath, synchronized);
+  }
+}
+
+console.log(
+  `Wrote ${OUT} and synchronized exploration-report.html (${nodes.length} nodes, ${edges.length} edges)`
+);
