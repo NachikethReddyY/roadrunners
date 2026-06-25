@@ -12,9 +12,12 @@ export function XpToast({ xpGain }: XpToastProps) {
 
   useEffect(() => {
     if (!xpGain || xpGain <= 0) return;
-    setVisible(true);
+    const showTimer = window.setTimeout(() => setVisible(true), 0);
     const timer = window.setTimeout(() => setVisible(false), 2800);
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(showTimer);
+      window.clearTimeout(timer);
+    };
   }, [xpGain]);
 
   if (!visible || !xpGain) return null;

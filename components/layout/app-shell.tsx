@@ -13,9 +13,7 @@ type AppShellProps = {
 export function AppShell({
   children,
   level = 1,
-  xp: _xp = 0,
   streakDays = 0,
-  showProgress: _showProgress = true,
   fullBleed = false,
 }: AppShellProps) {
   return (

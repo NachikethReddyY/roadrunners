@@ -1,0 +1,10 @@
+# Tool-agnostic agent ignore (Codex, Cursor, etc.) — gitignore syntax
+node_modules/
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions

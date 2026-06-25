@@ -297,10 +297,10 @@ export async function runTerminalLine(
   if (cmd === "help") {
     return {
       stdout: [
-        "Shell: help, clear, pwd, ls, cd <dir>, echo <text>",
-        "Run: run [file]  |  python main.py  |  python3 main.py",
-        "One-liner: python -c \"print('hi')\"",
-        "With a .py file open, a bare expression runs as Python.",
+        "Shell: help, clear, pwd, ls, cd, echo, cat <file>",
+        "Run: run [file] | python main.py | python3 main.py | node app.js",
+        "Version: python --version",
+        "Sign in + Daytona for full bash in the cloud sandbox.",
       ].join("\n"),
       stderr: "",
     };
@@ -326,8 +326,24 @@ export async function runTerminalLine(
     const next = ctx.cwd ? `${ctx.cwd}/${target}` : target;
     return { stdout: `__CWD__:${next}`, stderr: "" };
   }
+  if (cmd === "cat") {
+    const name = parts[1];
+    if (!name) return { stdout: "", stderr: "", error: "cat: missing file operand" };
+    const path = resolveFileInCtx(name, ctx);
+    if (!path) return { stdout: "", stderr: "", error: `cat: ${name}: No such file` };
+    return { stdout: ctx.files[path] ?? "", stderr: "" };
+  }
 
   if (cmd === "run" || cmd === "python" || cmd === "python3" || cmd === "node") {
+    if (
+      (cmd === "python" || cmd === "python3") &&
+      (parts[1] === "-V" || parts[1] === "--version" || parts[1] === "-v")
+    ) {
+      return {
+        stdout: "Python 3.12 (browser runtime — sign in for full shell via Daytona)",
+        stderr: "",
+      };
+    }
     const inline = shellOneLinerCode(parts);
     if (inline && (cmd === "python" || cmd === "python3")) {
       return runPython(inline);

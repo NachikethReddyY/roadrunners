@@ -1,6 +1,6 @@
 "use client";
 
-import { Columns2, Loader2, PanelRight, Play, Terminal } from "lucide-react";
+import { Columns2, Lightbulb, Loader2, PanelRight, Play, Terminal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RuntimeStatus } from "@/lib/playground/execute";
 
@@ -14,11 +14,13 @@ type WorkspaceToolbarProps = {
   splitEnabled?: boolean;
   terminalVisible?: boolean;
   explorerVisible?: boolean;
+  coachOpen?: boolean;
   readOnly?: boolean;
   onRun?: () => void;
   onToggleSplit?: () => void;
   onToggleTerminal?: () => void;
   onToggleExplorer?: () => void;
+  onToggleCoach?: () => void;
 };
 
 const runtimeLabel: Record<RuntimeStatus, string> = {
@@ -38,24 +40,25 @@ export function WorkspaceToolbar({
   splitEnabled,
   terminalVisible,
   explorerVisible,
-  readOnly,
+  coachOpen,
   onRun,
   onToggleSplit,
   onToggleTerminal,
   onToggleExplorer,
+  onToggleCoach,
 }: WorkspaceToolbarProps) {
   const status = running ? "running" : runtimeStatus;
 
   return (
-    <div className="flex h-11 shrink-0 items-center gap-2 border-b border-[var(--hairline-warm)] bg-[#16150f] px-2 sm:gap-3 sm:px-3">
+    <div className="flex h-11 shrink-0 items-center gap-2 border-b border-[var(--editor-border)] bg-[var(--surface-dark)] px-2 sm:gap-3 sm:px-3">
       <div className="min-w-0 flex-1">
         {breadcrumb && (
-          <p className="truncate text-[10px] font-medium uppercase tracking-widest text-[var(--on-dark-mute)]">
+          <p className="truncate text-[10px] font-medium uppercase tracking-widest text-[var(--editor-text-muted)]">
             {breadcrumb}
           </p>
         )}
         {title && (
-          <p className="truncate font-heading text-sm font-semibold text-[var(--on-dark)]">
+          <p className="truncate font-heading text-sm font-semibold text-[var(--editor-text)]">
             {title}
           </p>
         )}
@@ -92,7 +95,7 @@ export function WorkspaceToolbar({
             "flex size-9 items-center justify-center rounded-lg lg:hidden",
             explorerVisible
               ? "bg-[var(--primary)]/20 text-[var(--primary)]"
-              : "text-[var(--on-dark-mute)] hover:bg-[var(--surface-dark-soft)]"
+              : "text-[var(--editor-text-muted)] hover:bg-[var(--surface-dark-soft)]"
           )}
         >
           <PanelRight className="size-4" />
@@ -107,7 +110,7 @@ export function WorkspaceToolbar({
             "hidden size-9 items-center justify-center rounded-lg sm:flex",
             splitEnabled
               ? "bg-[var(--primary)]/20 text-[var(--primary)]"
-              : "text-[var(--on-dark-mute)] hover:bg-[var(--surface-dark-soft)]"
+              : "text-[var(--editor-text-muted)] hover:bg-[var(--surface-dark-soft)]"
           )}
         >
           <Columns2 className="size-4" />
@@ -122,11 +125,28 @@ export function WorkspaceToolbar({
             "flex size-9 items-center justify-center rounded-lg",
             terminalVisible
               ? "bg-[var(--primary)]/20 text-[var(--primary)]"
-              : "text-[var(--on-dark-mute)] hover:bg-[var(--surface-dark-soft)]"
+              : "text-[var(--editor-text-muted)] hover:bg-[var(--surface-dark-soft)]"
           )}
         >
           <Terminal className="size-4" />
         </button>
+
+        {onToggleCoach && (
+          <button
+            type="button"
+            onClick={onToggleCoach}
+            aria-pressed={coachOpen}
+            aria-label={coachOpen ? "Hide Teach Me coach" : "Show Teach Me coach"}
+            className={cn(
+              "flex size-9 items-center justify-center rounded-lg",
+              coachOpen
+                ? "bg-amber-400/15 text-amber-200"
+                : "text-[var(--editor-text-muted)] hover:bg-[var(--surface-dark-soft)]"
+            )}
+          >
+            <Lightbulb className="size-4" />
+          </button>
+        )}
 
         <button
           type="button"

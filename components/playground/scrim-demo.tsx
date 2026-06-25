@@ -1,14 +1,21 @@
 "use client";
 
 import { PlaygroundShell } from "@/components/playground/playground-shell";
-import type { PlaygroundTemplate, ScrimEvent, ScrimSlide } from "@/lib/schemas/playground";
+import type {
+  PlaygroundTemplate,
+  ScrimEvent,
+  ScrimNarration,
+  ScrimSlide,
+} from "@/lib/schemas/playground";
 
 export type ScrimDemoData = {
+  slug: string;
   title: string;
   template: PlaygroundTemplate;
   initial_files: Record<string, string>;
   duration_ms: number;
   slides: ScrimSlide[];
+  narration?: ScrimNarration;
   timeline: { durationMs: number; events: ScrimEvent[] };
 };
 
@@ -34,7 +41,10 @@ export function ScrimDemo({ data, breadcrumb, className }: ScrimDemoProps) {
         durationMs: data.timeline.durationMs,
         events: data.timeline.events,
         slides: data.slides,
+        narration: data.narration,
         initialFiles: data.initial_files,
+        scrimSlug: data.slug,
+        demoMode: true,
       }}
       className={className}
       fullscreen

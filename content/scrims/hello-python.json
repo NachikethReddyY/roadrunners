@@ -6,7 +6,7 @@
   "initial_files": {
     "main.py": ""
   },
-  "duration_ms": 18000,
+  "duration_ms": 22880,
   "slides": [
     {
       "id": "intro",
@@ -21,16 +21,48 @@
     {
       "id": "run",
       "title": "Run your code",
-      "markdown": "Press **Run** (or wait for the auto-run) to see output in the terminal."
+      "markdown": "Update the `name` value, press **Run**, and wait for the lesson to continue."
     }
   ],
+  "narration": {
+    "audio_url": "/audio/scrims/hello-python/lesson-ea2698ed6037.mp3",
+    "next_session_topic": "Hello React",
+    "script": "Let's build a tiny hello world program in Python. Use print when you want Python to show a message in the terminal. Put the message inside quotes, then run it. Nice. Now make it personal with a variable named name. An f-string lets us place that name inside the message. Your turn: change the name, add one more print line, then run it and check the terminal.",
+    "cues": [
+      {
+        "t": 0,
+        "text": "Build a tiny hello world program."
+      },
+      {
+        "t": 3605,
+        "text": "Use print to show a message."
+      },
+      {
+        "t": 6517,
+        "text": "Run the first line."
+      },
+      {
+        "t": 10400,
+        "text": "Make the greeting personal with a variable."
+      },
+      {
+        "t": 13520,
+        "text": "Use an f-string to include the variable."
+      },
+      {
+        "t": 18373,
+        "text": "Pause, edit, and run your own version."
+      }
+    ]
+  },
   "timeline": {
-    "durationMs": 18000,
+    "durationMs": 22880,
     "events": [
       {
         "t": 0,
         "type": "caption",
-        "text": "Let's build a hello-world program — watch the editor fill in step by step."
+        "text": "Let's build a tiny hello-world program in Python.",
+        "speech": "Let's build a tiny hello world program in Python. I'll write the code quickly, but we'll pause long enough to understand what each line is doing."
       },
       {
         "t": 0,
@@ -45,144 +77,162 @@
         }
       },
       {
-        "t": 600,
+        "t": 832,
         "type": "files",
         "files": {
           "main.py": "# My first Python program\n"
         }
       },
       {
-        "t": 1200,
+        "t": 3605,
         "type": "caption",
-        "text": "Start with print( — Python's built-in output function."
+        "text": "Use print() when you want Python to show a message.",
+        "speech": "We'll use the print function when we want Python to show something in the terminal. Put the message inside quotes, and Python will print it exactly as text."
       },
       {
-        "t": 1200,
+        "t": 3883,
         "type": "files",
         "files": {
           "main.py": "# My first Python program\nprint("
         }
       },
       {
-        "t": 2000,
+        "t": 4299,
         "type": "files",
         "files": {
           "main.py": "# My first Python program\nprint('"
         }
       },
       {
-        "t": 2800,
+        "t": 4715,
         "type": "files",
         "files": {
           "main.py": "# My first Python program\nprint('Hello"
         }
       },
       {
-        "t": 3600,
+        "t": 5269,
         "type": "files",
         "files": {
           "main.py": "# My first Python program\nprint('Hello, RoadRunners!"
         }
       },
       {
-        "t": 4200,
+        "t": 6517,
         "type": "caption",
-        "text": "Close the string and the call — quotes then parenthesis."
+        "text": "That line is ready to run.",
+        "speech": "That's the whole first line. The message is inside quotes, and print will send it to the terminal. Let's run it and see the output."
       },
       {
-        "t": 4200,
+        "t": 6795,
         "type": "files",
         "files": {
           "main.py": "# My first Python program\nprint('Hello, RoadRunners!')"
         }
       },
       {
-        "t": 5000,
+        "t": 7488,
         "type": "focus",
         "path": "main.py"
       },
       {
-        "t": 5500,
+        "t": 8597,
         "type": "run"
       },
       {
-        "t": 6500,
+        "t": 10400,
         "type": "caption",
-        "text": "Nice — now make it personal with a variable."
+        "text": "Nice — now make it personal with a variable.",
+        "speech": "Nice. Now let's make the greeting personal. A variable lets us store a value, like a name, and reuse it later."
       },
       {
-        "t": 6500,
+        "t": 10400,
         "type": "slide",
         "slideId": "variables"
       },
       {
-        "t": 7200,
+        "t": 11093,
         "type": "files",
         "files": {
           "main.py": "# My first Python program\nname = "
         }
       },
       {
-        "t": 8000,
+        "t": 11648,
         "type": "files",
         "files": {
           "main.py": "# My first Python program\nname = \"learner\"\n"
         }
       },
       {
-        "t": 9000,
+        "t": 13520,
         "type": "caption",
-        "text": "An f-string embeds {name} right inside the text."
+        "text": "An f-string can place the name inside the message.",
+        "speech": "Now we'll use an f-string. It lets us drop the name variable directly into the message, so the output changes when the variable changes."
       },
       {
-        "t": 9000,
+        "t": 14005,
         "type": "files",
         "files": {
           "main.py": "# My first Python program\nname = \"learner\"\nprint(f'"
         }
       },
       {
-        "t": 10000,
+        "t": 14560,
         "type": "files",
         "files": {
           "main.py": "# My first Python program\nname = \"learner\"\nprint(f'Hello, {name}"
         }
       },
       {
-        "t": 11000,
+        "t": 15253,
         "type": "files",
         "files": {
           "main.py": "# My first Python program\nname = \"learner\"\nprint(f'Hello, {name}!')"
         }
       },
       {
-        "t": 12000,
+        "t": 16779,
         "type": "run"
       },
       {
-        "t": 13500,
+        "t": 18373,
+        "type": "challenge",
+        "id": "personalize-greeting",
+        "title": "Make it yours",
+        "instructions": "Change the name variable to your own name, then press Run to see your greeting in the terminal.",
+        "hint": "Try `name = \"Alex\"` or your real name.",
+        "completion": {
+          "path": "main.py",
+          "file_must_not_include": "name = \"learner\"",
+          "output_must_include": "Hello,"
+        }
+      },
+      {
+        "t": 18373,
         "type": "slide",
         "slideId": "run"
       },
       {
-        "t": 13500,
+        "t": 18373,
         "type": "caption",
-        "text": "Your turn — edit the name or message, then hit Run."
+        "text": "Your turn — edit the name or message, then hit Run.",
+        "speech": "Your turn. Try changing the name, or add another print line. When you're ready, hit Run and check the terminal."
       },
       {
-        "t": 15000,
+        "t": 19760,
         "type": "files",
         "files": {
           "main.py": "# My first Python program\nname = \"learner\"\nprint(f'Hello, {name}!')\nprint('Welcome to Python on RoadRunners')"
         }
       },
       {
-        "t": 16500,
+        "t": 21147,
         "type": "focus",
         "path": "main.py"
       },
       {
-        "t": 18000,
+        "t": 22533,
         "type": "run"
       }
     ]

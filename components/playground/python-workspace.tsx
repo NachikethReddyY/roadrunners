@@ -2,7 +2,6 @@
 
 import { Play, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import type { PlaygroundConfig } from "@/lib/schemas/playground";
 import { cn } from "@/lib/utils";
 
 type PythonWorkspaceProps = {
@@ -42,7 +41,8 @@ export function PythonWorkspace({
   const [running, setRunning] = useState(false);
 
   useEffect(() => {
-    setLocalFiles(files);
+    const id = window.setTimeout(() => setLocalFiles(files), 0);
+    return () => window.clearTimeout(id);
   }, [files]);
 
   useEffect(() => {

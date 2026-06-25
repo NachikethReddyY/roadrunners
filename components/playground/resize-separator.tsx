@@ -18,17 +18,17 @@ export function ResizeSeparator({
   return (
     <Separator
       className={cn(
-        "relative z-[60] shrink-0 touch-none bg-[#1a1916]",
+        "relative z-[60] shrink-0 touch-none bg-[var(--editor-surface-muted)]",
         vertical
-          ? "flex h-5 w-full cursor-row-resize items-center justify-center"
-          : "flex w-5 cursor-col-resize items-center justify-center",
+          ? "flex h-6 w-full cursor-row-resize items-center justify-center"
+          : "flex w-6 cursor-col-resize items-center justify-center",
         "hover:bg-[var(--primary)]/10 active:bg-[var(--primary)]/20",
         className
       )}
     >
       <span
         className={cn(
-          "pointer-events-none rounded-full bg-[var(--on-dark-mute)]/40",
+          "pointer-events-none rounded-full bg-[var(--editor-text-muted)]/35",
           vertical ? "h-1 w-20" : "h-20 w-1"
         )}
         aria-hidden

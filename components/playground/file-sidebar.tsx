@@ -24,7 +24,6 @@ export function FileSidebar({
   vfs,
   activeFile,
   readOnly,
-  defaultLanguage,
   slides = [],
   activeSlideId,
   onSelectFile,
@@ -37,12 +36,12 @@ export function FileSidebar({
   return (
     <aside
       className={cn(
-        "flex h-full min-w-[11rem] flex-col border-r border-[var(--hairline-warm)] bg-[#13120e]",
+        "flex h-full min-w-[11rem] flex-col border-r border-[var(--editor-border)] bg-[var(--surface-dark)]",
         className
       )}
     >
-      <div className="flex shrink-0 items-center justify-between border-b border-[var(--hairline-warm)] px-3 py-2">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--on-dark-mute)]">
+      <div className="flex shrink-0 items-center justify-between border-b border-[var(--editor-border)] px-3 py-2">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--editor-text-muted)]">
           Explorer
         </p>
         <span className="max-w-[55%] truncate font-mono text-[10px] text-[var(--primary)]">
@@ -62,12 +61,12 @@ export function FileSidebar({
 
       {hasSlides && (
         <>
-          <div className="shrink-0 border-t border-[var(--hairline-warm)] px-3 py-2">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--on-dark-mute)]">
+          <div className="shrink-0 border-t border-[var(--editor-border)] px-3 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--editor-text-muted)]">
               Lesson
             </p>
           </div>
-          <div className="max-h-[40%] min-h-0 shrink-0 overflow-y-auto border-t border-[var(--hairline-warm)]/50 p-2">
+          <div className="max-h-[40%] min-h-0 shrink-0 overflow-y-auto border-t border-[var(--editor-border)]/60 p-2">
             <SlidePane
               slides={slides}
               activeSlideId={activeSlideId ?? null}

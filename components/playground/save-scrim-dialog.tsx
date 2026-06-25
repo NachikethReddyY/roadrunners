@@ -83,10 +83,10 @@ export function SaveScrimDialog({
         )}
       >
         <h2 id="save-scrim-title" className="font-heading text-lg font-semibold">
-          Save as scrim
+          Save CodeCast
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Keep a permanent copy you can reopen from your scrim library.
+          Keep a permanent copy you can reopen from your CodeCast library.
         </p>
         <label className="mt-4 block text-sm font-medium" htmlFor="scrim-title">
           Title
@@ -105,7 +105,7 @@ export function SaveScrimDialog({
             Cancel
           </Button>
           <Button type="button" onClick={handleSave} disabled={pending}>
-            {pending ? "Saving…" : "Save scrim"}
+            {pending ? "Saving..." : "Save CodeCast"}
           </Button>
         </div>
       </div>

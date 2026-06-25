@@ -63,7 +63,8 @@ function SubmitArrow({ disabled }: { disabled: boolean }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const id = window.setTimeout(() => setMounted(true), 0);
+    return () => window.clearTimeout(id);
   }, []);
 
   const className = cn(
@@ -96,7 +97,14 @@ export const GoalInput = forwardRef<HTMLInputElement, GoalInputProps>(function G
   const showPlaceholder = subject.trim().length === 0;
 
   useEffect(() => {
-    setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const id = window.setTimeout(
+      () =>
+        setReducedMotion(
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ),
+      0
+    );
+    return () => window.clearTimeout(id);
   }, []);
 
   return (

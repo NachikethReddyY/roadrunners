@@ -60,7 +60,7 @@ export function fileRecordsEqual(
   return fileRecordKey(a) === fileRecordKey(b);
 }
 
-export function defaultFilename(_language?: string): string {
+export function defaultFilename(): string {
   return "untitled.txt";
 }
 

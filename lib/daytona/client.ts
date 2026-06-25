@@ -13,6 +13,16 @@ export type DaytonaExecResult = {
 
 let daytonaClient: Daytona | null = null;
 
+/** ponytail: in-memory demo sessions — upgrade to Redis if multi-instance */
+const demoSessions = new Map<string, { sandboxId: string; expiresAt: number }>();
+
+function pruneDemoSessions(): void {
+  const now = Date.now();
+  for (const [id, row] of demoSessions) {
+    if (row.expiresAt <= now) demoSessions.delete(id);
+  }
+}
+
 function getDaytona(): Daytona {
   if (!daytonaClient) {
     daytonaClient = new Daytona({
@@ -36,36 +46,38 @@ function pickEntryFile(files: Record<string, string>, entryFile?: string): strin
   if (py) return py;
   const ts = Object.keys(files).find((p) => p.endsWith(".ts") || p.endsWith(".tsx"));
   if (ts) return ts;
+  const js = Object.keys(files).find((p) => p.endsWith(".js") || p.endsWith(".jsx"));
+  if (js) return js;
   return Object.keys(files)[0] ?? "main.py";
 }
 
-export async function execInDaytona(input: {
-  userId: string;
-  journeyId?: string;
-  nodeId?: string;
-  scrimId?: string;
-  sessionId?: string;
-  template: PlaygroundTemplate;
-  files: Record<string, string>;
-  entryFile?: string;
-}): Promise<DaytonaExecResult> {
-  if (!isDaytonaConfigured()) {
-    throw new Error("Daytona is not configured");
-  }
+function runCommandForTemplate(template: PlaygroundTemplate, entry: string): string {
+  if (template === "python") return `python3 "${entry}"`;
+  if (template === "react-ts") return `npx --yes tsx "${entry}"`;
+  return `node "${entry}"`;
+}
 
+async function getOrCreateSandbox(
+  userId: string,
+  template: PlaygroundTemplate,
+  journeyId?: string,
+  nodeId?: string,
+  scrimId?: string,
+  sessionId?: string
+): Promise<{ sandboxId: string; dbSessionId: string }> {
   const supabase = await createClient();
   const ttlMs = scrimConfig.daytona.sandboxTtlMinutes * 60_000;
   const expiresAt = new Date(Date.now() + ttlMs).toISOString();
 
   let sandboxId: string | null = null;
-  let dbSessionId = input.sessionId;
+  let dbSessionId = sessionId;
 
   if (dbSessionId) {
     const { data: existing } = await supabase
       .from("sandbox_sessions")
       .select("daytona_sandbox_id, expires_at")
       .eq("id", dbSessionId)
-      .eq("user_id", input.userId)
+      .eq("user_id", userId)
       .maybeSingle();
 
     if (existing && new Date(existing.expires_at) > new Date()) {
@@ -77,7 +89,7 @@ export async function execInDaytona(input: {
 
   if (!sandboxId) {
     const sandbox = await daytona.create({
-      language: languageForTemplate(input.template),
+      language: languageForTemplate(template),
       ephemeral: true,
       autoDeleteInterval: scrimConfig.daytona.sandboxTtlMinutes,
     });
@@ -86,10 +98,10 @@ export async function execInDaytona(input: {
     const { data: row, error } = await supabase
       .from("sandbox_sessions")
       .insert({
-        user_id: input.userId,
-        journey_id: input.journeyId ?? null,
-        node_id: input.nodeId ?? null,
-        scrim_id: input.scrimId ?? null,
+        user_id: userId,
+        journey_id: journeyId ?? null,
+        node_id: nodeId ?? null,
+        scrim_id: scrimId ?? null,
         daytona_sandbox_id: sandboxId,
         expires_at: expiresAt,
       })
@@ -100,28 +112,108 @@ export async function execInDaytona(input: {
     dbSessionId = row.id;
   }
 
-  const sandbox = await daytona.get(sandboxId);
+  return { sandboxId, dbSessionId: dbSessionId! };
+}
 
-  for (const [path, content] of Object.entries(input.files)) {
-    await sandbox.fs.uploadFile(Buffer.from(content, "utf-8"), path);
+async function getOrCreateDemoSandbox(
+  template: PlaygroundTemplate,
+  sessionId?: string
+): Promise<{ sandboxId: string; dbSessionId: string }> {
+  pruneDemoSessions();
+  const ttlMs = scrimConfig.daytona.sandboxTtlMinutes * 60_000;
+  const now = Date.now();
+
+  if (sessionId) {
+    const existing = demoSessions.get(sessionId);
+    if (existing && existing.expiresAt > now) {
+      existing.expiresAt = now + ttlMs;
+      return { sandboxId: existing.sandboxId, dbSessionId: sessionId };
+    }
   }
 
-  const entry = pickEntryFile(input.files, input.entryFile);
-  const code = input.files[entry] ?? "";
+  const sandbox = await getDaytona().create({
+    language: languageForTemplate(template),
+    ephemeral: true,
+    autoDeleteInterval: scrimConfig.daytona.sandboxTtlMinutes,
+  });
 
-  const response = await sandbox.process.codeRun(code);
+  const dbSessionId = crypto.randomUUID();
+  demoSessions.set(dbSessionId, {
+    sandboxId: sandbox.id,
+    expiresAt: now + ttlMs,
+  });
 
-  await supabase
-    .from("sandbox_sessions")
-    .update({ expires_at: expiresAt })
-    .eq("id", dbSessionId!);
+  return { sandboxId: sandbox.id, dbSessionId };
+}
 
-  return {
-    stdout: response.result ?? "",
-    stderr: "",
-    exitCode: response.exitCode ?? 0,
-    sessionId: dbSessionId,
-  };
+async function syncFiles(
+  sandboxId: string,
+  files: Record<string, string>
+): Promise<void> {
+  const sandbox = await getDaytona().get(sandboxId);
+  for (const [path, content] of Object.entries(files)) {
+    await sandbox.fs.uploadFile(Buffer.from(content, "utf-8"), path);
+  }
+}
+
+export async function execInDaytona(input: {
+  userId: string;
+  journeyId?: string;
+  nodeId?: string;
+  scrimId?: string;
+  sessionId?: string;
+  template: PlaygroundTemplate;
+  files: Record<string, string>;
+  entryFile?: string;
+  command?: string;
+  demo?: boolean;
+}): Promise<DaytonaExecResult> {
+  if (!isDaytonaConfigured()) {
+    throw new Error("Daytona is not configured");
+  }
+
+  const { sandboxId, dbSessionId } = input.demo
+    ? await getOrCreateDemoSandbox(input.template, input.sessionId)
+    : await getOrCreateSandbox(
+        input.userId,
+        input.template,
+        input.journeyId,
+        input.nodeId,
+        input.scrimId,
+        input.sessionId
+      );
+
+  await syncFiles(sandboxId, input.files);
+  const sandbox = await getDaytona().get(sandboxId);
+
+  let stdout = "";
+  const stderr = "";
+  let exitCode = 0;
+
+  if (input.command) {
+    const response = await sandbox.process.executeCommand(input.command);
+    stdout = response.result ?? "";
+    exitCode = response.exitCode ?? 0;
+  } else {
+    const entry = pickEntryFile(input.files, input.entryFile);
+    const cmd = runCommandForTemplate(input.template, entry);
+    const response = await sandbox.process.executeCommand(cmd);
+    stdout = response.result ?? "";
+    exitCode = response.exitCode ?? 0;
+  }
+
+  const supabase = await createClient();
+  const expiresAt = new Date(
+    Date.now() + scrimConfig.daytona.sandboxTtlMinutes * 60_000
+  ).toISOString();
+  if (!input.demo) {
+    await supabase
+      .from("sandbox_sessions")
+      .update({ expires_at: expiresAt })
+      .eq("id", dbSessionId);
+  }
+
+  return { stdout, stderr, exitCode, sessionId: dbSessionId };
 }
 
 /** ponytail: prune expired session rows — upgrade to pg_cron later */

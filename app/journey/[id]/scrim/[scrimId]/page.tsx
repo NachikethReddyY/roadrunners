@@ -71,7 +71,7 @@ export default async function ScrimLessonPage({ params }: PageProps) {
               href={ROUTES.journeyScrims(journeyId)}
               className={buttonVariants({ variant: "ghost", className: "rounded-full" })}
             >
-              Your scrims
+              CodeCasts
             </Link>
             <Link
               href={ROUTES.journeyDetail(journeyId)}

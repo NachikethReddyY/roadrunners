@@ -6,6 +6,7 @@ import { ConsolePane } from "@/components/playground/console-pane";
 import { EditorArea } from "@/components/playground/editor-area";
 import { FileSidebar } from "@/components/playground/file-sidebar";
 import { ResizeSeparator } from "@/components/playground/resize-separator";
+import { TeachCoachPanel } from "@/components/playground/teach-coach-panel";
 import { WorkspaceToolbar } from "@/components/playground/workspace-toolbar";
 import type { ScrimSlide } from "@/lib/schemas/playground";
 import {
@@ -15,7 +16,7 @@ import {
   runTerminalLine,
   type RuntimeStatus,
 } from "@/lib/playground/execute";
-import { runViaDaytona } from "@/lib/playground/daytona-run";
+import { runShellViaDaytona, runViaDaytona } from "@/lib/playground/daytona-run";
 import {
   defaultFilename,
   fileRecordKey,
@@ -39,12 +40,15 @@ type CodeWorkspaceProps = {
   onSelectSlide?: (id: string) => void;
   onFilesChange?: (files: Record<string, string>) => void;
   onOutput?: (output: string) => void;
+  challengeActive?: boolean;
+  onUserRun?: (result: { stdout: string; stderr: string; error?: string }) => void;
   runSignal?: number;
-  scrimDockPx?: number;
   journeyId?: string;
   nodeId?: string;
   lessonScrimId?: string;
   userScrimId?: string;
+  demoMode?: boolean;
+  scrimSlug?: string;
   className?: string;
 };
 
@@ -61,12 +65,15 @@ export function CodeWorkspace({
   onSelectSlide,
   onFilesChange,
   onOutput,
+  challengeActive = false,
+  onUserRun,
   runSignal = 0,
-  scrimDockPx = 0,
   journeyId,
   nodeId,
   lessonScrimId,
   userScrimId,
+  demoMode = false,
+  scrimSlug,
   className,
 }: CodeWorkspaceProps) {
   const [vfs, setVfs] = useState<VfsState>(() => vfsFromRecord(files));
@@ -84,7 +91,9 @@ export function CodeWorkspace({
   const [terminalCollapsed, setTerminalCollapsed] = useState(false);
   const [terminalFullscreen, setTerminalFullscreen] = useState(false);
   const [explorerVisible, setExplorerVisible] = useState(true);
+  const [coachOpen, setCoachOpen] = useState(false);
   const [consoleLines, setConsoleLines] = useState<string[]>([]);
+  const [lastRunOutput, setLastRunOutput] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [shellCwd, setShellCwd] = useState("");
   const [runtimeStatus, setRuntimeStatus] =
@@ -95,7 +104,10 @@ export function CodeWorkspace({
   const externalFilesKey = fileRecordKey(files);
   const lastExternalKeyRef = useRef(externalFilesKey);
   const vfsRef = useRef(vfs);
-  vfsRef.current = vfs;
+
+  useEffect(() => {
+    vfsRef.current = vfs;
+  }, [vfs]);
 
   useEffect(() => {
     if (lastExternalKeyRef.current === externalFilesKey) return;
@@ -202,7 +214,11 @@ export function CodeWorkspace({
       if (result.stdout) lines.push(result.stdout);
       if (result.stderr) lines.push(result.stderr);
       if (result.error) lines.push(result.error);
-      if (lines.length) setConsoleLines((prev) => [...prev, ...lines]);
+      if (lines.length) {
+        setConsoleLines((prev) => [...prev, ...lines]);
+        setLastRunOutput(lines.join("\n"));
+        if (result.error) setCoachOpen(true);
+      }
       if (result.previewUrl) {
         setPreviewUrl((old) => {
           if (old) URL.revokeObjectURL(old);
@@ -211,6 +227,24 @@ export function CodeWorkspace({
       }
     },
     []
+  );
+
+  const terminalPrompt = useCallback(
+    () => (shellCwd ? `~/${shellCwd}$ ` : "$ "),
+    [shellCwd]
+  );
+
+  const daytonaCtx = useCallback(
+    () => ({
+      sessionId: daytonaSessionRef.current,
+      journeyId,
+      nodeId,
+      scrimId: lessonScrimId ?? userScrimId,
+      template,
+      demo: demoMode,
+      scrimSlug,
+    }),
+    [demoMode, journeyId, lessonScrimId, nodeId, scrimSlug, template, userScrimId]
   );
 
   const runCode = useCallback(async () => {
@@ -223,16 +257,7 @@ export function CodeWorkspace({
       getPythonRuntimeStatus() === "offline" ? "offline" : "running"
     );
     const record = vfsToRecord(vfsRef.current);
-    let result =
-      template === "python"
-        ? await runViaDaytona(record, activeFile, {
-            sessionId: daytonaSessionRef.current,
-            journeyId,
-            nodeId,
-            scrimId: lessonScrimId ?? userScrimId,
-            template,
-          })
-        : null;
+    let result = await runViaDaytona(record, activeFile, daytonaCtx());
 
     if (!result) {
       result = await runActiveFile(activeFile, record);
@@ -244,6 +269,10 @@ export function CodeWorkspace({
     if (result.stderr) lines.push(result.stderr);
     if (result.error) lines.push(result.error);
     setConsoleLines((prev) => [...prev, ...lines]);
+    if (lines.length) {
+      setLastRunOutput(lines.join("\n"));
+      if (result.error) setCoachOpen(true);
+    }
     if (result.previewUrl) {
       setPreviewUrl((old) => {
         if (old) URL.revokeObjectURL(old);
@@ -251,34 +280,68 @@ export function CodeWorkspace({
       });
     }
     onOutput?.(result.error ?? result.stdout);
+    onUserRun?.({
+      stdout: result.stdout,
+      stderr: result.stderr,
+      error: result.error,
+    });
     setRunning(false);
     setRuntimeStatus(getPythonRuntimeStatus());
-  }, [activeFile, journeyId, lessonScrimId, nodeId, onOutput, running, template, terminalVisible, userScrimId]);
+  }, [
+    activeFile,
+    daytonaCtx,
+    onOutput,
+    onUserRun,
+    running,
+    terminalPanelRef,
+    terminalVisible,
+  ]);
 
   const runTerminalInput = useCallback(
     async (line: string) => {
       if (running) return;
-      setConsoleLines((prev) => [...prev, `${terminalPrompt()} ${line}`]);
+      setConsoleLines((prev) => [...prev, `${terminalPrompt()}${line}`]);
       setRunning(true);
       setRuntimeStatus("running");
-      const result = await runTerminalLine(line, activeFile, {
-        cwd: shellCwd,
-        files: vfsToRecord(vfsRef.current),
-        folderPaths: Object.keys(vfsRef.current).filter(
-          (p) => vfsRef.current[p]?.isFolder || p.endsWith("/")
-        ),
-      });
+      const record = vfsToRecord(vfsRef.current);
+      let result = await runShellViaDaytona(line, record, daytonaCtx());
+      if (!result) {
+        result = await runTerminalLine(line, activeFile, {
+          cwd: shellCwd,
+          files: record,
+          folderPaths: Object.keys(vfsRef.current).filter(
+            (p) => vfsRef.current[p]?.isFolder || p.endsWith("/")
+          ),
+        });
+      } else if (result.sessionId) {
+        daytonaSessionRef.current = result.sessionId;
+      }
       appendResult(result);
       setRunning(false);
       setRuntimeStatus(getPythonRuntimeStatus());
     },
-    [activeFile, appendResult, running, shellCwd]
+    [activeFile, appendResult, daytonaCtx, running, shellCwd, terminalPrompt]
   );
 
-  const terminalPrompt = () => (shellCwd ? `~/${shellCwd}$` : "$");
-
   const runCodeRef = useRef(runCode);
-  runCodeRef.current = runCode;
+
+  useEffect(() => {
+    runCodeRef.current = runCode;
+  }, [runCode]);
+
+  useEffect(() => {
+    if (!challengeActive) return;
+    const frame = requestAnimationFrame(() => {
+      setConsoleLines([]);
+      setLastRunOutput("");
+      setCoachOpen(false);
+      setPreviewUrl((old) => {
+        if (old) URL.revokeObjectURL(old);
+        return null;
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [challengeActive]);
 
   const onLayoutChanged = useCallback(
     (layout: { [id: string]: number }) => {
@@ -325,6 +388,7 @@ export function CodeWorkspace({
     },
     onClear: () => {
       setConsoleLines([]);
+      setLastRunOutput("");
       setPreviewUrl((old) => {
         if (old) URL.revokeObjectURL(old);
         return null;
@@ -351,7 +415,7 @@ export function CodeWorkspace({
             className="h-full min-h-0"
             defaultLayout={{ editor: 50, terminal: 50 }}
             onLayoutChanged={onLayoutChanged}
-            resizeTargetMinimumSize={{ coarse: 28, fine: 12 }}
+            resizeTargetMinimumSize={{ coarse: 44, fine: 18 }}
           >
             <Panel
               id="editor"
@@ -379,7 +443,7 @@ export function CodeWorkspace({
               id="terminal"
               panelRef={terminalPanelRef}
               defaultSize={50}
-              minSize={20}
+              minSize={10}
               maxSize={95}
             >
               <ConsolePane {...consolePaneProps} />
@@ -403,13 +467,16 @@ export function CodeWorkspace({
     </div>
   );
 
+  const activeSlide =
+    slides?.find((slide) => slide.id === activeSlideId) ?? null;
+  const activeCode = vfs[activeFile]?.content ?? "";
+
   return (
     <div
       className={cn(
-        "flex h-full min-h-0 flex-col overflow-hidden bg-[var(--canvas-dark)] text-[var(--on-dark)]",
+        "relative flex h-full min-h-0 flex-col overflow-hidden bg-[var(--canvas-dark)] text-[var(--on-dark)]",
         className
       )}
-      style={scrimDockPx > 0 ? { paddingBottom: scrimDockPx } : undefined}
     >
       <WorkspaceToolbar
         title={title}
@@ -421,11 +488,22 @@ export function CodeWorkspace({
         splitEnabled={splitEnabled}
         terminalVisible={terminalVisible}
         explorerVisible={explorerVisible}
+        coachOpen={coachOpen}
         readOnly={readOnly}
         onRun={() => void runCode()}
         onToggleSplit={toggleSplit}
         onToggleTerminal={() => setTerminalVisible((v) => !v)}
         onToggleExplorer={() => setExplorerVisible((v) => !v)}
+        onToggleCoach={() => setCoachOpen((v) => !v)}
+      />
+
+      <TeachCoachPanel
+        open={coachOpen}
+        code={activeCode}
+        output={lastRunOutput}
+        activeSlide={activeSlide}
+        template={template}
+        onClose={() => setCoachOpen(false)}
       />
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">

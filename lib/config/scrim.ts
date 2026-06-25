@@ -1,4 +1,5 @@
 export type ScrimRunner = "browser" | "daytona" | "auto";
+export type TtsStorageBackend = "supabase" | "r2";
 
 function parseRunner(value: string | undefined): ScrimRunner {
   if (value === "daytona" || value === "auto") return value;
@@ -28,15 +29,22 @@ export const scrimConfig = {
     voiceId: process.env.ELEVENLABS_VOICE_ID ?? "JBFqnCBsd6RMkjVDRZzb",
     modelId: process.env.ELEVENLABS_MODEL_ID ?? "eleven_multilingual_v2",
     outputFormat: process.env.ELEVENLABS_OUTPUT_FORMAT ?? "mp3_44100_128",
+    storageBackend:
+      process.env.TTS_STORAGE_BACKEND === "r2" ? "r2" : "supabase",
     storageBucket: process.env.TTS_STORAGE_BUCKET ?? "tts-cache",
+    r2: {
+      accountId: process.env.CLOUDFLARE_R2_ACCOUNT_ID ?? "",
+      accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID ?? "",
+      secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY ?? "",
+      bucket: process.env.CLOUDFLARE_R2_BUCKET ?? "roadrunners-tts-cache",
+    },
   },
 } as const;
 
-export function shouldUseDaytona(template: string): boolean {
+export function shouldUseDaytona(): boolean {
+  if (!isDaytonaConfigured()) return false;
   const { runner } = scrimConfig;
-  if (runner === "browser") return false;
-  if (runner === "daytona") return true;
-  return template === "python";
+  return runner === "daytona" || runner === "auto";
 }
 
 export function isDaytonaConfigured(): boolean {
@@ -45,4 +53,11 @@ export function isDaytonaConfigured(): boolean {
 
 export function isTtsConfigured(): boolean {
   return scrimConfig.ttsEnabled && Boolean(scrimConfig.tts.apiKey);
+}
+
+export function isR2Configured(): boolean {
+  const { r2 } = scrimConfig.tts;
+  return Boolean(
+    r2.accountId && r2.accessKeyId && r2.secretAccessKey && r2.bucket
+  );
 }

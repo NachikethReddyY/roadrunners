@@ -140,7 +140,7 @@ export default async function JourneyDetailPage({ params }: PageProps) {
                 className: "rounded-full",
               })}
             >
-              Your scrims
+              CodeCasts
             </Link>
             {scrims.map((scrim) => (
               <Link
@@ -152,7 +152,7 @@ export default async function JourneyDetailPage({ params }: PageProps) {
                   className: "rounded-full",
                 })}
               >
-                Scrim: {scrim.title}
+                CodeCast: {scrim.title}
               </Link>
             ))}
           </div>
