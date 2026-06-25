@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -27,13 +25,11 @@ export function XpToast({ xpGain }: XpToastProps) {
       role="status"
       aria-live="polite"
       className={cn(
-        "fixed bottom-28 left-1/2 z-50 -translate-x-1/2",
-        "rounded-full border border-primary/30 bg-primary/15 px-5 py-2.5",
-        "text-sm font-semibold text-primary shadow-lg backdrop-blur-md",
-        "animate-in fade-in slide-in-from-bottom-4 duration-300"
+        "inline-flex min-h-8 items-center rounded-full border border-primary/30",
+        "bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
       )}
     >
-      +{xpGain} XP
+      +{xpGain} XP recorded
     </div>
   );
 }

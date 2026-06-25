@@ -13,11 +13,18 @@ export type JourneyActionState = {
   xpGain?: number;
 } | null;
 
+type JourneyActionResult = {
+  error?: string;
+  success?: boolean;
+  xpGain?: number;
+  pivotSkill?: string;
+};
+
 export async function submitChoice(input: {
   journeyId: string;
   nodeId: string;
   choiceId: string;
-}) {
+}): Promise<JourneyActionResult> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -25,11 +32,24 @@ export async function submitChoice(input: {
 
   if (!user) return { error: "Unauthorized" };
 
-  const { data: choice } = await supabase
-    .from("journey_choices")
-    .select("target_skill_tag")
-    .eq("id", input.choiceId)
-    .single();
+  const [{ data: journey }, { data: choice }] = await Promise.all([
+    supabase
+      .from("journeys")
+      .select("current_node_id")
+      .eq("id", input.journeyId)
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("journey_choices")
+      .select("node_id, target_skill_tag")
+      .eq("id", input.choiceId)
+      .eq("node_id", input.nodeId)
+      .maybeSingle(),
+  ]);
+
+  if (!journey || journey.current_node_id !== input.nodeId || !choice) {
+    return { error: "This choice is no longer available" };
+  }
 
   const { error: decisionError } = await supabase.from("decisions").insert({
     journey_id: input.journeyId,
@@ -39,7 +59,7 @@ export async function submitChoice(input: {
   });
 
   if (decisionError?.code === "23505") {
-    return { error: "Already decided on this node" };
+    return { success: true, xpGain: 0 };
   }
   if (decisionError) return { error: decisionError.message };
 
@@ -74,13 +94,27 @@ export async function submitChoice(input: {
   return { success: true, xpGain };
 }
 
-export async function acknowledgeNode(input: { journeyId: string; nodeId: string }) {
+export async function acknowledgeNode(input: {
+  journeyId: string;
+  nodeId: string;
+}): Promise<JourneyActionResult> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) return { error: "Unauthorized" };
+
+  const { data: journey } = await supabase
+    .from("journeys")
+    .select("current_node_id")
+    .eq("id", input.journeyId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!journey || journey.current_node_id !== input.nodeId) {
+    return { error: "This checkpoint is no longer current" };
+  }
 
   const { error } = await supabase.from("decisions").insert({
     journey_id: input.journeyId,
@@ -89,7 +123,7 @@ export async function acknowledgeNode(input: { journeyId: string; nodeId: string
     decided_at: new Date().toISOString(),
   });
 
-  if (error?.code === "23505") return { error: "Already completed" };
+  if (error?.code === "23505") return { success: true, xpGain: 0 };
   if (error) return { error: error.message };
 
   const xpGain = 25;
@@ -112,7 +146,10 @@ export async function acknowledgeNode(input: { journeyId: string; nodeId: string
   return { success: true, xpGain };
 }
 
-export async function pivotTrack(input: { journeyId: string; pivotSkill: string }) {
+export async function pivotTrack(input: {
+  journeyId: string;
+  pivotSkill: string;
+}): Promise<JourneyActionResult> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -120,28 +157,35 @@ export async function pivotTrack(input: { journeyId: string; pivotSkill: string 
 
   if (!user) return { error: "Unauthorized" };
 
-  const { data: journey } = await supabase
-    .from("journeys")
-    .select("current_node_id")
-    .eq("id", input.journeyId)
-    .eq("user_id", user.id)
-    .single();
+  const [{ data: journey }, { data: pivotSkill }] = await Promise.all([
+    supabase
+      .from("journeys")
+      .select("current_node_id")
+      .eq("id", input.journeyId)
+      .eq("user_id", user.id)
+      .single(),
+    supabase
+      .from("skill_catalog")
+      .select("slug")
+      .eq("slug", input.pivotSkill)
+      .maybeSingle(),
+  ]);
 
   if (!journey?.current_node_id) return { error: "Journey not found" };
-
-  await supabase
-    .from("journey_nodes")
-    .update({ archived_at: new Date().toISOString() })
-    .eq("journey_id", input.journeyId)
-    .is("archived_at", null)
-    .neq("id", journey.current_node_id);
+  if (!pivotSkill) return { error: "That pivot is not available" };
 
   try {
-    await createAndPersistNextNode(supabase, {
+    const generated = await createAndPersistNextNode(supabase, {
       journeyId: input.journeyId,
       userId: user.id,
       pivotSkill: input.pivotSkill,
     });
+    await supabase
+      .from("journey_nodes")
+      .update({ archived_at: new Date().toISOString() })
+      .eq("journey_id", input.journeyId)
+      .is("archived_at", null)
+      .neq("id", generated.nodeId);
   } catch (e) {
     revalidatePath(ROUTES.journeyDetail(input.journeyId));
     return { error: e instanceof Error ? e.message : "Could not pivot track" };
@@ -153,7 +197,10 @@ export async function pivotTrack(input: { journeyId: string; pivotSkill: string 
   return { success: true, pivotSkill: input.pivotSkill };
 }
 
-export async function retryNextNode(input: { journeyId: string; nodeId: string }) {
+export async function retryNextNode(input: {
+  journeyId: string;
+  nodeId: string;
+}): Promise<JourneyActionResult> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -273,7 +320,7 @@ export async function pivotTrackAction(formData: FormData): Promise<void> {
   await pivotTrackFormAction(null, formData);
 }
 
-async function awardXp(userId: string, amount: number) {
+async function awardXp(userId: string, amount: number): Promise<void> {
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")

@@ -1,4 +1,5 @@
 import { NavDock } from "@/components/layout/nav-dock";
+import { StickyProgressBar } from "@/components/layout/sticky-progress-bar";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -13,11 +14,16 @@ type AppShellProps = {
 export function AppShell({
   children,
   level = 1,
+  xp = 0,
   streakDays = 0,
+  showProgress = true,
   fullBleed = false,
 }: AppShellProps) {
   return (
     <div className="flex min-h-screen flex-col">
+      {showProgress && (
+        <StickyProgressBar level={level} xp={xp} streakDays={streakDays} />
+      )}
       <main
         className={
           fullBleed

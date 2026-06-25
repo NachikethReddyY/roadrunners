@@ -12,12 +12,16 @@ function preferredDarkTheme() {
 }
 
 export function ThemeToggle() {
-  const [dark, setDark] = useState(preferredDarkTheme);
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle("dark", dark);
-  }, [dark]);
+    const isDark = preferredDarkTheme();
+    const frame = window.requestAnimationFrame(() => {
+      setDark(isDark);
+      document.documentElement.classList.toggle("dark", isDark);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   function toggle() {
     const next = !dark;

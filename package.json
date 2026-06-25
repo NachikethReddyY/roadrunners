@@ -10,7 +10,8 @@
     "check:codecasts": "node scripts/check-codecast-readiness.mjs",
     "generate:trial-mp4": "node scripts/generate-trial-scrim-demo.mjs",
     "bake:scrim-audio": "node scripts/bake-scrim-caption-audio.mjs",
-    "bake:scrim-narration": "node scripts/bake-scrim-narration-audio.mjs"
+    "bake:scrim-narration": "node scripts/bake-scrim-narration-audio.mjs",
+    "test": "node --experimental-strip-types --test lib/journey/presentation.test.mjs lib/journey/frontier-view.test.mjs lib/journey/progress.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",

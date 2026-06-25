@@ -68,16 +68,17 @@ function DockNavLink({ href, active, label, children }: DockNavLinkProps) {
 
 function ThemeDockIcon() {
   const [mounted, setMounted] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    if (typeof window === "undefined") return "light";
-    const stored = localStorage.getItem("rr-theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    return stored === "dark" || (!stored && prefersDark) ? "dark" : "light";
-  });
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    const id = window.setTimeout(() => setMounted(true), 0);
-    return () => window.clearTimeout(id);
+    const stored = localStorage.getItem("rr-theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = stored === "dark" || (!stored && prefersDark);
+    const frame = window.requestAnimationFrame(() => {
+      setMounted(true);
+      setTheme(isDark ? "dark" : "light");
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   return (
