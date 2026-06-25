@@ -21,7 +21,7 @@ function ContinueButton() {
       disabled={pending}
       className={cn(buttonVariants({ className: "h-11 w-full rounded-full" }), pending && "opacity-60")}
     >
-      {pending ? "Generating next step…" : "Continue"}
+      {pending ? "Saving and preparing next checkpoint…" : "Acknowledge and continue"}
     </button>
   );
 }

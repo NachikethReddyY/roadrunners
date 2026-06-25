@@ -1,11 +1,11 @@
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
-import rehypeSanitize from "rehype-sanitize";
 import { Logo } from "@/components/brand/logo";
+import { GuidePanel } from "@/components/guide/guide-panel";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ROUTES } from "@/lib/constants/routes";
+import type { CheckpointMode } from "@/lib/journey/presentation";
 import { cn } from "@/lib/utils";
 
 const skillBadgeClass: Record<string, string> = {
@@ -23,6 +23,8 @@ type JourneyNodeCardProps = {
   skillTag: string;
   skillCategory?: string;
   fallback?: boolean;
+  mode?: CheckpointMode;
+  scrimHref?: string;
   children?: React.ReactNode;
 };
 
@@ -32,6 +34,8 @@ export function JourneyNodeCard({
   skillTag,
   skillCategory = "web",
   fallback,
+  mode = "guide",
+  scrimHref,
   children,
 }: JourneyNodeCardProps) {
   return (
@@ -56,11 +60,31 @@ export function JourneyNodeCard({
           )}
         </div>
         <CardTitle className="font-heading text-2xl font-semibold tracking-tight">{title}</CardTitle>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          {mode} checkpoint
+        </p>
       </CardHeader>
       <CardContent>
-        <div className="prose prose-neutral max-w-none text-[17px] leading-[1.47] tracking-[-0.01em] dark:prose-invert">
-          <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{content}</ReactMarkdown>
-        </div>
+        <GuidePanel
+          markdown={content}
+          goals={[mode === "choice" ? "Choose the next feature outcome." : `Complete “${title}”.`]}
+          expectations={[
+            mode === "build"
+              ? "Use the guide, then author and run the implementation in your workspace."
+              : "Review the context before acknowledging or choosing the next direction.",
+          ]}
+          hints={
+            mode === "build"
+              ? [
+                  { level: 1, text: "Start with the smallest observable behavior in the goal." },
+                  { level: 2, text: "Run after each meaningful change and inspect the output." },
+                  { level: 3, text: "Compare the final behavior with the checkpoint requirement." },
+                ]
+              : []
+          }
+          scrimHref={scrimHref}
+          className="border-0 bg-transparent p-0"
+        />
       </CardContent>
       {children && (
         <CardFooter className="flex flex-col items-stretch gap-3 border-t border-border pt-6">
@@ -90,7 +114,9 @@ export function EmptyJourneyCard() {
       <CardContent className="space-y-4">
         <Logo size="lg" className="mx-auto text-primary/50" />
         <p className="font-heading text-xl font-semibold">No roadmap yet</p>
-        <p className="text-muted-foreground">Create your first AI-guided learning path.</p>
+        <p className="text-muted-foreground">
+          Create a roadmap from a goal, then choose feature checkpoints as you build.
+        </p>
         <Link href={ROUTES.roadmapNew} className={buttonVariants({ className: "h-11 rounded-full px-6" })}>
           Create roadmap
         </Link>

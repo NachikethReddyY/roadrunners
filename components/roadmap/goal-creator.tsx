@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 type GoalCreatorProps = {
   skills: SkillBubble[];
+  catalogUnavailable?: boolean;
 };
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
@@ -26,7 +27,7 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
   return debounced;
 }
 
-export function GoalCreator({ skills }: GoalCreatorProps) {
+export function GoalCreator({ skills, catalogUnavailable = false }: GoalCreatorProps) {
   const [mode, setMode] = useState<"learn" | "become">("become");
   const [subject, setSubject] = useState("");
   const [lockedSkills, setLockedSkills] = useState<SkillBubble[] | null>(null);
@@ -116,6 +117,17 @@ export function GoalCreator({ skills }: GoalCreatorProps) {
               onSubjectChange={handleSubjectChange}
               canSubmit={canSubmit}
             />
+            {subject.length > 0 && !canSubmit && (
+              <p className="roadmap-subtitle -mt-3 text-sm" role="status">
+                Enter at least three characters.
+              </p>
+            )}
+            {catalogUnavailable && (
+              <p className="roadmap-subtitle -mt-3 text-center text-sm" role="status">
+                Skill suggestions are temporarily unavailable. You can still create a roadmap
+                from your goal.
+              </p>
+            )}
             <LoadingOverlay />
           </form>
         </div>
@@ -138,8 +150,12 @@ function LoadingOverlay() {
       aria-live="polite"
     >
       <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      <p className="roadmap-title font-heading text-xl font-semibold">Building your roadmap…</p>
-      <p className="roadmap-subtitle text-sm">Generating your first step</p>
+      <p className="roadmap-title font-heading text-xl font-semibold">
+        Saving your roadmap…
+      </p>
+      <p className="roadmap-subtitle max-w-sm text-center text-sm">
+        Preparing the first checkpoint. The roadmap opens only after it is safely saved.
+      </p>
     </div>
   );
 }

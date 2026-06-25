@@ -18,7 +18,7 @@ export type CreateRoadmapFormState = CreateRoadmapResult | null;
 export async function createRoadmap(formData: FormData): Promise<CreateRoadmapResult> {
   const parsed = createRoadmapSchema.safeParse({
     mode: formData.get("mode"),
-    subject: formData.get("subject"),
+    subject: String(formData.get("subject") ?? "").trim(),
   });
 
   if (!parsed.success) {
@@ -84,7 +84,7 @@ export async function createRoadmapFormAction(
 ): Promise<CreateRoadmapFormState> {
   const result = await createRoadmap(formData);
   if ("error" in result) return result;
-  redirect(ROUTES.journey);
+  redirect(ROUTES.journeyDetail(result.journeyId));
 }
 
 export async function createRoadmapAction(formData: FormData): Promise<void> {

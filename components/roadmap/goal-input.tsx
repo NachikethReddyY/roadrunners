@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight } from "lucide-react";
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useSyncExternalStore } from "react";
 import { useFormStatus } from "react-dom";
 import { MorphingText } from "@/components/ui/morphing-text";
 import {
@@ -17,25 +17,6 @@ type GoalInputProps = {
   canSubmit: boolean;
   inputId?: string;
 };
-
-function SubmitArrowStatic({
-  disabled,
-  className,
-}: {
-  disabled: boolean;
-  className: string;
-}) {
-  return (
-    <button
-      type="submit"
-      disabled={disabled}
-      aria-label="Continue"
-      className={className}
-    >
-      <ArrowRight className="size-5" />
-    </button>
-  );
-}
 
 function SubmitArrowPending({
   disabled,
@@ -60,12 +41,6 @@ function SubmitArrowPending({
 }
 
 function SubmitArrow({ disabled }: { disabled: boolean }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const className = cn(
     "glass-submit flex size-11 shrink-0 items-center justify-center rounded-xl",
     "opacity-80 transition-all duration-200",
@@ -73,11 +48,21 @@ function SubmitArrow({ disabled }: { disabled: boolean }) {
     "disabled:pointer-events-none disabled:opacity-35"
   );
 
-  if (!mounted) {
-    return <SubmitArrowStatic disabled={disabled} className={className} />;
-  }
-
   return <SubmitArrowPending disabled={disabled} className={className} />;
+}
+
+function subscribeToReducedMotion(onStoreChange: () => void): () => void {
+  const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+  query.addEventListener("change", onStoreChange);
+  return () => query.removeEventListener("change", onStoreChange);
+}
+
+function reducedMotionSnapshot(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function reducedMotionServerSnapshot(): boolean {
+  return false;
 }
 
 export const GoalInput = forwardRef<HTMLInputElement, GoalInputProps>(function GoalInput(
@@ -92,12 +77,12 @@ export const GoalInput = forwardRef<HTMLInputElement, GoalInputProps>(function G
   ref
 ) {
   const placeholders = placeholdersForMode(mode);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const reducedMotion = useSyncExternalStore(
+    subscribeToReducedMotion,
+    reducedMotionSnapshot,
+    reducedMotionServerSnapshot
+  );
   const showPlaceholder = subject.trim().length === 0;
-
-  useEffect(() => {
-    setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  }, []);
 
   return (
     <div className="flex w-full max-w-3xl flex-col items-center gap-4">
