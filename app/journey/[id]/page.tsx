@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { CheckpointFlow } from "@/components/journey/checkpoint-flow";
 import { ChoicePanel } from "@/components/journey/choice-panel";
 import { ContinueForm } from "@/components/journey/continue-form";
+import { GenerateCodecastButton } from "@/components/playground/generate-codecast-button";
 import { PrepareScrimButton } from "@/components/playground/prepare-scrim-button";
 import {
   JourneyNodeCard,
@@ -213,16 +214,25 @@ export default async function JourneyDetailPage({ params }: PageProps) {
                       separate full-screen scrim experience.
                     </p>
                   </div>
-                  {relevantScrim ? (
-                    <PrepareScrimButton
-                      scrimId={relevantScrim.id}
+                  <div className="flex flex-col items-start gap-3">
+                    <GenerateCodecastButton
                       journeyId={id}
+                      nodeId={node.id}
+                      label="Generate AI CodeCast"
                     />
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      No CodeCast is wired for this checkpoint yet.
-                    </p>
-                  )}
+                    {relevantScrim ? (
+                      <PrepareScrimButton
+                        scrimId={relevantScrim.id}
+                        journeyId={id}
+                        label="Open curated CodeCast"
+                        className="min-h-10 rounded-full bg-transparent px-4 text-sm text-foreground ring-1 ring-border hover:bg-muted"
+                      />
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No curated CodeCast is wired for this checkpoint, so generate one live.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 

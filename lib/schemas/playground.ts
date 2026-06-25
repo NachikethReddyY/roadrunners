@@ -90,6 +90,23 @@ export const scrimNarrationSchema = z.object({
   script: z.string(),
   cues: z.array(scrimNarrationCueSchema).default([]),
   next_session_topic: z.string().min(1).optional(),
+  storage_path: z.string().optional(),
+  storage_backend: z.enum(["supabase", "r2"]).optional(),
+});
+
+export const generatedScrimSchema = z.object({
+  title: z.string().min(1).max(160),
+  skill_tag: z.string().min(1),
+  template: playgroundTemplateSchema,
+  initial_files: z.record(z.string(), z.string()),
+  slides: z.array(scrimSlideSchema).min(1).max(6),
+  timeline: scrimTimelineSchema,
+  narration: z.object({
+    script: z.string().min(1).max(12000),
+    cues: z.array(scrimNarrationCueSchema).default([]),
+    next_session_topic: z.string().min(1).optional(),
+  }),
+  duration_ms: z.number().nonnegative(),
 });
 
 export const lessonScrimSchema = z.object({
@@ -113,6 +130,7 @@ export type ScrimEvent = z.infer<typeof scrimEventSchema>;
 export type ScrimSlide = z.infer<typeof scrimSlideSchema>;
 export type ScrimChallengeEvent = Extract<ScrimEvent, { type: "challenge" }>;
 export type LessonScrim = z.infer<typeof lessonScrimSchema>;
+export type GeneratedScrim = z.infer<typeof generatedScrimSchema>;
 
 function interpolateStringByTime(
   from: string,

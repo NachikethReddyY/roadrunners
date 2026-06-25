@@ -3,9 +3,11 @@ import { notFound, redirect } from "next/navigation";
 import { UserScrimView } from "@/components/playground/user-scrim-view";
 import { AppShell } from "@/components/layout/app-shell";
 import { loadLatestCheckpoint, loadUserScrim } from "@/lib/actions/scrim";
-import { isTtsConfigured } from "@/lib/config/scrim";
+import { isR2Configured, isTtsConfigured, scrimConfig } from "@/lib/config/scrim";
 import { ROUTES } from "@/lib/constants/routes";
 import { lessonScrimSchema } from "@/lib/schemas/playground";
+import { createR2SignedUrl } from "@/lib/storage/r2";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -44,6 +46,29 @@ export default async function UserScrimPage({ params }: PageProps) {
 
   const journey = journeyRes.data;
   const profile = profileRes.data;
+  let narration = userScrim.narration;
+
+  if (narration?.storage_path && narration?.storage_backend === "r2" && isR2Configured()) {
+    narration = {
+      ...narration,
+      audio_url: createR2SignedUrl(scrimConfig.tts.r2, narration.storage_path, 3600),
+    };
+  } else if (
+    narration?.storage_path &&
+    narration?.storage_backend === "supabase" &&
+    isTtsConfigured()
+  ) {
+    const admin = createAdminClient();
+    const { data } = await admin.storage
+      .from(scrimConfig.tts.storageBucket)
+      .createSignedUrl(narration.storage_path, 3600);
+    if (data?.signedUrl) {
+      narration = {
+        ...narration,
+        audio_url: data.signedUrl,
+      };
+    }
+  }
 
   const parsed = lessonScrimSchema.safeParse({
     id: userScrim.id,
@@ -53,6 +78,7 @@ export default async function UserScrimPage({ params }: PageProps) {
     template: userScrim.template,
     initial_files: checkpoint?.files ?? userScrim.initialFiles,
     timeline: userScrim.timeline,
+    narration,
     slides: userScrim.slides,
     duration_ms: userScrim.durationMs,
   });

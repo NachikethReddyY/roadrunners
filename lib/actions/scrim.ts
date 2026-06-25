@@ -212,6 +212,7 @@ export async function saveUserScrim(
       initial_files: row.initialFiles,
       timeline: row.timeline,
       slides: row.slides,
+      narration: row.narration ?? null,
       duration_ms: row.durationMs,
       resume_timeline_ms: row.resumeTimelineMs,
     })
@@ -266,6 +267,7 @@ export async function loadUserScrim(userScrimId: string) {
     initialFiles: data.initial_files as Record<string, string>,
     timeline: data.timeline,
     slides: data.slides,
+    narration: data.narration,
     durationMs: data.duration_ms as number,
     resumeTimelineMs: data.resume_timeline_ms as number,
   };

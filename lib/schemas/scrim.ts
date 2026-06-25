@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   playgroundTemplateSchema,
+  scrimNarrationSchema,
   scrimSlideSchema,
   scrimTimelineSchema,
 } from "@/lib/schemas/playground";
@@ -26,6 +27,7 @@ export const saveUserScrimSchema = z.object({
   initialFiles: z.record(z.string(), z.string()),
   timeline: scrimTimelineSchema,
   slides: z.array(scrimSlideSchema).default([]),
+  narration: scrimNarrationSchema.optional(),
   durationMs: z.number().nonnegative(),
   resumeTimelineMs: z.number().nonnegative().default(0),
 });
