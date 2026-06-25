@@ -29,7 +29,7 @@ function toSandpackFiles(files: Record<string, string>): SandpackFiles {
   return Object.fromEntries(
     entries.map(([path, code]) => [
       path.startsWith("/") ? path : `/${path}`,
-      code,
+      { code },
     ])
   );
 }
