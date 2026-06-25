@@ -4,8 +4,8 @@ import { isOAuthProviderEnabled } from "@/lib/auth/oauth";
 import { ROUTES } from "@/lib/constants/routes";
 import { createRouteHandlerClient } from "@/lib/supabase/route-handler";
 
-function authCallbackUrl() {
-  return new URL("/auth/callback", process.env.NEXT_PUBLIC_APP_URL!).toString();
+function authCallbackUrl(origin: string) {
+  return new URL("/auth/callback", origin).toString();
 }
 
 function loginErrorRedirect(origin: string, message: string) {
@@ -43,7 +43,7 @@ export async function GET(
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: authCallbackUrl(),
+      redirectTo: authCallbackUrl(origin),
       queryParams: { prompt: "select_account", access_type: "online" },
     },
   });

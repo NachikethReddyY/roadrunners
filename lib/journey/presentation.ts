@@ -92,7 +92,7 @@ export function checkpointModeForNode(
   nodeType: string,
   hasWorkspace = false
 ): CheckpointMode {
-  if (hasWorkspace || nodeType === "interactive") return "build";
+  if (hasWorkspace || nodeType === "interactive") return "scrim";
   if (nodeType === "milestone") return "milestone";
   if (nodeType === "lesson") return "guide";
   if (nodeType === "scrim") return "scrim";

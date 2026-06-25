@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { sendAuthCodeEmail } from "@/lib/email/send-auth-code";
 import { isOAuthProviderEnabled } from "@/lib/auth/oauth";
@@ -11,8 +12,14 @@ import { createClient } from "@/lib/supabase/server";
 
 type OAuthProvider = "google";
 
-function authCallbackUrl(next?: string) {
-  const url = new URL("/auth/callback", process.env.NEXT_PUBLIC_APP_URL!);
+async function authCallbackUrl(next?: string) {
+  const headerStore = await headers();
+  const forwardedProto = headerStore.get("x-forwarded-proto");
+  const forwardedHost = headerStore.get("x-forwarded-host");
+  const host = forwardedHost ?? headerStore.get("host") ?? process.env.NEXT_PUBLIC_APP_URL;
+  const protocol = forwardedProto ?? (host?.includes("localhost") ? "http" : "https");
+  const base = host?.startsWith("http") ? host : `${protocol}://${host}`;
+  const url = new URL("/auth/callback", base);
   if (next?.startsWith("/")) {
     url.searchParams.set("next", next);
   }
@@ -44,7 +51,7 @@ async function signInWithOAuth(provider: OAuthProvider, next?: string) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: authCallbackUrl(next),
+      redirectTo: await authCallbackUrl(next),
     },
   });
 
@@ -80,7 +87,7 @@ export async function sendEmailCode(
     type: "magiclink",
     email: parsedEmail.data,
     options: {
-      redirectTo: authCallbackUrl(safeNext),
+      redirectTo: await authCallbackUrl(safeNext),
     },
   });
 

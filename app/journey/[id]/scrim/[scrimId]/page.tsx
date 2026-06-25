@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ScrimLessonView } from "@/components/playground/scrim-lesson-view";
+import { ContinueForm } from "@/components/journey/continue-form";
 import { AppShell } from "@/components/layout/app-shell";
 import { loadLatestCheckpoint } from "@/lib/actions/scrim";
 import { isTtsConfigured } from "@/lib/config/scrim";
@@ -26,7 +27,7 @@ export default async function ScrimLessonPage({ params }: PageProps) {
     await Promise.all([
       supabase
         .from("journeys")
-        .select("id, title")
+        .select("id, title, current_node_id")
         .eq("id", journeyId)
         .eq("user_id", user.id)
         .maybeSingle(),
@@ -41,10 +42,25 @@ export default async function ScrimLessonPage({ params }: PageProps) {
 
   if (!journey || !scrimRow) notFound();
 
+  const { data: linkedNode } = journey.current_node_id
+    ? await supabase
+        .from("journey_nodes")
+        .select("id, skill_tag, playground_config, node_type")
+        .eq("id", journey.current_node_id)
+        .maybeSingle()
+    : { data: null };
+
   const scrim = parseLessonScrim({
     ...scrimRow,
     initial_files: scrimRow.initial_files as Record<string, string>,
   });
+
+  const currentCheckpointNodeId =
+    linkedNode &&
+    linkedNode.skill_tag === scrim.skill_tag &&
+    (linkedNode.node_type === "interactive" || Boolean(linkedNode.playground_config))
+      ? linkedNode.id
+      : undefined;
 
   const resumeFiles = checkpoint?.files ?? scrim.initial_files;
   const resumeMs = checkpoint?.timeline_ms ?? 0;
@@ -55,8 +71,8 @@ export default async function ScrimLessonPage({ params }: PageProps) {
       level={profile?.level ?? 1}
       streakDays={profile?.streak_days ?? 0}
     >
-      <div className="flex h-[calc(100vh-4rem)] flex-col px-2 py-2 sm:px-4">
-        <div className="mb-2 flex items-center justify-between gap-4 px-2">
+      <div className="flex h-[calc(100dvh-4rem)] flex-col overflow-hidden px-0 py-0">
+        <div className="flex items-center justify-between gap-4 border-b border-border bg-background/92 px-4 py-3 backdrop-blur sm:px-5">
           <div>
             <p className="text-xs text-muted-foreground">{journey.title}</p>
             <h1 className="font-heading text-lg font-semibold">{scrim.title}</h1>
@@ -66,7 +82,12 @@ export default async function ScrimLessonPage({ params }: PageProps) {
               </p>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {currentCheckpointNodeId && (
+              <div className="min-w-[13rem]">
+                <ContinueForm journeyId={journeyId} nodeId={currentCheckpointNodeId} />
+              </div>
+            )}
             <Link
               href={ROUTES.journeyScrims(journeyId)}
               className={buttonVariants({ variant: "ghost", className: "rounded-full" })}
@@ -83,6 +104,7 @@ export default async function ScrimLessonPage({ params }: PageProps) {
         </div>
         <ScrimLessonView
           journeyId={journeyId}
+          nodeId={currentCheckpointNodeId}
           scrimId={scrim.id}
           scrim={scrim}
           breadcrumb={`${journey.title} / ${scrim.title}`}

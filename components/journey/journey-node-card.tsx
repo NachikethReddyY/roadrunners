@@ -71,6 +71,8 @@ export function JourneyNodeCard({
           expectations={[
             mode === "build"
               ? "Use the guide, then author and run the implementation in your workspace."
+              : mode === "scrim"
+                ? "Read the guide here, then open the full-screen CodeCast to watch, try, and run the exercise in its own workspace."
               : "Review the context before acknowledging or choosing the next direction.",
           ]}
           hints={
@@ -80,6 +82,12 @@ export function JourneyNodeCard({
                   { level: 2, text: "Run after each meaningful change and inspect the output." },
                   { level: 3, text: "Compare the final behavior with the checkpoint requirement." },
                 ]
+              : mode === "scrim"
+                ? [
+                    { level: 1, text: "Open the CodeCast and watch the setup once before you edit." },
+                    { level: 2, text: "Use the challenge pause to make the change yourself, then run it." },
+                    { level: 3, text: "When the exercise behaves correctly, continue the roadmap from the same flow." },
+                  ]
               : []
           }
           scrimHref={scrimHref}

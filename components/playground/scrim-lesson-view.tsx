@@ -7,6 +7,7 @@ import { saveWorkspaceSnapshot } from "@/lib/actions/workspace";
 
 type ScrimLessonViewProps = {
   journeyId: string;
+  nodeId?: string;
   scrimId: string;
   scrim: LessonScrim;
   breadcrumb: string;
@@ -17,6 +18,7 @@ type ScrimLessonViewProps = {
 
 export function ScrimLessonView({
   journeyId,
+  nodeId,
   scrimId,
   scrim,
   breadcrumb,
@@ -33,12 +35,13 @@ export function ScrimLessonView({
       saveTimer.current = setTimeout(() => {
         void saveWorkspaceSnapshot({
           journeyId,
+          nodeId,
           scrimId,
           files,
         });
       }, 1500);
     },
-    [journeyId, scrimId]
+    [journeyId, nodeId, scrimId]
   );
 
   useEffect(() => {
@@ -60,9 +63,11 @@ export function ScrimLessonView({
       title={scrim.title}
       breadcrumb={breadcrumb}
       journeyId={journeyId}
+      nodeId={nodeId}
       lessonScrimId={scrimId}
       skillTag={scrim.skill_tag}
       ttsAvailable={ttsAvailable}
+      fullscreen
       scrim={{
         durationMs: scrim.timeline.durationMs,
         events: scrim.timeline.events,

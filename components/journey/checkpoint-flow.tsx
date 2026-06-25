@@ -26,6 +26,14 @@ export function CheckpointFlow({ mode, hasScrim = false, className }: Checkpoint
           { label: "Verify", icon: CheckCircle2 },
           { label: "Next choice", icon: GitBranch },
         ]
+      : mode === "scrim"
+        ? [
+            { label: "Guide", icon: BookOpen },
+            { label: "Open CodeCast", icon: Clapperboard },
+            { label: "Watch", icon: Play },
+            { label: "Try it", icon: Code2 },
+            { label: "Continue", icon: GitBranch },
+          ]
       : mode === "choice"
         ? [
             { label: "Context", icon: BookOpen },

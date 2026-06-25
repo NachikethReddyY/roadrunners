@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { InteractiveNodeView } from "@/components/playground/interactive-node-view";
 import { AppShell } from "@/components/layout/app-shell";
 import { CheckpointFlow } from "@/components/journey/checkpoint-flow";
 import { ChoicePanel } from "@/components/journey/choice-panel";
@@ -15,7 +14,6 @@ import { buttonVariants } from "@/components/ui/button";
 import { ROUTES } from "@/lib/constants/routes";
 import { checkpointModeForNode, presentFeatureChoices } from "@/lib/journey/presentation";
 import { playgroundConfigSchema } from "@/lib/schemas/playground";
-import { loadWorkspaceSnapshot } from "@/lib/actions/workspace";
 import { createClient } from "@/lib/supabase/server";
 
 type PageProps = {
@@ -85,13 +83,13 @@ export default async function JourneyDetailPage({ params }: PageProps) {
     ? playgroundConfigSchema.safeParse(node.playground_config)
     : null;
   const playground = playgroundParsed?.success ? playgroundParsed.data : null;
-  const workspaceSnapshot =
-    node && playground ? await loadWorkspaceSnapshot({ nodeId: node.id }) : null;
   const isInteractive = Boolean(playground);
-  const mode = checkpointModeForNode(node?.node_type ?? "choice", isInteractive);
   const relevantScrim = node
     ? scrims?.find((scrim) => scrim.skill_tag === node.skill_tag)
     : undefined;
+  const mode = relevantScrim
+    ? "scrim"
+    : checkpointModeForNode(node?.node_type ?? "choice", isInteractive);
   const scrimHref = relevantScrim
     ? ROUTES.journeyScrim(id, relevantScrim.id)
     : undefined;
@@ -190,20 +188,57 @@ export default async function JourneyDetailPage({ params }: PageProps) {
           </div>
         ) : playground ? (
           <div className="space-y-6">
-            <InteractiveNodeView
-              journeyId={id}
-              nodeId={node.id}
+            <JourneyNodeCard
               title={node.title}
-              contentMd={node.content_md}
+              content={node.content_md}
               skillTag={node.skill_tag}
               skillCategory={skillCategory}
               fallback={node.is_fallback}
-              playground={playground}
-              initialFiles={workspaceSnapshot?.files}
-              choices={choicePayload}
-              skills={availableSkills}
-              decided={Boolean(decision)}
-            />
+              mode={mode}
+              scrimHref={scrimHref}
+            >
+              <div className="rounded-2xl border border-[var(--primary)]/15 bg-[color:color-mix(in_oklch,var(--surface),var(--primary)_4%)] p-5">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="max-w-2xl">
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                      Full-screen practice
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold text-foreground">
+                      Open this checkpoint in the dedicated CodeCast workspace
+                    </h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      The roadmap keeps the reading and decision-making here. The hands-on coding,
+                      player controls, challenge pauses, and saved progress now live in the
+                      separate full-screen scrim experience.
+                    </p>
+                  </div>
+                  {scrimHref && (
+                    <Link
+                      href={scrimHref}
+                      className={buttonVariants({
+                        className: "min-h-12 rounded-full px-6 text-sm",
+                      })}
+                    >
+                      Open full-screen CodeCast
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              {choicePayload.length > 0 ? (
+                <ChoicePanel
+                  journeyId={id}
+                  nodeId={node.id}
+                  choices={choicePayload}
+                  skills={availableSkills}
+                  roadmapGoal={journey.goal}
+                  currentSkillTag={node.skill_tag}
+                  decided={Boolean(decision)}
+                />
+              ) : (
+                !decision && <ContinueForm journeyId={id} nodeId={node.id} />
+              )}
+            </JourneyNodeCard>
             <VerificationSummary />
           </div>
         ) : (
