@@ -146,6 +146,7 @@ export function PlaygroundShell({
   onOutput,
   onFilesChange: onFilesChangeExternal,
 }: PlaygroundShellProps) {
+  const immersiveScrim = Boolean(scrim && fullscreen);
   const resumeFiles = config.files;
   const [files, setFiles] = useState(resumeFiles);
   const [activeFile, setActiveFile] = useState<string | null>(
@@ -159,7 +160,9 @@ export function PlaygroundShell({
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [listenControlMounted, setListenControlMounted] = useState(false);
-  const [activeStage, setActiveStage] = useState<LessonStage>(scrim ? "read" : "try");
+  const [activeStage, setActiveStage] = useState<LessonStage>(
+    scrim ? (immersiveScrim ? "watch" : "read") : "try"
+  );
   const [savedScrimId, setSavedScrimId] = useState<string | null>(userScrimId ?? null);
   const [currentCaption, setCurrentCaption] = useState<string | null>(
     scrim ? captionEventAt(scrim.events, scrim.initialTimelineMs ?? 0)?.text ?? null : null
@@ -298,7 +301,7 @@ export function PlaygroundShell({
       day: "numeric",
     })}`;
 
-  const stageHeader = scrim ? (
+  const stageHeader = scrim && !immersiveScrim ? (
     <div className="border-b border-[var(--hairline-warm)]/70 bg-[color:color-mix(in_oklch,var(--surface),white_3%)] px-4 py-4 sm:px-5">
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -365,7 +368,7 @@ export function PlaygroundShell({
     </div>
   ) : null;
 
-  const readStage = scrim ? (
+  const readStage = scrim && !immersiveScrim ? (
     <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(18rem,0.7fr)]">
         <section className="rounded-2xl border border-border bg-card p-5">
@@ -459,7 +462,7 @@ export function PlaygroundShell({
     </div>
   ) : null;
 
-  const watchOrTryBanner = scrim ? (
+  const watchOrTryBanner = scrim && !immersiveScrim ? (
     <div className="border-b border-[var(--hairline-warm)]/70 bg-[color:color-mix(in_oklch,var(--surface),white_2%)] px-4 py-4 sm:px-5">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
         <section className="rounded-2xl border border-border bg-card p-5">
@@ -517,7 +520,7 @@ export function PlaygroundShell({
     </div>
   ) : null;
 
-  const saveStage = scrim ? (
+  const saveStage = scrim && !immersiveScrim ? (
     <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
         <section className="rounded-2xl border border-border bg-card p-5">
@@ -631,9 +634,9 @@ export function PlaygroundShell({
     >
       {stageHeader}
 
-      {scrim && activeStage === "read" ? (
+      {scrim && !immersiveScrim && activeStage === "read" ? (
         readStage
-      ) : scrim && activeStage === "save" ? (
+      ) : scrim && !immersiveScrim && activeStage === "save" ? (
         saveStage
       ) : (
         <>

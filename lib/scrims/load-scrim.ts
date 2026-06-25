@@ -15,6 +15,7 @@ type ScrimSeedJson = {
   duration_ms: number;
   slides: LessonScrim["slides"];
   timeline: LessonScrim["timeline"];
+  narration?: LessonScrim["narration"];
 };
 
 export function loadScrimFromFile(filename: string): ScrimSeedJson {
@@ -32,6 +33,7 @@ export function parseLessonScrim(row: {
   template: string;
   initial_files: Record<string, string>;
   timeline: unknown;
+  narration?: unknown;
   slides: unknown;
   duration_ms: number;
 }): LessonScrim {
@@ -43,6 +45,7 @@ export function parseLessonScrim(row: {
     template: row.template,
     initial_files: row.initial_files,
     timeline: row.timeline,
+    narration: row.narration,
     slides: row.slides,
     duration_ms: row.duration_ms,
   });
